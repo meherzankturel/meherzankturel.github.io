@@ -1,16 +1,15 @@
-import { useEffect } from 'react';
-import { useRouter, useSegments } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../src/contexts/AuthContext';
-import { ActivityIndicator, View } from 'react-native';
-import { theme } from '../src/config/theme';
+import { AnimatedSplashScreen } from '../src/components/AnimatedSplashScreen';
 
 export default function Index() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const segments = useSegments();
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || showSplash) return;
 
     // If user is authenticated, redirect to tabs
     if (user) {
@@ -19,13 +18,24 @@ export default function Index() {
       // If not authenticated, redirect to login
       router.replace('/(auth)/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, showSplash]);
 
-  // Show loading while checking auth state
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  // Show animated splash screen
+  if (showSplash) {
+    return (
+      <AnimatedSplashScreen 
+        onAnimationComplete={handleSplashComplete}
+        duration={2500}
+      />
+    );
+  }
+
+  // Show splash while checking auth (after animated splash)
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-      <ActivityIndicator size="large" color={theme.colors.primary} />
-    </View>
+    <AnimatedSplashScreen duration={0} />
   );
 }
-

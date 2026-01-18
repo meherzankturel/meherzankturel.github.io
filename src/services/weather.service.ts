@@ -71,7 +71,7 @@ export class WeatherService {
 
         try {
             const response = await fetch(
-                `${OPENWEATHER_BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=imperial`
+                `${OPENWEATHER_BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`
             );
 
             if (!response.ok) {
@@ -106,7 +106,7 @@ export class WeatherService {
 
         try {
             const response = await fetch(
-                `${OPENWEATHER_BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=imperial`
+                `${OPENWEATHER_BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=metric`
             );
 
             if (!response.ok) {
@@ -243,14 +243,14 @@ export class WeatherService {
     }
 
     /**
-     * Format temperature for display
+     * Format temperature for display (now uses Celsius by default)
      */
-    static formatTemp(temp: number, unit: 'F' | 'C' = 'F'): string {
-        if (unit === 'C') {
-            const celsius = Math.round((temp - 32) * 5 / 9);
-            return `${celsius}°C`;
+    static formatTemp(temp: number, unit: 'F' | 'C' = 'C'): string {
+        if (unit === 'F') {
+            const fahrenheit = Math.round((temp * 9 / 5) + 32);
+            return `${fahrenheit}°F`;
         }
-        return `${temp}°F`;
+        return `${Math.round(temp)}°C`;
     }
 
     /**

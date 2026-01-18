@@ -1,33 +1,36 @@
 {
   "expo": {
-    "name": "Boundless",
-    "slug": "boundless",
+    "name": "SYNC",
+    "slug": "sync-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0A0A0F"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.boundless.app"
+      "bundleIdentifier": "com.sync.app"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0F"
       },
-      "package": "com.boundless.app"
+      "package": "com.sync.app"
     },
     "plugins": [
       "expo-router",
       "expo-font",
       "expo-video"
     ],
-    "scheme": "boundless",
+    "scheme": "sync",
     "extra": {
       "router": {},
       "eas": {

@@ -41,7 +41,7 @@ export default function LoginScreen() {
       <StatusBar style="auto" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.appName}>Boundless</Text>
+          <Text style={styles.appName}>SYNC</Text>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue</Text>
 

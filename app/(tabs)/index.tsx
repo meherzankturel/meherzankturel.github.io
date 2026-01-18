@@ -16,6 +16,8 @@ import MoodSelector from '../../src/components/MoodSelector';
 import SignalButton from '../../src/components/SignalButton';
 import HeartEffect from '../../src/components/HeartEffect';
 import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
+import { SyncLogoHeader } from '../../src/components/SyncLogoHeader';
+import { PhotoViewerModal } from '../../src/components/PhotoViewerModal';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
@@ -69,6 +71,13 @@ export default function HomeScreen() {
     const [showCaptionInput, setShowCaptionInput] = useState(false);
     const [momentCaption, setMomentCaption] = useState('');
     const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+
+    // Photo Viewer
+    const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
+    const [selectedPhotoUrl, setSelectedPhotoUrl] = useState('');
+    const [selectedPhotoCaption, setSelectedPhotoCaption] = useState<string | undefined>();
+    const [selectedMomentId, setSelectedMomentId] = useState<string | undefined>();
+    const [isOwnPhoto, setIsOwnPhoto] = useState(false);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -232,7 +241,7 @@ export default function HomeScreen() {
         initLocation();
     }, [user]);
 
-    // Real-time clock updates
+    // Real-time clock updates (every second for accuracy)
     useEffect(() => {
         const updateTimes = () => {
             // My time
@@ -250,8 +259,8 @@ export default function HomeScreen() {
         // Update immediately
         updateTimes();
 
-        // Update every minute
-        const interval = setInterval(updateTimes, 60000);
+        // Update every second for real-time display
+        const interval = setInterval(updateTimes, 1000);
 
         return () => clearInterval(interval);
     }, [userData?.timezone, partnerData?.timezone]);
@@ -280,7 +289,10 @@ export default function HomeScreen() {
                     userData.latitude,
                     userData.longitude
                 );
-                setMyWeather(weather);
+                if (weather) {
+                    setMyWeather(weather);
+                    console.log('✅ Got my weather by coords:', weather.temp, weather.condition);
+                }
 
                 // Check for severe weather and notify partner
                 if (weather?.isSevere && partnerData?.pushToken && userData?.name) {
@@ -292,6 +304,15 @@ export default function HomeScreen() {
                     );
                 }
                 setLoadingWeather(false);
+            } else if (userData?.city) {
+                // Fallback to city name if no coords
+                setLoadingWeather(true);
+                const weather = await WeatherService.getWeatherByCity(userData.city);
+                if (weather) {
+                    setMyWeather(weather);
+                    console.log('✅ Got my weather by city:', weather.temp, weather.condition);
+                }
+                setLoadingWeather(false);
             }
 
             // Fetch partner weather
@@ -300,10 +321,16 @@ export default function HomeScreen() {
                     partnerData.latitude,
                     partnerData.longitude
                 );
-                setPartnerWeather(weather);
+                if (weather) {
+                    setPartnerWeather(weather);
+                    console.log('✅ Got partner weather by coords:', weather.temp, weather.condition);
+                }
             } else if (partnerData?.city) {
                 const weather = await WeatherService.getWeatherByCity(partnerData.city);
-                setPartnerWeather(weather);
+                if (weather) {
+                    setPartnerWeather(weather);
+                    console.log('✅ Got partner weather by city:', weather.temp, weather.condition);
+                }
             }
         };
 
@@ -312,7 +339,7 @@ export default function HomeScreen() {
         // Refresh weather every 10 minutes
         const interval = setInterval(fetchWeather, 10 * 60 * 1000);
         return () => clearInterval(interval);
-    }, [userData?.latitude, userData?.longitude, partnerData?.latitude, partnerData?.longitude, partnerData?.city]);
+    }, [userData?.latitude, userData?.longitude, userData?.city, partnerData?.latitude, partnerData?.longitude, partnerData?.city]);
 
     // Real-time moment listener
     useEffect(() => {
@@ -1487,23 +1514,10 @@ export default function HomeScreen() {
                         }
                     >
                         {/* HEADER */}
-                        <View style={styles.header}>
-                            <Text style={styles.headerTitle}>Echoes of Us</Text>
-                            <View style={styles.headerButtons}>
-                                <TouchableOpacity
-                                    style={styles.headerButton}
-                                    onPress={() => router.push('/settings')}
-                                >
-                                    <Ionicons name="settings-outline" size={22} color={theme.colors.textSecondary} />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles.headerButton}
-                                    onPress={handleLogout}
-                                >
-                                    <Ionicons name="log-out-outline" size={22} color={theme.colors.textSecondary} />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                        <SyncLogoHeader
+                            onSettingsPress={() => router.push('/settings')}
+                            onLogoutPress={handleLogout}
+                        />
 
                         {/* SOS BANNER */}
                         {activeSOS && (
@@ -1552,7 +1566,19 @@ export default function HomeScreen() {
                                         {/* My Photo */}
                                         <View style={styles.momentPhotoHalf}>
                                             {MomentService.getUserPhoto(todayMoment, user?.uid || '') ? (
-                                                <>
+                                                <TouchableOpacity
+                                                    activeOpacity={0.9}
+                                                    onPress={() => {
+                                                        const photo = MomentService.getUserPhoto(todayMoment, user?.uid || '');
+                                                        if (photo) {
+                                                            setSelectedPhotoUrl(photo.photoUrl);
+                                                            setSelectedPhotoCaption(photo.caption);
+                                                            setSelectedMomentId(photo.id);
+                                                            setIsOwnPhoto(true);
+                                                            setPhotoViewerVisible(true);
+                                                        }
+                                                    }}
+                                                >
                                                     <Image
                                                         source={{ uri: MomentService.getUserPhoto(todayMoment, user?.uid || '')!.photoUrl }}
                                                         style={styles.momentPhoto}
@@ -1565,7 +1591,7 @@ export default function HomeScreen() {
                                                             </Text>
                                                         </View>
                                                     )}
-                                                </>
+                                                </TouchableOpacity>
                                             ) : (
                                                 <View style={styles.momentPlaceholder}>
                                                     <Ionicons name="camera-outline" size={32} color={theme.colors.textMuted} />
@@ -1577,7 +1603,19 @@ export default function HomeScreen() {
                                         {/* Partner Photo */}
                                         <View style={styles.momentPhotoHalf}>
                                             {MomentService.getPartnerPhoto(todayMoment, user?.uid || '') ? (
-                                                <>
+                                                <TouchableOpacity
+                                                    activeOpacity={0.9}
+                                                    onPress={() => {
+                                                        const photo = MomentService.getPartnerPhoto(todayMoment, user?.uid || '');
+                                                        if (photo) {
+                                                            setSelectedPhotoUrl(photo.photoUrl);
+                                                            setSelectedPhotoCaption(photo.caption);
+                                                            setSelectedMomentId(undefined);
+                                                            setIsOwnPhoto(false);
+                                                            setPhotoViewerVisible(true);
+                                                        }
+                                                    }}
+                                                >
                                                     <Image
                                                         source={{ uri: MomentService.getPartnerPhoto(todayMoment, user?.uid || '')!.photoUrl }}
                                                         style={styles.momentPhoto}
@@ -1590,7 +1628,7 @@ export default function HomeScreen() {
                                                             </Text>
                                                         </View>
                                                     )}
-                                                </>
+                                                </TouchableOpacity>
                                             ) : (
                                                 <View style={styles.momentPlaceholder}>
                                                     <Ionicons name="time-outline" size={32} color={theme.colors.textMuted} />
@@ -1600,10 +1638,6 @@ export default function HomeScreen() {
                                         </View>
                                     </View>
 
-                                    {/* Bottom Title */}
-                                    <View style={styles.momentBottomBar}>
-                                        <Text style={styles.momentBottomTitle}>Couple Joy</Text>
-                                    </View>
                                 </TouchableOpacity>
 
                                 {/* TIMEZONE CARDS */}
@@ -1640,7 +1674,10 @@ export default function HomeScreen() {
                                                                 color={WeatherService.getWeatherColor(myWeather.condition)}
                                                             />
                                                             <Text style={[styles.weatherText, myWeather.isSevere && styles.weatherSevere]}>
-                                                                {WeatherService.formatTemp(myWeather.temp)}
+                                                                {Math.round(myWeather.temp)}°
+                                                                <Text style={styles.feelsLikeText}>
+                                                                    {' '}(feels {Math.round(myWeather.feelsLike)}°)
+                                                                </Text>
                                                             </Text>
                                                         </View>
                                                     ) : loadingWeather ? (
@@ -1678,7 +1715,10 @@ export default function HomeScreen() {
                                                     color={WeatherService.getWeatherColor(partnerWeather.condition)}
                                                 />
                                                 <Text style={[styles.weatherText, partnerWeather.isSevere && styles.weatherSevere]}>
-                                                    {WeatherService.formatTemp(partnerWeather.temp)}
+                                                    {Math.round(partnerWeather.temp)}°
+                                                    <Text style={styles.feelsLikeText}>
+                                                        {' '}(feels {Math.round(partnerWeather.feelsLike)}°)
+                                                    </Text>
                                                 </Text>
                                                 {partnerWeather.isSevere && (
                                                     <Ionicons name="warning" size={12} color={theme.colors.error} />
@@ -1800,6 +1840,29 @@ export default function HomeScreen() {
                         onClose={() => setShowMoodModal(false)}
                         onSubmit={handleMoodSelect}
                         loading={updatingMood}
+                    />
+
+                    {/* PHOTO VIEWER MODAL */}
+                    <PhotoViewerModal
+                        visible={photoViewerVisible}
+                        photoUrl={selectedPhotoUrl}
+                        caption={selectedPhotoCaption}
+                        momentId={selectedMomentId}
+                        isOwnPhoto={isOwnPhoto}
+                        userId={user?.uid}
+                        onClose={() => setPhotoViewerVisible(false)}
+                        onCaptionUpdated={(newCaption) => {
+                            setSelectedPhotoCaption(newCaption);
+                            // Refresh moments to get updated caption
+                            if (user?.uid && userData?.partnerId) {
+                                MomentService.getTodayMoment(user.uid, userData.partnerId)
+                                    .then(setTodayMoment);
+                            }
+                        }}
+                        onReplacePhoto={() => {
+                            // Trigger the add moment flow to pick a new photo
+                            handleAddMoment();
+                        }}
                     />
 
                     {/* CAPTION INPUT MODAL */}
@@ -2030,6 +2093,11 @@ const styles = StyleSheet.create({
     weatherSevere: {
         color: theme.colors.error,
         fontWeight: '600',
+    },
+    feelsLikeText: {
+        fontSize: theme.typography.fontSize.xs,
+        color: theme.colors.textMuted,
+        fontWeight: '400',
     },
 
 

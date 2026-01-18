@@ -101,7 +101,7 @@ export default function SignUpScreen() {
       <StatusBar style="auto" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.appName}>Boundless</Text>
+          <Text style={styles.appName}>SYNC</Text>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Start your journey together</Text>
 

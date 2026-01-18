@@ -477,7 +477,7 @@ export default function MediaPreviewModal({
         }
       }
       
-      const fileName = `boundless_${Date.now()}.${extension}`;
+      const fileName = `sync_${Date.now()}.${extension}`;
       const filePath = `${FileSystem.cacheDirectory}${fileName}`;
 
       console.log('📥 Downloading media to:', filePath);
@@ -493,13 +493,13 @@ export default function MediaPreviewModal({
         const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
         console.log('📥 Asset created:', asset.id);
         
-        // Try to add to Boundless album
+        // Try to add to SYNC album
         try {
-          const album = await MediaLibrary.getAlbumAsync('Boundless');
+          const album = await MediaLibrary.getAlbumAsync('SYNC');
           if (album) {
             await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
           } else {
-            await MediaLibrary.createAlbumAsync('Boundless', asset, false);
+            await MediaLibrary.createAlbumAsync('SYNC', asset, false);
           }
         } catch (albumError) {
           console.log('Album error (non-critical):', albumError);
@@ -542,7 +542,7 @@ export default function MediaPreviewModal({
       // Download file first for reliable sharing
       const isVideo = currentMedia.type === 'video';
       const extension = isVideo ? 'mp4' : 'jpg';
-      const fileName = `boundless_share_${Date.now()}.${extension}`;
+      const fileName = `sync_share_${Date.now()}.${extension}`;
       const filePath = `${FileSystem.cacheDirectory}${fileName}`;
 
       console.log('📤 Downloading for share:', currentMedia.uri.substring(0, 100));
@@ -555,7 +555,7 @@ export default function MediaPreviewModal({
           Platform.OS === 'ios'
             ? { url: downloadResult.uri }
             : { 
-                message: 'A special memory from Boundless 💕',
+                message: 'A special memory from SYNC 💕',
                 url: downloadResult.uri,
               }
         );
@@ -571,7 +571,7 @@ export default function MediaPreviewModal({
       } else {
         // Fallback: try to share URL directly
         await Share.share({
-          message: `Check out this memory from Boundless! 💕\n${currentMedia.uri}`,
+          message: `Check out this memory from SYNC! 💕\n${currentMedia.uri}`,
         });
       }
     } catch (error: any) {

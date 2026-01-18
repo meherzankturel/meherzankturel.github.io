@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import mediaRoutes from './routes/media.routes';
 import authRoutes from './routes/auth.routes';
 import reviewRoutes from './routes/review.routes';
+import momentRoutes from './routes/moment.routes';
 import { initGridFS } from './utils/gridfs';
 
 dotenv.config();
@@ -15,10 +16,10 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      process.env.FRONTEND_URL,
-      /^exp:\/\/.*$/, // Expo development URLs
-      /^https:\/\/.*\.vercel\.app$/, // Vercel deployments
-    ].filter(Boolean)
+    process.env.FRONTEND_URL,
+    /^exp:\/\/.*$/, // Expo development URLs
+    /^https:\/\/.*\.vercel\.app$/, // Vercel deployments
+  ].filter(Boolean)
   : '*'; // Allow all in development
 
 app.use(cors({
@@ -54,11 +55,12 @@ mongoose.connect(MONGODB_URI)
 app.use('/api/media', mediaRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/moments', momentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'API is running',
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });

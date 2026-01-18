@@ -1,13 +1,45 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
+import { 
+    View, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    StyleSheet, 
+    ActivityIndicator, 
+    Alert, 
+    KeyboardAvoidingView, 
+    Platform, 
+    TouchableWithoutFeedback, 
+    Keyboard, 
+    ScrollView,
+    Dimensions 
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, db } from '../../src/config/firebase';
-import { theme } from '../../src/config/theme';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { SyncLogo } from '../../src/components/SyncLogo';
+import { StatusBar } from 'expo-status-bar';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// SYNC Brand Colors
+const colors = {
+    background: '#0A0A0F',
+    surface: '#12141C',
+    surfaceLight: '#1A1D28',
+    primary: '#00D4FF',
+    primaryDark: '#00A8CC',
+    text: '#FFFFFF',
+    textSecondary: '#7A8599',
+    textMuted: '#4A5568',
+    border: '#2A2D3A',
+    error: '#FF6B6B',
+    success: '#4ADE80',
+};
 
 export default function LoginScreen() {
     const { user } = useAuth();
@@ -90,9 +122,9 @@ export default function LoginScreen() {
                 });
 
                 await signOut(auth); // Prevent auto-login
-                Alert.alert('Success', 'Successfully Signed-up', [
+                Alert.alert('Success', 'Account created successfully!', [
                     {
-                        text: 'OK',
+                        text: 'Sign In',
                         onPress: () => {
                             setIsSignUp(false);
                             setPassword('');
@@ -112,12 +144,12 @@ export default function LoginScreen() {
 
             if (error.code === 'auth/email-already-in-use') {
                 title = 'Account Exists';
-                msg = 'That email is already registered. Try logging in instead.';
+                msg = 'That email is already registered. Try signing in instead.';
             } else if (error.code === 'auth/invalid-email') {
                 title = 'Invalid Email';
                 msg = 'Please enter a valid email address.';
             } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                title = 'Login Failed';
+                title = 'Sign In Failed';
                 msg = 'Incorrect email or password.';
             } else if (error.code === 'auth/weak-password') {
                 title = 'Weak Password';
@@ -131,10 +163,16 @@ export default function LoginScreen() {
     };
 
     return (
-        <LinearGradient
-            colors={theme.gradients.primary as [string, string]}
-            style={styles.gradient}
-        >
+        <View style={styles.container}>
+            <StatusBar style="light" />
+            <LinearGradient
+                colors={['#0A0A0F', '#0D0D14', '#0A0A0F']}
+                style={StyleSheet.absoluteFill}
+            />
+            
+            {/* Ambient glow */}
+            <View style={styles.ambientGlow} />
+            
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
@@ -145,231 +183,303 @@ export default function LoginScreen() {
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
                     >
-                        <View style={styles.container}>
-                            {/* Decorative header */}
-                            <Text style={styles.emoji}>💕</Text>
-                            <Text style={styles.title}>{isSignUp ? 'Create Account' : 'Welcome Back'}</Text>
-                            <Text style={styles.subtitle}>
-                                {isSignUp ? 'Start your love journey together' : 'We missed you!'}
+                        {/* Logo Section */}
+                        <View style={styles.logoSection}>
+                            <SyncLogo size="medium" showText={true} />
+                            <Text style={styles.tagline}>
+                                {isSignUp ? 'Start your journey together' : 'Stay connected, always'}
                             </Text>
+                        </View>
 
-                            <View style={styles.formCard}>
-                                <View style={styles.inputContainer}>
-                                    {isSignUp && (
-                                        <TextInput
-                                            placeholder="Name *"
-                                            placeholderTextColor={theme.colors.textLight}
-                                            value={name}
-                                            onChangeText={setName}
-                                            autoCapitalize="words"
-                                            textContentType="name"
-                                            autoComplete="name"
-                                            style={styles.input}
-                                        />
-                                    )}
-
+                        {/* Form Card */}
+                        <View style={styles.formCard}>
+                            <Text style={styles.formTitle}>
+                                {isSignUp ? 'Create Account' : 'Welcome Back'}
+                            </Text>
+                            
+                            {isSignUp && (
+                                <View style={styles.inputWrapper}>
+                                    <Ionicons name="person-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
                                     <TextInput
-                                        placeholder="Email"
-                                        placeholderTextColor={theme.colors.textLight}
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        autoCapitalize="none"
-                                        keyboardType="email-address"
-                                        textContentType="emailAddress"
-                                        autoComplete="email"
+                                        placeholder="Full Name"
+                                        placeholderTextColor={colors.textMuted}
+                                        value={name}
+                                        onChangeText={setName}
+                                        autoCapitalize="words"
+                                        textContentType="name"
+                                        autoComplete="name"
                                         style={styles.input}
                                     />
-
-                                    <View style={styles.passwordContainer}>
-                                        <TextInput
-                                            placeholder="Password"
-                                            placeholderTextColor={theme.colors.textLight}
-                                            value={password}
-                                            onChangeText={setPassword}
-                                            secureTextEntry={!showPassword}
-                                            textContentType={isSignUp ? "newPassword" : "password"}
-                                            autoComplete={isSignUp ? "password-new" : "password"}
-                                            autoCapitalize="none"
-                                            autoCorrect={false}
-                                            style={styles.passwordInput}
-                                        />
-                                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                                            <Ionicons name={showPassword ? "eye-off" : "eye"} size={22} color={theme.colors.textSecondary} />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {isSignUp && (
-                                        <>
-                                            <View style={styles.passwordContainer}>
-                                                <TextInput
-                                                    placeholder="Confirm Password *"
-                                                    placeholderTextColor={theme.colors.textLight}
-                                                    value={confirmPassword}
-                                                    onChangeText={setConfirmPassword}
-                                                    secureTextEntry={!showPassword}
-                                                    textContentType="newPassword"
-                                                    autoComplete="password-new"
-                                                    autoCapitalize="none"
-                                                    autoCorrect={false}
-                                                    style={styles.passwordInput}
-                                                />
-                                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                                                    <Ionicons name={showPassword ? "eye-off" : "eye"} size={22} color={theme.colors.textSecondary} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            <TextInput
-                                                placeholder="Phone Number * - For SOS calls"
-                                                placeholderTextColor={theme.colors.textLight}
-                                                value={phoneNumber}
-                                                onChangeText={setPhoneNumber}
-                                                keyboardType="phone-pad"
-                                                textContentType="telephoneNumber"
-                                                autoComplete="tel"
-                                                style={styles.input}
-                                            />
-
-                                            <TextInput
-                                                placeholder="FaceTime Email * - For SOS FaceTime"
-                                                placeholderTextColor={theme.colors.textLight}
-                                                value={faceTimeEmail}
-                                                onChangeText={setFaceTimeEmail}
-                                                autoCapitalize="none"
-                                                keyboardType="email-address"
-                                                textContentType="emailAddress"
-                                                autoComplete="email"
-                                                style={styles.input}
-                                            />
-                                        </>
-                                    )}
                                 </View>
+                            )}
 
-                                {!isSignUp && (
-                                    <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} style={styles.forgotButton}>
-                                        <Text style={styles.forgotText}>Forgot Password?</Text>
-                                    </TouchableOpacity>
-                                )}
+                            <View style={styles.inputWrapper}>
+                                <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+                                <TextInput
+                                    placeholder="Email"
+                                    placeholderTextColor={colors.textMuted}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    autoCapitalize="none"
+                                    keyboardType="email-address"
+                                    textContentType="emailAddress"
+                                    autoComplete="email"
+                                    style={styles.input}
+                                />
+                            </View>
 
-                                <TouchableOpacity onPress={handleAuth} style={styles.button} disabled={loading}>
-                                    {loading ? (
-                                        <ActivityIndicator color="#fff" />
-                                    ) : (
-                                        <Text style={styles.buttonText}>{isSignUp ? 'Sign Up' : 'Log In'}</Text>
-                                    )}
+                            <View style={styles.inputWrapper}>
+                                <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+                                <TextInput
+                                    placeholder="Password"
+                                    placeholderTextColor={colors.textMuted}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!showPassword}
+                                    textContentType={isSignUp ? "newPassword" : "password"}
+                                    autoComplete={isSignUp ? "password-new" : "password"}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    style={[styles.input, { flex: 1 }]}
+                                />
+                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+                                    <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textMuted} />
                                 </TouchableOpacity>
                             </View>
 
-                            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={styles.linkButton}>
-                                <Text style={styles.linkText}>
-                                    {isSignUp ? 'Already have an account? Log In' : 'New here? Create Account'}
+                            {isSignUp && (
+                                <>
+                                    <View style={styles.inputWrapper}>
+                                        <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+                                        <TextInput
+                                            placeholder="Confirm Password"
+                                            placeholderTextColor={colors.textMuted}
+                                            value={confirmPassword}
+                                            onChangeText={setConfirmPassword}
+                                            secureTextEntry={!showPassword}
+                                            textContentType="newPassword"
+                                            autoComplete="password-new"
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            style={[styles.input, { flex: 1 }]}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputWrapper}>
+                                        <Ionicons name="call-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+                                        <TextInput
+                                            placeholder="Phone Number (for SOS)"
+                                            placeholderTextColor={colors.textMuted}
+                                            value={phoneNumber}
+                                            onChangeText={setPhoneNumber}
+                                            keyboardType="phone-pad"
+                                            textContentType="telephoneNumber"
+                                            autoComplete="tel"
+                                            style={styles.input}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputWrapper}>
+                                        <Ionicons name="videocam-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+                                        <TextInput
+                                            placeholder="FaceTime Email (for SOS)"
+                                            placeholderTextColor={colors.textMuted}
+                                            value={faceTimeEmail}
+                                            onChangeText={setFaceTimeEmail}
+                                            autoCapitalize="none"
+                                            keyboardType="email-address"
+                                            textContentType="emailAddress"
+                                            autoComplete="email"
+                                            style={styles.input}
+                                        />
+                                    </View>
+                                </>
+                            )}
+
+                            {!isSignUp && (
+                                <TouchableOpacity 
+                                    onPress={() => router.push('/(auth)/forgot-password')} 
+                                    style={styles.forgotButton}
+                                >
+                                    <Text style={styles.forgotText}>Forgot Password?</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {/* Primary Button */}
+                            <TouchableOpacity 
+                                onPress={handleAuth} 
+                                style={styles.primaryButton} 
+                                disabled={loading}
+                                activeOpacity={0.8}
+                            >
+                                <LinearGradient
+                                    colors={['#00D4FF', '#00A8CC']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={styles.buttonGradient}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="#0A0A0F" />
+                                    ) : (
+                                        <Text style={styles.buttonText}>
+                                            {isSignUp ? 'Create Account' : 'Sign In'}
+                                        </Text>
+                                    )}
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Toggle Sign Up / Sign In */}
+                        <View style={styles.toggleSection}>
+                            <Text style={styles.toggleText}>
+                                {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+                            </Text>
+                            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+                                <Text style={styles.toggleLink}>
+                                    {isSignUp ? 'Sign In' : 'Create Account'}
                                 </Text>
                             </TouchableOpacity>
+                        </View>
+
+                        {/* Footer */}
+                        <View style={styles.footer}>
+                            <View style={styles.footerLine} />
+                            <Text style={styles.footerText}>Couples App</Text>
+                            <View style={styles.footerLine} />
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
-        </LinearGradient>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    // 🎀 Cozy Cloud Love Theme - Login Screen
-    gradient: {
+    container: {
         flex: 1,
+        backgroundColor: colors.background,
+    },
+    ambientGlow: {
+        position: 'absolute',
+        top: -100,
+        left: SCREEN_WIDTH / 2 - 150,
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        backgroundColor: colors.primary,
+        opacity: 0.08,
     },
     scrollContent: {
         flexGrow: 1,
-        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingTop: 60,
+        paddingBottom: 40,
     },
-    container: {
-        flex: 1,
-        padding: theme.spacing.lg,
-        justifyContent: 'center',
+    logoSection: {
         alignItems: 'center',
+        marginBottom: 32,
     },
-    emoji: {
-        fontSize: 48,
-        marginBottom: theme.spacing.sm,
-    },
-    title: {
-        fontSize: theme.typography.fontSize['3xl'],
-        fontWeight: '700',
-        marginBottom: theme.spacing.xs,
-        textAlign: 'center',
-        color: theme.colors.text,
-    },
-    subtitle: {
-        fontSize: theme.typography.fontSize.base,
-        color: theme.colors.textSecondary,
-        marginBottom: theme.spacing.xl,
-        textAlign: 'center',
+    tagline: {
+        fontSize: 15,
+        color: colors.textSecondary,
+        marginTop: 16,
+        letterSpacing: 0.5,
     },
     formCard: {
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.borderRadius['2xl'],
-        padding: theme.spacing.lg,
-        width: '100%',
-        ...theme.shadows.lg,
+        backgroundColor: colors.surface,
+        borderRadius: 24,
+        padding: 24,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
-    inputContainer: {
-        marginBottom: theme.spacing.md,
+    formTitle: {
+        fontSize: 22,
+        fontWeight: '600',
+        color: colors.text,
+        marginBottom: 24,
+        textAlign: 'center',
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.surfaceLight,
+        borderRadius: 14,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: colors.border,
+        paddingHorizontal: 16,
+    },
+    inputIcon: {
+        marginRight: 12,
     },
     input: {
-        backgroundColor: theme.colors.surfaceSoft,
-        padding: 16,
-        borderRadius: theme.borderRadius.lg,
-        marginBottom: theme.spacing.md,
-        fontSize: theme.typography.fontSize.base,
-        color: theme.colors.text,
-        borderWidth: 1,
-        borderColor: theme.colors.borderLight,
-    },
-    passwordContainer: {
-        flexDirection: 'row',
-        backgroundColor: theme.colors.surfaceSoft,
-        borderRadius: theme.borderRadius.lg,
-        marginBottom: theme.spacing.md,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: theme.colors.borderLight,
-    },
-    passwordInput: {
         flex: 1,
-        padding: 16,
-        fontSize: theme.typography.fontSize.base,
-        color: theme.colors.text,
+        paddingVertical: 16,
+        fontSize: 16,
+        color: colors.text,
     },
-    eyeIcon: {
-        padding: 12,
-    },
-    button: {
-        backgroundColor: theme.colors.primary,
-        padding: 16,
-        borderRadius: theme.borderRadius.xl,
-        alignItems: 'center',
-        ...theme.shadows.lifted,
-    },
-    buttonText: {
-        color: theme.colors.textOnPrimary,
-        fontWeight: '700',
-        fontSize: theme.typography.fontSize.md,
-    },
-    linkButton: {
-        marginTop: theme.spacing.lg,
-        alignItems: 'center',
-    },
-    linkText: {
-        color: theme.colors.text,
-        fontWeight: '500',
+    eyeButton: {
+        padding: 8,
+        marginLeft: 8,
     },
     forgotButton: {
         alignSelf: 'flex-end',
-        marginBottom: theme.spacing.md,
-        marginTop: -theme.spacing.xs,
+        marginBottom: 20,
+        marginTop: -8,
     },
     forgotText: {
-        color: theme.colors.primary,
+        color: colors.primary,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    primaryButton: {
+        borderRadius: 14,
+        overflow: 'hidden',
+        marginTop: 8,
+    },
+    buttonGradient: {
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonText: {
+        color: colors.background,
+        fontSize: 16,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    toggleSection: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 28,
+        gap: 6,
+    },
+    toggleText: {
+        color: colors.textSecondary,
+        fontSize: 15,
+    },
+    toggleLink: {
+        color: colors.primary,
+        fontSize: 15,
         fontWeight: '600',
-        fontSize: theme.typography.fontSize.sm,
+    },
+    footer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 40,
+        gap: 12,
+    },
+    footerLine: {
+        width: 40,
+        height: 1,
+        backgroundColor: colors.border,
+    },
+    footerText: {
+        color: colors.textMuted,
+        fontSize: 12,
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
 });

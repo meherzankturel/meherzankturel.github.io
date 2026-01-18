@@ -1,100 +1,100 @@
-// Design System - "Echoes of Us" Theme
-// Warm Cloud Palette - Calm, peaceful, soft mid-tones
+// Design System - "SYNC" Theme
+// Dark, modern palette with cyan accents
 
 export const theme = {
   colors: {
-    // Primary - Muted mauve-gray
-    primary: '#9A8F96',           // Main accent (muted mauve)
-    primaryDark: '#7A7078',       // Pressed/hover state
-    primaryLight: '#C0B5BC',      // Lighter variant (dusty pink)
+    // Primary - Cyan/Teal accent
+    primary: '#00D4FF',           // Main accent (cyan)
+    primaryDark: '#00A8CC',       // Pressed/hover state
+    primaryLight: '#4DE8FF',      // Lighter variant
 
-    // Secondary - Soft sage-teal
-    secondary: '#8FA5A0',         // Secondary actions
-    secondaryDark: '#708885',     // Darker variant
-    secondaryLight: '#B0C4C0',    // Lighter variant
+    // Secondary - Soft blue-gray
+    secondary: '#4A5568',         // Secondary actions
+    secondaryDark: '#2D3748',     // Darker variant
+    secondaryLight: '#718096',    // Lighter variant
 
-    // Background - Warm cloud gray (mid-tone)
-    background: '#EDEAE7',        // Main page background (90% light)
-    backgroundAlt: '#E5E2DF',     // Alternate sections
-    surface: '#F7F5F3',           // Cards, modals (soft cream)
-    surfaceElevated: '#FFFFFF',   // Elevated cards (pure white)
-    surfaceSoft: '#F2EFEC',       // Subtle surface
+    // Background - Dark theme
+    background: '#0A0A0F',        // Main page background (dark)
+    backgroundAlt: '#0D0D14',     // Alternate sections
+    surface: '#12141C',           // Cards, modals
+    surfaceElevated: '#1A1D28',   // Elevated cards
+    surfaceSoft: '#1A1D28',       // Subtle surface
 
-    // Text colors - Warm charcoal
-    text: '#48444A',              // Primary text (warm charcoal)
-    textSecondary: '#8A868E',     // Muted gray
-    textMuted: '#A8A4AA',         // Very muted (placeholder)
-    textLight: '#8A868E',         // Alias for compatibility
-    textAccent: '#9A8F96',        // Accent text (mauve)
-    textOnPrimary: '#FFFFFF',     // White on primary buttons
+    // Text colors - Light on dark
+    text: '#FFFFFF',              // Primary text (white)
+    textSecondary: '#7A8599',     // Muted gray-blue
+    textMuted: '#4A5568',         // Very muted (placeholder)
+    textLight: '#7A8599',         // Alias for compatibility
+    textAccent: '#00D4FF',        // Accent text (cyan)
+    textOnPrimary: '#0A0A0F',     // Dark on primary buttons
 
     // Accent colors
-    accent: '#9A8F96',            // Same as primary
-    accentPink: '#C4A5B0',        // Dusty rose (love/heart elements)
-    accentMint: '#8AAA98',        // Soft sage (online)
-    accentGold: '#C4AA8A',        // Warm muted gold
-    accentSky: '#8AA5B8',         // Soft dusty blue
+    accent: '#00D4FF',            // Same as primary
+    accentPink: '#FF6B9D',        // Vibrant pink (love/heart elements)
+    accentMint: '#4ADE80',        // Bright mint (online)
+    accentGold: '#FBBF24',        // Bright gold
+    accentSky: '#38BDF8',         // Sky blue
 
-    // Status colors - Soft variants
-    success: '#8AAA98',           // Muted sage green
-    warning: '#C4AA8A',           // Muted warm gold
-    error: '#C09090',             // Soft rose-red
-    info: '#8AA5B8',              // Soft dusty blue
+    // Status colors
+    success: '#4ADE80',           // Bright green
+    warning: '#FBBF24',           // Bright gold
+    error: '#FF6B6B',             // Bright red
+    info: '#38BDF8',              // Sky blue
 
     // Online/Offline indicators
-    online: '#8AAA98',            // Sage green dot
-    offline: '#A8A4AA',           // Muted gray
+    online: '#4ADE80',            // Bright green dot
+    offline: '#4A5568',           // Muted gray
 
-    // Mood colors - Calm, muted versions
-    moodHappy: '#C4B88A',         // Muted sunshine
-    moodCalm: '#8AB0B8',          // Soft sky
-    moodNeutral: '#A8A4AA',       // Neutral gray
-    moodSad: '#9A94B0',           // Soft purple
-    moodAnxious: '#C0A0A0',       // Dusty rose
-    moodLoved: '#C4A5B0',         // Dusty pink
-    moodExcited: '#C4AA8A',       // Muted gold
-    moodGrateful: '#8AAA98',      // Sage green
+    // Mood colors - Vibrant on dark
+    moodHappy: '#FBBF24',         // Bright gold
+    moodCalm: '#38BDF8',          // Sky blue
+    moodNeutral: '#7A8599',       // Neutral gray
+    moodSad: '#A78BFA',           // Purple
+    moodAnxious: '#F472B6',       // Pink
+    moodLoved: '#FF6B9D',         // Vibrant pink
+    moodExcited: '#FB923C',       // Orange
+    moodGrateful: '#4ADE80',      // Green
 
     // Borders & Dividers
-    border: '#DDD8D4',            // Warm gray border
-    borderLight: '#E8E4E0',       // Very subtle
-    divider: '#E0DBD7',           // Divider line
+    border: '#2A2D3A',            // Dark border
+    borderLight: '#1F2937',       // Very subtle
+    divider: '#2A2D3A',           // Divider line
 
     // Special effects
-    glow: 'rgba(154, 143, 150, 0.2)',        // Soft mauve glow
-    glowStrong: 'rgba(154, 143, 150, 0.35)', // Stronger glow
-    overlay: 'rgba(72, 68, 74, 0.5)',        // Dark overlay
-    overlayLight: 'rgba(72, 68, 74, 0.25)',  // Light overlay
+    glow: 'rgba(0, 212, 255, 0.2)',        // Cyan glow
+    glowStrong: 'rgba(0, 212, 255, 0.4)', // Stronger glow
+    overlay: 'rgba(0, 0, 0, 0.7)',        // Dark overlay
+    overlayLight: 'rgba(0, 0, 0, 0.4)',   // Light overlay
   },
 
   // Gradient definitions
   gradients: {
-    // Soft neutral gradients
-    background: ['#F7F5F3', '#EDEAE7'],
-    surface: ['#FFFFFF', '#F7F5F3'],
-    card: ['#FFFFFF', '#FAF8F6'],
+    // Dark gradients
+    background: ['#0A0A0F', '#0D0D14'],
+    surface: ['#12141C', '#1A1D28'],
+    card: ['#12141C', '#0D0D14'],
 
     // Accent gradients
-    primary: ['#C0B5BC', '#9A8F96'],
-    rose: ['#D4B8C0', '#C4A5B0'],
-    sage: ['#A5C0B8', '#8FA5A0'],
+    primary: ['#00D4FF', '#00A8CC'],
+    rose: ['#FF6B9D', '#E91E63'],
+    sage: ['#4ADE80', '#22C55E'],
 
     // Photo overlay gradient
-    photoOverlay: ['transparent', 'rgba(72, 68, 74, 0.4)'],
+    photoOverlay: ['transparent', 'rgba(0, 0, 0, 0.6)'],
 
-    // Memories screen soft gradient
-    memories: ['#F5F0EC', '#EDE5E0', '#E5DDD8'],
-    memoriesAlt: ['#F7F5F3', '#EDEAE7'],
+    // Memories screen gradient
+    memories: ['#0A0A0F', '#0D0D14', '#12141C'],
+    memoriesAlt: ['#0A0A0F', '#0D0D14'],
 
     // Button gradients
-    button: ['#A8A0A4', '#9A8F96'],
-    buttonSoft: ['#F7F5F3', '#EDEAE7'],
+    button: ['#00D4FF', '#00A8CC'],
+    buttonSoft: ['#1A1D28', '#12141C'],
 
     // Tab bar
-    tabBar: ['#F7F5F3', '#EDEAE7'],
+    tabBar: ['#0D0D14', '#0A0A0F'],
 
-    // Calm cloud gradient
-    cloud: ['#F7F5F3', '#EDEAE7', '#E5E2DF'],
+    // Dark ambient gradient
+    cloud: ['#0A0A0F', '#0D0D14', '#12141C'],
   },
 
   typography: {
@@ -164,48 +164,48 @@ export const theme = {
   },
 
   shadows: {
-    // Soft, calm shadows
+    // Dark theme shadows
     sm: {
-      shadowColor: '#48444A',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
+      shadowOpacity: 0.3,
       shadowRadius: 4,
       elevation: 2,
     },
     md: {
-      shadowColor: '#48444A',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.07,
+      shadowOpacity: 0.4,
       shadowRadius: 8,
       elevation: 4,
     },
     lg: {
-      shadowColor: '#48444A',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.5,
       shadowRadius: 16,
       elevation: 8,
     },
-    // Soft glow effects
+    // Cyan glow effects
     glow: {
-      shadowColor: '#9A8F96',
+      shadowColor: '#00D4FF',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.3,
       shadowRadius: 12,
       elevation: 6,
     },
     glowStrong: {
-      shadowColor: '#9A8F96',
+      shadowColor: '#00D4FF',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.35,
+      shadowOpacity: 0.5,
       shadowRadius: 20,
       elevation: 10,
     },
     // Lifted button
     lifted: {
-      shadowColor: '#48444A',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.08,
+      shadowColor: '#00D4FF',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
       shadowRadius: 12,
       elevation: 8,
     },
@@ -238,19 +238,19 @@ export const theme = {
   // Card preset styles
   cards: {
     default: {
-      backgroundColor: '#F7F5F3',
+      backgroundColor: '#12141C',
       borderRadius: 20,
       padding: 16,
       borderWidth: 1,
-      borderColor: '#DDD8D4',
+      borderColor: '#2A2D3A',
     },
     elevated: {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#1A1D28',
       borderRadius: 24,
       padding: 20,
     },
     organic: {
-      backgroundColor: '#F7F5F3',
+      backgroundColor: '#12141C',
       borderRadius: 28,
       padding: 20,
     },

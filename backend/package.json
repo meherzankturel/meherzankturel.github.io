@@ -1,7 +1,7 @@
 {
-  "name": "couples-app-backend",
+  "name": "sync-app-backend",
   "version": "1.0.0",
-  "description": "Backend API for Couples App with MongoDB Atlas",
+  "description": "Backend API for SYNC App with MongoDB Atlas",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
@@ -32,7 +32,7 @@
     "mongodb",
     "express",
     "api",
-    "couples-app"
+    "sync-app"
   ],
   "author": "",
   "license": "ISC"

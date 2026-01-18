@@ -1,9 +1,8 @@
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, getDoc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db, storage } from '../config/firebase';
 import * as ImagePicker from 'expo-image-picker';
+import { MONGODB_API_BASE_URL, API_ENDPOINTS } from '../config/mongodb';
 
 export interface DailyMoment {
+    id?: string; // MongoDB document ID for editing
     date: string; // Format: YYYY-MM-DD
     userId: string;
     photoUrl: string;
@@ -32,6 +31,7 @@ export class MomentService {
 
     /**
      * Pick an image from library
+     * Supports high-resolution and Live Photos
      */
     static async pickImage(): Promise<string | null> {
         try {
@@ -39,7 +39,8 @@ export class MomentService {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [4, 3],
-                quality: 0.8,
+                quality: 1.0, // High quality (was 0.8)
+                // Live Photos are supported automatically on iOS
             });
 
             if (!result.canceled && result.assets[0]) {
@@ -54,13 +55,14 @@ export class MomentService {
 
     /**
      * Take a photo with camera
+     * Supports high-resolution
      */
     static async takePhoto(): Promise<string | null> {
         try {
             const result = await ImagePicker.launchCameraAsync({
                 allowsEditing: true,
                 aspect: [4, 3],
-                quality: 0.8,
+                quality: 1.0, // High quality (was 0.8)
             });
 
             if (!result.canceled && result.assets[0]) {
@@ -74,24 +76,66 @@ export class MomentService {
     }
 
     /**
-     * Upload image to Firebase Storage
+     * Upload image to MongoDB via backend API
      */
-    static async uploadImage(uri: string, userId: string, date: string): Promise<string | null> {
+    static async uploadImage(
+        uri: string,
+        userId: string,
+        partnerId: string,
+        caption?: string
+    ): Promise<string | null> {
         try {
-            // Fetch the image
-            const response = await fetch(uri);
-            const blob = await response.blob();
+            const date = this.getTodayDate();
+            const pairId = this.getMomentPairId(userId, partnerId);
 
-            // Create a reference
-            const filename = `moments/${userId}/${date}.jpg`;
-            const storageRef = ref(storage, filename);
+            // Prepare form data
+            const formData = new FormData();
 
-            // Upload
-            await uploadBytes(storageRef, blob);
+            // Extract file extension from URI
+            const fileExtension = uri.split('.').pop()?.toLowerCase() || 'jpg';
+            const fileName = `moment_${userId}_${date}.${fileExtension}`;
 
-            // Get download URL
-            const downloadUrl = await getDownloadURL(storageRef);
-            return downloadUrl;
+            // Determine MIME type (support HEIC for Live Photos)
+            let mimeType = 'image/jpeg';
+            if (fileExtension === 'png') mimeType = 'image/png';
+            else if (fileExtension === 'heic' || fileExtension === 'heif') mimeType = 'image/heic';
+            else if (fileExtension === 'gif') mimeType = 'image/gif';
+
+            // Add file to FormData
+            formData.append('file', {
+                uri,
+                type: mimeType,
+                name: fileName,
+            } as any);
+
+            // Add metadata
+            formData.append('userId', userId);
+            formData.append('pairId', pairId);
+            formData.append('momentDate', date);
+            if (caption) {
+                formData.append('caption', caption);
+            }
+
+            console.log(`📤 Uploading moment to MongoDB...`);
+
+            // Upload to backend
+            const response = await fetch(`${MONGODB_API_BASE_URL}${API_ENDPOINTS.MOMENTS.UPLOAD}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    // Don't set Content-Type - let browser set with boundary
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                throw new Error(errorData.error || `Upload failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`✅ Moment uploaded successfully`);
+
+            return data.url;
         } catch (error) {
             console.error('Error uploading image:', error);
             return null;
@@ -107,11 +151,11 @@ export class MomentService {
     }
 
     /**
-     * Get the moment document ID for a couple
+     * Get the moment pair ID for a couple (consistent ordering)
      */
-    static getMomentDocId(user1Id: string, user2Id: string, date: string): string {
+    static getMomentPairId(user1Id: string, user2Id: string): string {
         const [id1, id2] = [user1Id, user2Id].sort();
-        return `${id1}_${id2}_${date}`;
+        return `${id1}_${id2}`;
     }
 
     /**
@@ -124,56 +168,8 @@ export class MomentService {
         caption?: string
     ): Promise<boolean> {
         try {
-            const date = this.getTodayDate();
-            const docId = this.getMomentDocId(userId, partnerId, date);
-
-            // Upload image to storage
-            const photoUrl = await this.uploadImage(imageUri, userId, date);
-            if (!photoUrl) return false;
-
-            // Create moment data
-            const momentData: DailyMoment = {
-                date,
-                userId,
-                photoUrl,
-                caption,
-                uploadedAt: new Date(),
-            };
-
-            // Get existing document
-            const docRef = doc(db, 'coupleMoments', docId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                // Update existing document
-                const existing = docSnap.data();
-                const updateData: any = {
-                    date,
-                };
-
-                // Determine which user's photo to update
-                if (existing.user1Photo?.userId === userId) {
-                    updateData.user1Photo = momentData;
-                } else if (existing.user2Photo?.userId === userId) {
-                    updateData.user2Photo = momentData;
-                } else if (!existing.user1Photo) {
-                    updateData.user1Photo = momentData;
-                } else {
-                    updateData.user2Photo = momentData;
-                }
-
-                await setDoc(docRef, updateData, { merge: true });
-            } else {
-                // Create new document
-                await setDoc(docRef, {
-                    id: docId,
-                    date,
-                    user1Photo: momentData,
-                    createdAt: Timestamp.now(),
-                });
-            }
-
-            return true;
+            const photoUrl = await this.uploadImage(imageUri, userId, partnerId, caption);
+            return !!photoUrl;
         } catch (error) {
             console.error('Error uploading moment:', error);
             return false;
@@ -181,26 +177,68 @@ export class MomentService {
     }
 
     /**
-     * Get today's moment for a couple
+     * Get today's moment for a couple from MongoDB
      */
     static async getTodayMoment(userId: string, partnerId: string): Promise<CoupleMoment | null> {
         try {
-            const date = this.getTodayDate();
-            const docId = this.getMomentDocId(userId, partnerId, date);
-            const docRef = doc(db, 'coupleMoments', docId);
-            const docSnap = await getDoc(docRef);
+            const response = await fetch(
+                `${MONGODB_API_BASE_URL}${API_ENDPOINTS.MOMENTS.GET_TODAY(userId, partnerId)}`
+            );
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                return {
-                    id: data.id,
-                    date: data.date,
-                    user1Photo: data.user1Photo,
-                    user2Photo: data.user2Photo,
-                    createdAt: data.createdAt?.toDate() || new Date(),
-                };
+            if (!response.ok) {
+                throw new Error(`Failed to fetch moment: ${response.status}`);
             }
-            return null;
+
+            const data = await response.json();
+
+            if (!data.success) {
+                return null;
+            }
+
+            // Convert API response to CoupleMoment format
+            const coupleMoment: CoupleMoment = {
+                id: data.pairId,
+                date: data.date,
+                createdAt: new Date(),
+            };
+
+            if (data.userMoment) {
+                const moment: DailyMoment = {
+                    id: data.userMoment.id,
+                    date: data.date,
+                    userId: data.userMoment.userId,
+                    photoUrl: data.userMoment.url,
+                    caption: data.userMoment.caption,
+                    uploadedAt: new Date(data.userMoment.uploadedAt),
+                };
+
+                // Assign to correct position based on userId
+                if (data.userMoment.userId === userId) {
+                    coupleMoment.user1Photo = moment;
+                } else {
+                    coupleMoment.user2Photo = moment;
+                }
+            }
+
+            if (data.partnerMoment) {
+                const moment: DailyMoment = {
+                    id: data.partnerMoment.id,
+                    date: data.date,
+                    userId: data.partnerMoment.userId,
+                    photoUrl: data.partnerMoment.url,
+                    caption: data.partnerMoment.caption,
+                    uploadedAt: new Date(data.partnerMoment.uploadedAt),
+                };
+
+                // Assign to correct position based on userId
+                if (data.partnerMoment.userId === userId) {
+                    coupleMoment.user1Photo = moment;
+                } else {
+                    coupleMoment.user2Photo = moment;
+                }
+            }
+
+            return coupleMoment;
         } catch (error) {
             console.error('Error getting moment:', error);
             return null;
@@ -209,32 +247,24 @@ export class MomentService {
 
     /**
      * Listen to today's moment in real-time
+     * Note: For MongoDB, we use polling instead of real-time listeners
      */
     static listenToTodayMoment(
         userId: string,
         partnerId: string,
         callback: (moment: CoupleMoment | null) => void
     ): () => void {
-        const date = this.getTodayDate();
-        const docId = this.getMomentDocId(userId, partnerId, date);
-        const docRef = doc(db, 'coupleMoments', docId);
+        // Poll every 10 seconds for updates
+        const pollInterval = setInterval(async () => {
+            const moment = await this.getTodayMoment(userId, partnerId);
+            callback(moment);
+        }, 10000);
 
-        const unsubscribe = onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                callback({
-                    id: data.id,
-                    date: data.date,
-                    user1Photo: data.user1Photo,
-                    user2Photo: data.user2Photo,
-                    createdAt: data.createdAt?.toDate() || new Date(),
-                });
-            } else {
-                callback(null);
-            }
-        });
+        // Initial fetch
+        this.getTodayMoment(userId, partnerId).then(callback);
 
-        return unsubscribe;
+        // Return cleanup function
+        return () => clearInterval(pollInterval);
     }
 
     /**
@@ -265,5 +295,38 @@ export class MomentService {
             return moment.user2Photo;
         }
         return null;
+    }
+
+    /**
+     * Update caption of a moment
+     */
+    static async updateCaption(
+        momentId: string,
+        userId: string,
+        caption: string
+    ): Promise<boolean> {
+        try {
+            const response = await fetch(
+                `${MONGODB_API_BASE_URL}${API_ENDPOINTS.MOMENTS.UPDATE_CAPTION(momentId)}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userId, caption }),
+                }
+            );
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to update caption');
+            }
+
+            console.log('✅ Caption updated successfully');
+            return true;
+        } catch (error) {
+            console.error('Error updating caption:', error);
+            return false;
+        }
     }
 }

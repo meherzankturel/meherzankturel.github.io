@@ -8,16 +8,15 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textLight,
+        tabBarActiveTintColor: '#00D4FF',
+        tabBarInactiveTintColor: '#4A5568',
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.borderLight,
+          backgroundColor: '#0D0D14',
+          borderTopColor: '#1A1D28',
           borderTopWidth: 1,
           paddingBottom: 8,
           paddingTop: 10,
           height: 65,
-          ...theme.shadows.sm,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -100,9 +99,8 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   activeIconContainer: {
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: 'rgba(0, 212, 255, 0.15)',
     borderRadius: 12,
     padding: 6,
-    ...theme.shadows.glow,
   },
 });
