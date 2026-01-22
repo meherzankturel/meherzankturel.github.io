@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    StyleSheet, 
-    ActivityIndicator, 
-    Alert, 
-    KeyboardAvoidingView, 
-    Platform, 
-    TouchableWithoutFeedback, 
-    Keyboard, 
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard,
     ScrollView,
-    Dimensions 
+    Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -169,10 +169,10 @@ export default function LoginScreen() {
                 colors={['#0A0A0F', '#0D0D14', '#0A0A0F']}
                 style={StyleSheet.absoluteFill}
             />
-            
+
             {/* Ambient glow */}
             <View style={styles.ambientGlow} />
-            
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
@@ -196,7 +196,7 @@ export default function LoginScreen() {
                             <Text style={styles.formTitle}>
                                 {isSignUp ? 'Create Account' : 'Welcome Back'}
                             </Text>
-                            
+
                             {isSignUp && (
                                 <View style={styles.inputWrapper}>
                                     <Ionicons name="person-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
@@ -297,8 +297,8 @@ export default function LoginScreen() {
                             )}
 
                             {!isSignUp && (
-                                <TouchableOpacity 
-                                    onPress={() => router.push('/(auth)/forgot-password')} 
+                                <TouchableOpacity
+                                    onPress={() => router.push('/(auth)/forgot-password')}
                                     style={styles.forgotButton}
                                 >
                                     <Text style={styles.forgotText}>Forgot Password?</Text>
@@ -306,9 +306,9 @@ export default function LoginScreen() {
                             )}
 
                             {/* Primary Button */}
-                            <TouchableOpacity 
-                                onPress={handleAuth} 
-                                style={styles.primaryButton} 
+                            <TouchableOpacity
+                                onPress={handleAuth}
+                                style={styles.primaryButton}
                                 disabled={loading}
                                 activeOpacity={0.8}
                             >
@@ -343,9 +343,7 @@ export default function LoginScreen() {
 
                         {/* Footer */}
                         <View style={styles.footer}>
-                            <View style={styles.footerLine} />
-                            <Text style={styles.footerText}>Couples App</Text>
-                            <View style={styles.footerLine} />
+                            {/* Footer branding removed */}
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>

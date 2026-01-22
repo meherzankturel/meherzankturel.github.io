@@ -16,6 +16,7 @@ interface PolaroidMemoryCardProps {
     hasTape?: boolean;
     hasClip?: boolean;
     onPress?: () => void;
+    onEdit?: () => void;
 }
 
 export const PolaroidMemoryCard: React.FC<PolaroidMemoryCardProps> = ({
@@ -30,6 +31,7 @@ export const PolaroidMemoryCard: React.FC<PolaroidMemoryCardProps> = ({
     hasTape = false,
     hasClip = false,
     onPress,
+    onEdit,
 }) => {
     // Determine rotation style
     const rotationStyle = {
@@ -73,6 +75,20 @@ export const PolaroidMemoryCard: React.FC<PolaroidMemoryCardProps> = ({
                 <View style={styles.clipContainer}>
                     <Ionicons name="bookmark" size={24} color="#C25068" />
                 </View>
+            )}
+
+            {/* Edit icon button */}
+            {onEdit && (
+                <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        onEdit();
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <Ionicons name="pencil" size={16} color="#FFFFFF" />
+                </TouchableOpacity>
             )}
 
             {/* Polaroid frame */}
@@ -169,6 +185,19 @@ const styles = StyleSheet.create({
         top: -12,
         right: 20,
         zIndex: 10,
+    },
+    editButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 20,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: theme.colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...theme.shadows.md,
     },
     polaroidFrame: {
         backgroundColor: '#FFFFFF',

@@ -99,10 +99,10 @@ export const theme = {
 
   typography: {
     fontFamily: {
-      regular: 'System',
-      medium: 'System',
-      bold: 'System',
-      rounded: 'System',
+      regular: 'SF Pro Display',
+      medium: 'SF Pro Display',
+      bold: 'SF Pro Display',
+      rounded: 'SF Pro Rounded',
     },
 
     fontSize: {

@@ -11,8 +11,10 @@ import ChoiceGame from '../../src/components/ChoiceGame';
 import { theme } from '../../src/config/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 
 const GAME_TYPES = [
+  { id: 'tic-tac-toe', name: 'Tic-Tac-Toe', icon: 'grid', color: '#00D4FF' },
   { id: 'question', name: 'Question Game', icon: 'chatbubbles', color: theme.colors.primary },
   { id: 'trivia', name: 'Trivia', icon: 'trophy', color: theme.colors.accent },
   { id: 'would-you-rather', name: 'Would You Rather', icon: 'swap-horizontal', color: theme.colors.secondary },
@@ -21,6 +23,7 @@ const GAME_TYPES = [
 
 export default function GamesScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
   const [partnerData, setPartnerData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +77,7 @@ export default function GamesScreen() {
                 id: doc.id,
                 ...doc.data(),
               })) as GameSession[];
-              
+
               // Filter to show only unique games (deduplicate by gameType)
               // Keep the most recently created game for each gameType
               const uniqueGames = games.reduce((acc, game) => {
@@ -93,17 +96,17 @@ export default function GamesScreen() {
                 }
                 return acc;
               }, [] as GameSession[]);
-              
+
               // Additional filter: explicitly exclude completed games (double-check)
               const filteredGames = uniqueGames.filter(g => g.status !== 'completed');
-              
+
               console.log('🎮 Active games:', {
                 total: games.length,
                 unique: uniqueGames.length,
                 filtered: filteredGames.length,
                 games: filteredGames.map(g => ({ id: g.id, type: g.gameType, status: g.status }))
               });
-              
+
               setActiveGames(filteredGames);
             },
             (error) => {
@@ -166,7 +169,7 @@ export default function GamesScreen() {
                   where('status', '==', 'completed'),
                   limit(10)
                 );
-                
+
                 const fallbackUnsubscribe = onSnapshotQuery(
                   fallbackQuery,
                   (snapshot) => {
@@ -174,14 +177,14 @@ export default function GamesScreen() {
                       id: doc.id,
                       ...doc.data(),
                     })) as GameSession[];
-                    
+
                     // Sort manually by updatedAt
                     games.sort((a, b) => {
                       const aTime = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : (a.updatedAt?.seconds * 1000 || 0);
                       const bTime = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : (b.updatedAt?.seconds * 1000 || 0);
                       return bTime - aTime;
                     });
-                    
+
                     setCompletedGames(games.slice(0, 10));
                     const totalPlayed = games.length;
                     const totalQuestions = games.reduce((sum, game) => {
@@ -193,7 +196,7 @@ export default function GamesScreen() {
                     console.error('Fallback completed games query also failed:', fallbackError);
                   }
                 );
-                
+
                 // Replace unsubscribe with fallback unsubscribe
                 completedGamesUnsubscribe = fallbackUnsubscribe;
               } else {
@@ -227,10 +230,10 @@ export default function GamesScreen() {
       // Force refresh by manually fetching latest data
       // The real-time listeners will continue to work, but this ensures
       // we get the latest state immediately on refresh
-      
+
       // Fetch active games directly to ensure we have latest data
       const activeGamesData = await GameService.getActiveGames(userData.pairId);
-      
+
       // Deduplicate and filter active games
       const uniqueGames = activeGamesData.reduce((acc, game) => {
         const existing = acc.find(g => g.gameType === game.gameType);
@@ -246,7 +249,7 @@ export default function GamesScreen() {
         }
         return acc;
       }, [] as GameSession[]);
-      
+
       const filteredActiveGames = uniqueGames.filter(game => game.status !== 'completed');
       setActiveGames(filteredActiveGames);
 
@@ -320,7 +323,10 @@ export default function GamesScreen() {
       return;
     }
 
-    if (gameType === 'question') {
+    if (gameType === 'tic-tac-toe') {
+      // Navigate to Tic-Tac-Toe screen
+      router.push('/games/tic-tac-toe');
+    } else if (gameType === 'question') {
       await startQuestionGame();
     } else if (gameType === 'trivia') {
       await startTriviaGame();
@@ -335,7 +341,7 @@ export default function GamesScreen() {
 
   const formatTimeAgo = (timestamp: any): string => {
     if (!timestamp) return 'just now';
-    
+
     let timestampMs: number;
     if (timestamp.toMillis) {
       timestampMs = timestamp.toMillis();
@@ -346,19 +352,19 @@ export default function GamesScreen() {
     } else {
       return 'just now';
     }
-    
+
     const now = Date.now();
     const diffMs = now - timestampMs;
     const diffMinutes = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffMinutes < 1) return 'just now';
     if (diffMinutes < 60) return `${diffMinutes}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return '1 day ago';
     if (diffDays < 7) return `${diffDays} days ago`;
-    
+
     const date = new Date(timestampMs);
     return date.toLocaleDateString();
   };
@@ -396,7 +402,7 @@ export default function GamesScreen() {
       }
 
       console.log('🎮 Creating new question game...');
-      
+
       // Generate questions (will use AI or fallback)
       const questions = await GameService.generateQuestions(
         userData.pairId,
@@ -429,12 +435,12 @@ export default function GamesScreen() {
           questionsCount: game.questions?.length,
           status: game.status,
         });
-        
+
         // Validate game has questions
         if (!game.questions || game.questions.length === 0) {
           throw new Error('Game was created but has no questions. Please try again.');
         }
-        
+
         setSelectedGame(game);
         setShowQuestionGame(true);
       } else {
@@ -481,7 +487,7 @@ export default function GamesScreen() {
       }
 
       console.log('🎮 Creating new trivia game...');
-      
+
       // Generate trivia questions (will use AI or fallback)
       const questions = await GameService.generateQuestions(
         userData.pairId,
@@ -514,12 +520,12 @@ export default function GamesScreen() {
           questionsCount: game.questions?.length,
           status: game.status,
         });
-        
+
         // Validate game has questions
         if (!game.questions || game.questions.length === 0) {
           throw new Error('Game was created but has no questions. Please try again.');
         }
-        
+
         setSelectedGame(game);
         setShowTriviaGame(true);
       } else {
@@ -565,7 +571,7 @@ export default function GamesScreen() {
       }
 
       console.log('🎮 Creating new Would You Rather game...');
-      
+
       const questions = await GameService.generateQuestions(
         userData.pairId,
         'would-you-rather',
@@ -593,7 +599,7 @@ export default function GamesScreen() {
         if (!game.questions || game.questions.length === 0) {
           throw new Error('Game was created but has no questions. Please try again.');
         }
-        
+
         setSelectedGame(game);
         setShowWouldYouRatherGame(true);
       } else {
@@ -639,7 +645,7 @@ export default function GamesScreen() {
       }
 
       console.log('🎮 Creating new This or That game...');
-      
+
       const questions = await GameService.generateQuestions(
         userData.pairId,
         'this-or-that',
@@ -667,7 +673,7 @@ export default function GamesScreen() {
         if (!game.questions || game.questions.length === 0) {
           throw new Error('Game was created but has no questions. Please try again.');
         }
-        
+
         setSelectedGame(game);
         setShowThisOrThatGame(true);
       } else {
@@ -764,10 +770,10 @@ export default function GamesScreen() {
               {activeGames.map((game) => {
                 const gameTypeInfo = GAME_TYPES.find(g => g.id === game.gameType);
                 const progress = game.questions?.length ? ((game.currentQuestionIndex + 1) / game.questions.length) * 100 : 0;
-                
+
                 const handleDeleteGame = async () => {
                   if (!game.id) return;
-                  
+
                   Alert.alert(
                     'Delete Game',
                     'Are you sure you want to delete this game? This action cannot be undone.',
@@ -790,110 +796,110 @@ export default function GamesScreen() {
                     ]
                   );
                 };
-                
+
                 return (
                   <View key={game.id} style={styles.activeGameCardWrapper}>
-                  <TouchableOpacity
-                    style={styles.activeGameCard}
-                    onPress={async () => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      console.log(`🎮 Opening ${game.gameType} Game:`, game.id);
-                      
-                      try {
-                        const latestGame = await GameService.getGameSession(game.id!);
-                        if (latestGame) {
-                          console.log(`📂 Opening ${game.gameType} game with latest state:`, {
-                            id: latestGame.id,
-                            questionsCount: latestGame.questions?.length,
-                            currentIndex: latestGame.currentQuestionIndex,
-                            status: latestGame.status
-                          });
-                          
-                          if (!latestGame.questions || latestGame.questions.length === 0) {
-                            console.error(`❌ ${game.gameType} game has no questions:`, latestGame.id);
-                            Alert.alert('Error', 'This game has no questions. Please start a new game.');
-                            return;
+                    <TouchableOpacity
+                      style={styles.activeGameCard}
+                      onPress={async () => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        console.log(`🎮 Opening ${game.gameType} Game:`, game.id);
+
+                        try {
+                          const latestGame = await GameService.getGameSession(game.id!);
+                          if (latestGame) {
+                            console.log(`📂 Opening ${game.gameType} game with latest state:`, {
+                              id: latestGame.id,
+                              questionsCount: latestGame.questions?.length,
+                              currentIndex: latestGame.currentQuestionIndex,
+                              status: latestGame.status
+                            });
+
+                            if (!latestGame.questions || latestGame.questions.length === 0) {
+                              console.error(`❌ ${game.gameType} game has no questions:`, latestGame.id);
+                              Alert.alert('Error', 'This game has no questions. Please start a new game.');
+                              return;
+                            }
+
+                            setSelectedGame(latestGame);
+
+                            if (game.gameType === 'question') {
+                              setShowQuestionGame(true);
+                            } else if (game.gameType === 'trivia') {
+                              setShowTriviaGame(true);
+                            } else if (game.gameType === 'would-you-rather') {
+                              setShowWouldYouRatherGame(true);
+                            } else if (game.gameType === 'this-or-that') {
+                              setShowThisOrThatGame(true);
+                            }
+                          } else {
+                            console.error(`❌ ${game.gameType} game not found:`, game.id);
+                            Alert.alert('Error', 'Game not found. Please try again.');
                           }
-                          
-                          setSelectedGame(latestGame);
-                          
-                          if (game.gameType === 'question') {
-                            setShowQuestionGame(true);
-                          } else if (game.gameType === 'trivia') {
-                            setShowTriviaGame(true);
-                          } else if (game.gameType === 'would-you-rather') {
-                            setShowWouldYouRatherGame(true);
-                          } else if (game.gameType === 'this-or-that') {
-                            setShowThisOrThatGame(true);
+                        } catch (error: any) {
+                          console.error(`❌ Error fetching ${game.gameType} game:`, error);
+                          if (game.questions && game.questions.length > 0) {
+                            console.log(`⚠️ Using fallback ${game.gameType} game from state`);
+                            setSelectedGame(game);
+
+                            if (game.gameType === 'question') {
+                              setShowQuestionGame(true);
+                            } else if (game.gameType === 'trivia') {
+                              setShowTriviaGame(true);
+                            } else if (game.gameType === 'would-you-rather') {
+                              setShowWouldYouRatherGame(true);
+                            } else if (game.gameType === 'this-or-that') {
+                              setShowThisOrThatGame(true);
+                            }
+                          } else {
+                            Alert.alert('Error', 'Unable to load game. Please try again.');
                           }
-                        } else {
-                          console.error(`❌ ${game.gameType} game not found:`, game.id);
-                          Alert.alert('Error', 'Game not found. Please try again.');
                         }
-                      } catch (error: any) {
-                        console.error(`❌ Error fetching ${game.gameType} game:`, error);
-                        if (game.questions && game.questions.length > 0) {
-                          console.log(`⚠️ Using fallback ${game.gameType} game from state`);
-                          setSelectedGame(game);
-                          
-                          if (game.gameType === 'question') {
-                            setShowQuestionGame(true);
-                          } else if (game.gameType === 'trivia') {
-                            setShowTriviaGame(true);
-                          } else if (game.gameType === 'would-you-rather') {
-                            setShowWouldYouRatherGame(true);
-                          } else if (game.gameType === 'this-or-that') {
-                            setShowThisOrThatGame(true);
-                          }
-                        } else {
-                          Alert.alert('Error', 'Unable to load game. Please try again.');
-                        }
-                      }
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.activeGameHeader}>
-                      <View style={[styles.activeGameIconContainer, { backgroundColor: (gameTypeInfo?.color || theme.colors.primary) + '20' }]}>
-                        <Ionicons
-                          name={gameTypeInfo?.icon as any || 'game-controller'}
-                          size={24}
-                          color={gameTypeInfo?.color || theme.colors.primary}
-                        />
-                      </View>
-                      <View style={styles.activeGameInfo}>
-                        <Text style={styles.activeGameTitle}>
-                          {gameTypeInfo?.name || game.gameType}
-                        </Text>
-                        <Text style={styles.activeGameStatus}>
-                          {game.status === 'active' ? 'In Progress' : 'Pending'}
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />
-                    </View>
-                    
-                    {game.questions && game.questions.length > 0 ? (
-                      <View style={styles.progressContainer}>
-                        <View style={styles.progressBar}>
-                          <View style={[styles.progressFill, { 
-                            width: `${Math.min(100, Math.max(0, progress))}%`, 
-                            backgroundColor: gameTypeInfo?.color || theme.colors.primary 
-                          }]} />
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.activeGameHeader}>
+                        <View style={[styles.activeGameIconContainer, { backgroundColor: (gameTypeInfo?.color || theme.colors.primary) + '20' }]}>
+                          <Ionicons
+                            name={gameTypeInfo?.icon as any || 'game-controller'}
+                            size={24}
+                            color={gameTypeInfo?.color || theme.colors.primary}
+                          />
                         </View>
-                        <Text style={styles.progressText}>
-                          {Math.max(0, Math.min(game.currentQuestionIndex + 1, game.questions.length))} / {game.questions.length} questions
-                        </Text>
+                        <View style={styles.activeGameInfo}>
+                          <Text style={styles.activeGameTitle}>
+                            {gameTypeInfo?.name || game.gameType}
+                          </Text>
+                          <Text style={styles.activeGameStatus}>
+                            {game.status === 'active' ? 'In Progress' : 'Pending'}
+                          </Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />
                       </View>
-                    ) : (
-                      <Text style={styles.progressText}>No questions yet</Text>
-                    )}
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.deleteGameButton}
-                    onPress={handleDeleteGame}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
-                  </TouchableOpacity>
+
+                      {game.questions && game.questions.length > 0 ? (
+                        <View style={styles.progressContainer}>
+                          <View style={styles.progressBar}>
+                            <View style={[styles.progressFill, {
+                              width: `${Math.min(100, Math.max(0, progress))}%`,
+                              backgroundColor: gameTypeInfo?.color || theme.colors.primary
+                            }]} />
+                          </View>
+                          <Text style={styles.progressText}>
+                            {Math.max(0, Math.min(game.currentQuestionIndex + 1, game.questions.length))} / {game.questions.length} questions
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.progressText}>No questions yet</Text>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteGameButton}
+                      onPress={handleDeleteGame}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
+                    </TouchableOpacity>
                   </View>
                 );
               })}
@@ -956,7 +962,7 @@ export default function GamesScreen() {
                         if (latestGame) {
                           console.log(`📂 Opening completed ${game.gameType} game for review:`, latestGame.id);
                           setSelectedGame(latestGame);
-                          
+
                           if (game.gameType === 'question') {
                             setShowQuestionGame(true);
                           } else if (game.gameType === 'trivia') {

@@ -386,6 +386,28 @@ export default function DateNightsScreen() {
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderOffset, setReminderOffset] = useState(30);
 
+  // Media preview state
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewItems, setPreviewItems] = useState<Array<{ uri: string; type: 'image' | 'video' }>>([]);
+  const [previewInitialIndex, setPreviewInitialIndex] = useState(0);
+
+  const openMediaPreview = (items: Array<{ uri: string; type: 'image' | 'video' }>, initialIndex: number = 0) => {
+    console.log('🖼️ openMediaPreview called with:', { itemCount: items.length, initialIndex, items });
+    setPreviewItems(items);
+    setPreviewInitialIndex(initialIndex);
+    setPreviewVisible(true);
+    console.log('🖼️ State should be set now - preview should open');
+  };
+
+  // Debug: Log when preview state changes
+  useEffect(() => {
+    console.log('🖼️ Preview state updated:', {
+      previewVisible,
+      itemCount: previewItems.length,
+      items: previewItems
+    });
+  }, [previewVisible, previewItems]);
+
   // Handle date night notifications (auto-add to calendar, handle deletions)
   useEffect(() => {
     if (!user || !userData?.pairId) return;
@@ -1614,7 +1636,7 @@ export default function DateNightsScreen() {
           <SimpleTabs
             tabs={[
               { id: 'upcoming', label: `Upcoming (${upcomingNights.length})` },
-              { id: 'past', label: `Past (${sortedPastNights.length})` },
+              { id: 'past', label: `Past Moments (${sortedPastNights.length})` },
             ]}
             activeTab={activeDateTab}
             onTabChange={(tabId) => setActiveDateTab(tabId as 'upcoming' | 'past')}
@@ -1732,6 +1754,15 @@ export default function DateNightsScreen() {
                         const firstMedia = firstReview?.images?.[0] || firstReview?.videos?.[0];
                         const mediaType = firstReview?.videos?.[0] ? 'video' : 'image';
 
+                        // Collect ALL media from both partners' reviews for this date
+                        const allMedia: Array<{ uri: string; type: 'image' | 'video' }> = [];
+                        dateReviews.forEach(review => {
+                          // Add images
+                          review.images?.forEach(uri => allMedia.push({ uri, type: 'image' }));
+                          // Add videos
+                          review.videos?.forEach(uri => allMedia.push({ uri, type: 'video' }));
+                        });
+
                         // Alternate rotation for visual interest
                         const rotation = index % 3 === 0 ? 'left' : index % 3 === 1 ? 'right' : 'none';
 
@@ -1748,7 +1779,23 @@ export default function DateNightsScreen() {
                             rotation={rotation}
                             hasTape={index % 2 === 0}
                             hasClip={index % 2 === 1}
-                            onPress={() => handleOpenReview(dateNight)}
+                            onPress={() => {
+                              console.log('Polaroid card tapped!', {
+                                dateNightId: dateNight.id,
+                                allMediaCount: allMedia.length,
+                                allMedia: allMedia
+                              });
+                              if (allMedia.length > 0) {
+                                // Open media preview with all images/videos
+                                console.log('Opening media preview with', allMedia.length, 'items');
+                                openMediaPreview(allMedia, 0);
+                              } else {
+                                // No media - open review modal
+                                console.log('No media found, opening review modal');
+                                handleOpenReview(dateNight);
+                              }
+                            }}
+                            onEdit={() => handleOpenReview(dateNight)}
                           />
                         );
                       })}
@@ -2134,6 +2181,14 @@ export default function DateNightsScreen() {
             onSubmit={handleSubmitReview}
           />
         )}
+
+        {/* Media Preview Modal - Must be at main component level */}
+        <MediaPreviewModal
+          visible={previewVisible}
+          mediaItems={previewItems}
+          initialIndex={previewInitialIndex}
+          onClose={() => setPreviewVisible(false)}
+        />
       </SafeAreaView>
     </SwipeableTabWrapper>
   );
@@ -2585,14 +2640,6 @@ function DateNightCard({
           })}
         </View>
       )}
-
-      {/* Media Preview Modal */}
-      <MediaPreviewModal
-        visible={previewVisible}
-        mediaItems={previewItems}
-        initialIndex={previewInitialIndex}
-        onClose={() => setPreviewVisible(false)}
-      />
     </View>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Modal, Pressable, ScrollView, SafeAreaView, RefreshControl, AppState, Animated, Easing, Image, ActionSheetIOS, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Modal, Pressable, ScrollView, SafeAreaView, RefreshControl, AppState, Animated, Easing, Image, ActionSheetIOS, TextInput, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -25,6 +25,8 @@ import NetInfo from '@react-native-community/netinfo';
 import { LocationService, UserLocation } from '../../src/services/location.service';
 import { WeatherService, WeatherData } from '../../src/services/weather.service';
 import { MomentService, CoupleMoment, DailyMoment } from '../../src/services/moment.service';
+import { DailyEchoService, DailyEcho } from '../../src/services/dailyEcho.service';
+import WidgetService from '../../src/services/widget.service';
 
 export default function HomeScreen() {
     const { user } = useAuth();
@@ -78,6 +80,14 @@ export default function HomeScreen() {
     const [selectedPhotoCaption, setSelectedPhotoCaption] = useState<string | undefined>();
     const [selectedMomentId, setSelectedMomentId] = useState<string | undefined>();
     const [isOwnPhoto, setIsOwnPhoto] = useState(false);
+
+    // Daily Echo
+    const [dailyEcho, setDailyEcho] = useState<DailyEcho | null>(null);
+    const [showEchoAnswerModal, setShowEchoAnswerModal] = useState(false);
+    const [echoAnswer, setEchoAnswer] = useState('');
+    const [submittingEcho, setSubmittingEcho] = useState(false);
+    const [showEchoRevealModal, setShowEchoRevealModal] = useState(false);
+    const [echoCountdown, setEchoCountdown] = useState(0);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -162,9 +172,39 @@ export default function HomeScreen() {
                 console.warn('Manual SOS check failed:', error);
             }
         }
+
+        // Reload weather data with fresh fetch (clear cache first)
+        if (userData?.latitude && userData?.longitude) {
+            // Clear cache to force fresh data
+            await WeatherService.clearCache();
+            const weather = await WeatherService.getWeatherByCoords(
+                userData.latitude,
+                userData.longitude
+            );
+            if (weather) {
+                setMyWeather(weather);
+            }
+        }
+
+        if (partnerData?.latitude && partnerData?.longitude) {
+            const weather = await WeatherService.getWeatherByCoords(
+                partnerData.latitude,
+                partnerData.longitude
+            );
+            if (weather) {
+                setPartnerWeather(weather);
+            }
+        }
+
+        // Reload moods (listeners will update automatically)
+        // Reload moments (listeners will update automatically)
+        // Reload Daily Echo (listener will update automatically)
+
+        console.log('✅ Refresh complete - all data reloaded');
+
         await new Promise(resolve => setTimeout(resolve, 500));
         setRefreshing(false);
-    }, [userData?.partnerId]);
+    }, [userData?.partnerId, userData?.latitude, userData?.longitude, partnerData?.latitude, partnerData?.longitude]);
 
     // 1. Listen to User Profile
     useEffect(() => {
@@ -336,9 +376,32 @@ export default function HomeScreen() {
 
         fetchWeather();
 
-        // Refresh weather every 10 minutes
-        const interval = setInterval(fetchWeather, 10 * 60 * 1000);
+        // Refresh weather every 3 minutes for real-time updates
+        const interval = setInterval(fetchWeather, 180000); // 3 minutes
         return () => clearInterval(interval);
+    }, [userData?.latitude, userData?.longitude, userData?.city, partnerData?.latitude, partnerData?.longitude, partnerData?.city]);
+
+    // Update iOS widgets when location/distance changes
+    useEffect(() => {
+        if (userData?.latitude && userData?.longitude && partnerData?.latitude && partnerData?.longitude) {
+            // Calculate distance
+            const R = 6371; // Radius of Earth in km
+            const dLat = (partnerData.latitude - userData.latitude) * Math.PI / 180;
+            const dLon = (partnerData.longitude - userData.longitude) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(userData.latitude * Math.PI / 180) * Math.cos(partnerData.latitude * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+
+            // Update widget
+            WidgetService.updateDistance(
+                distance,
+                userData.city || 'Your City',
+                partnerData.city || 'Partner City'
+            );
+        }
     }, [userData?.latitude, userData?.longitude, userData?.city, partnerData?.latitude, partnerData?.longitude, partnerData?.city]);
 
     // Real-time moment listener
@@ -350,11 +413,96 @@ export default function HomeScreen() {
             userData.partnerId,
             (moment) => {
                 setTodayMoment(moment);
+
+                // Update widgets with latest moments
+                if (moment) {
+                    const yourPhoto = moment.user1Photo?.userId === user.uid ? moment.user1Photo : moment.user2Photo;
+                    const partnerPhoto = moment.user1Photo?.userId === user.uid ? moment.user2Photo : moment.user1Photo;
+
+                    WidgetService.updateMoments(
+                        yourPhoto ? {
+                            photoUrl: yourPhoto.photoUrl,
+                            caption: yourPhoto.caption,
+                            timestamp: yourPhoto.uploadedAt,
+                        } : null,
+                        partnerPhoto ? {
+                            photoUrl: partnerPhoto.photoUrl,
+                            caption: partnerPhoto.caption,
+                            timestamp: partnerPhoto.uploadedAt,
+                        } : null
+                    );
+                }
             }
         );
 
         return unsubscribe;
     }, [user, userData?.partnerId]);
+
+    // Real-time Daily Echo listener
+    useEffect(() => {
+        if (!user || !userData?.pairId) return;
+
+        // Initialize today's echo
+        DailyEchoService.getTodayEcho(userData.pairId).then(setDailyEcho);
+
+        // Listen to real-time updates
+        const unsubscribe = DailyEchoService.listenToTodayEcho(
+            userData.pairId,
+            (echo) => {
+                setDailyEcho(echo);
+            }
+        );
+
+        return unsubscribe;
+    }, [user, userData?.pairId]);
+
+    // Daily Echo countdown timer
+    useEffect(() => {
+        if (!dailyEcho) return;
+
+        const updateCountdown = () => {
+            const seconds = DailyEchoService.getCountdownSeconds(dailyEcho);
+            setEchoCountdown(seconds);
+        };
+
+        // Update immediately
+        updateCountdown();
+
+        // Update every second
+        const interval = setInterval(updateCountdown, 1000);
+
+        return () => clearInterval(interval);
+    }, [dailyEcho]);
+
+    // Handle Daily Echo answer submission
+    const handleSubmitEchoAnswer = async () => {
+        if (!echoAnswer.trim() || !user || !userData?.pairId) return;
+
+        setSubmittingEcho(true);
+        const success = await DailyEchoService.submitAnswer(
+            userData.pairId,
+            user.uid,
+            echoAnswer.trim()
+        );
+
+        if (success) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            setShowEchoAnswerModal(false);
+            setEchoAnswer('');
+        } else {
+            Alert.alert('Error', 'Failed to submit your answer. Please try again.');
+        }
+        setSubmittingEcho(false);
+    };
+
+    // Handle reveal click
+    const handleRevealEcho = async () => {
+        if (!userData?.pairId || !dailyEcho) return;
+
+        // Mark as revealed
+        await DailyEchoService.markRevealed(userData.pairId);
+        setShowEchoRevealModal(true);
+    };
 
     // Handle photo selection
     const handleAddMoment = async () => {
@@ -1557,6 +1705,7 @@ export default function HomeScreen() {
                         {userData?.partnerId ? (
                             <>
                                 {/* MOMENT OF THE DAY */}
+                                <Text style={styles.momentSectionTitle}>Today's Moments</Text>
                                 <TouchableOpacity
                                     style={styles.momentCard}
                                     onPress={handleAddMoment}
@@ -1793,13 +1942,35 @@ export default function HomeScreen() {
                                             <Ionicons name="chatbubble-ellipses" size={18} color={theme.colors.primary} />
                                         </View>
                                         <Text style={styles.dailyEchoLabel}>DAILY ECHO</Text>
+                                        {DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') && (
+                                            <Ionicons name="checkmark-circle" size={16} color={theme.colors.success} style={{ marginLeft: 'auto' }} />
+                                        )}
                                     </View>
                                     <Text style={styles.dailyEchoQuestion}>
-                                        What's one thing that made you think of me today?
+                                        {dailyEcho?.question || "What's one thing that made you think of me today?"}
                                     </Text>
-                                    <TouchableOpacity>
-                                        <Text style={styles.dailyEchoAction}>Answer now →</Text>
-                                    </TouchableOpacity>
+
+                                    {!DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') ? (
+                                        <TouchableOpacity onPress={() => setShowEchoAnswerModal(true)}>
+                                            <Text style={styles.dailyEchoAction}>Answer now →</Text>
+                                        </TouchableOpacity>
+                                    ) : DailyEchoService.canReveal(dailyEcho!) && DailyEchoService.haveBothAnswered(dailyEcho) ? (
+                                        <TouchableOpacity onPress={handleRevealEcho} style={styles.revealButton}>
+                                            <Ionicons name="eye" size={16} color="#FFF" />
+                                            <Text style={styles.revealButtonText}>Reveal Answers</Text>
+                                        </TouchableOpacity>
+                                    ) : DailyEchoService.haveBothAnswered(dailyEcho) ? (
+                                        <View style={styles.countdownContainer}>
+                                            <Ionicons name="time-outline" size={14} color={theme.colors.textMuted} />
+                                            <Text style={styles.countdownText}>
+                                                Reveals in {DailyEchoService.formatCountdown(echoCountdown)}
+                                            </Text>
+                                        </View>
+                                    ) : (
+                                        <Text style={styles.waitingText}>
+                                            <Ionicons name="hourglass-outline" size={12} /> Waiting for partner...
+                                        </Text>
+                                    )}
                                 </View>
 
                                 {/* SIGNAL BUTTON */}
@@ -1867,7 +2038,13 @@ export default function HomeScreen() {
 
                     {/* CAPTION INPUT MODAL */}
                     <Modal visible={showCaptionInput} transparent animationType="fade">
-                        <Pressable style={styles.overlay} onPress={() => !uploadingMoment && setShowCaptionInput(false)}>
+                        <Pressable
+                            style={styles.overlay}
+                            onPress={() => {
+                                Keyboard.dismiss();
+                                if (!uploadingMoment) setShowCaptionInput(false);
+                            }}
+                        >
                             <Pressable onPress={(e) => e.stopPropagation()} style={styles.captionModal}>
                                 <Text style={styles.captionModalTitle}>Add Caption</Text>
                                 {selectedImageUri && (
@@ -1882,6 +2059,9 @@ export default function HomeScreen() {
                                     onChangeText={setMomentCaption}
                                     maxLength={50}
                                     multiline
+                                    returnKeyType="done"
+                                    blurOnSubmit={true}
+                                    onSubmitEditing={() => Keyboard.dismiss()}
                                 />
                                 <TouchableOpacity
                                     style={[styles.uploadButton, uploadingMoment && styles.uploadButtonDisabled]}
@@ -1893,6 +2073,88 @@ export default function HomeScreen() {
                                     ) : (
                                         <Text style={styles.uploadButtonText}>Upload Moment</Text>
                                     )}
+                                </TouchableOpacity>
+                            </Pressable>
+                        </Pressable>
+                    </Modal>
+
+                    {/* DAILY ECHO ANSWER MODAL */}
+                    <Modal visible={showEchoAnswerModal} transparent animationType="fade">
+                        <Pressable style={styles.overlay} onPress={() => !submittingEcho && setShowEchoAnswerModal(false)}>
+                            <Pressable onPress={(e) => e.stopPropagation()} style={styles.captionModal}>
+                                <Text style={styles.captionModalTitle}>Daily Echo</Text>
+                                <Text style={[styles.dailyEchoQuestion, { marginBottom: theme.spacing.md }]}>
+                                    {dailyEcho?.question}
+                                </Text>
+                                <TextInput
+                                    style={styles.captionTextInput}
+                                    placeholder="Share your thoughts..."
+                                    placeholderTextColor={theme.colors.textMuted}
+                                    value={echoAnswer}
+                                    onChangeText={setEchoAnswer}
+                                    maxLength={200}
+                                    multiline
+                                    autoFocus
+                                />
+                                <TouchableOpacity
+                                    style={[styles.uploadButton, submittingEcho && styles.uploadButtonDisabled]}
+                                    onPress={handleSubmitEchoAnswer}
+                                    disabled={submittingEcho || !echoAnswer.trim()}
+                                >
+                                    {submittingEcho ? (
+                                        <ActivityIndicator color="#FFF" />
+                                    ) : (
+                                        <Text style={styles.uploadButtonText}>Submit Answer</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </Pressable>
+                        </Pressable>
+                    </Modal>
+
+                    {/* DAILY ECHO REVEAL MODAL */}
+                    <Modal visible={showEchoRevealModal} transparent animationType="fade">
+                        <Pressable style={styles.overlay} onPress={() => setShowEchoRevealModal(false)}>
+                            <Pressable onPress={(e) => e.stopPropagation()} style={styles.revealModal}>
+                                <View style={styles.revealHeader}>
+                                    <Ionicons name="chatbubble-ellipses" size={24} color={theme.colors.primary} />
+                                    <Text style={styles.revealModalTitle}>Today's Answers</Text>
+                                </View>
+
+                                <Text style={styles.revealQuestion}>{dailyEcho?.question}</Text>
+
+                                <View style={styles.answerSection}>
+                                    <View style={styles.answerHeader}>
+                                        <View style={styles.answerAvatar}>
+                                            <Text style={styles.answerAvatarText}>
+                                                {userData?.name?.charAt(0) || '?'}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.answerName}>{userData?.name?.split(' ')[0] || 'You'}</Text>
+                                    </View>
+                                    <Text style={styles.answerText}>
+                                        {DailyEchoService.getUserAnswer(dailyEcho, user?.uid || '') || 'No answer'}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.answerSection}>
+                                    <View style={styles.answerHeader}>
+                                        <View style={[styles.answerAvatar, styles.answerAvatarPartner]}>
+                                            <Text style={styles.answerAvatarText}>
+                                                {partnerData?.name?.charAt(0) || '?'}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.answerName}>{partnerData?.name?.split(' ')[0] || 'Partner'}</Text>
+                                    </View>
+                                    <Text style={styles.answerText}>
+                                        {DailyEchoService.getPartnerAnswer(dailyEcho, user?.uid || '') || 'No answer'}
+                                    </Text>
+                                </View>
+
+                                <TouchableOpacity
+                                    style={styles.closeRevealButton}
+                                    onPress={() => setShowEchoRevealModal(false)}
+                                >
+                                    <Text style={styles.closeRevealButtonText}>Close</Text>
                                 </TouchableOpacity>
                             </Pressable>
                         </Pressable>
@@ -1975,6 +2237,14 @@ const styles = StyleSheet.create({
     },
 
     // Moment Card - Split Screen Photo
+    momentSectionTitle: {
+        fontSize: theme.typography.fontSize.sm,
+        fontWeight: '600',
+        color: theme.colors.textSecondary,
+        letterSpacing: 0.5,
+        marginBottom: theme.spacing.xs,
+        textTransform: 'uppercase',
+    },
     momentCard: {
         height: 240,
         borderRadius: theme.borderRadius['2xl'],
@@ -2252,6 +2522,120 @@ const styles = StyleSheet.create({
         fontSize: theme.typography.fontSize.sm,
         fontWeight: '600',
         color: theme.colors.primary,
+    },
+    revealButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: theme.spacing.xs,
+        backgroundColor: theme.colors.primary,
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.md,
+        borderRadius: theme.borderRadius.lg,
+        marginTop: theme.spacing.xs,
+    },
+    revealButtonText: {
+        fontSize: theme.typography.fontSize.sm,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+    countdownContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: theme.spacing.xs,
+    },
+    countdownText: {
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.textMuted,
+        fontWeight: '500',
+    },
+    waitingText: {
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.textMuted,
+        fontStyle: 'italic',
+        marginTop: theme.spacing.xs,
+    },
+
+    // Daily Echo Reveal Modal
+    revealModal: {
+        width: '90%',
+        maxWidth: 500,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.borderRadius['2xl'],
+        padding: theme.spacing.xl,
+        maxHeight: '80%',
+    },
+    revealHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing.sm,
+        marginBottom: theme.spacing.md,
+    },
+    revealModalTitle: {
+        fontSize: theme.typography.fontSize['2xl'],
+        fontWeight: '700',
+        color: theme.colors.text,
+    },
+    revealQuestion: {
+        fontSize: theme.typography.fontSize.md,
+        color: theme.colors.textSecondary,
+        marginBottom: theme.spacing.lg,
+        fontStyle: 'italic',
+    },
+    answerSection: {
+        backgroundColor: theme.colors.backgroundAlt,
+        borderRadius: theme.borderRadius.lg,
+        padding: theme.spacing.md,
+        marginBottom: theme.spacing.md,
+    },
+    answerHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing.sm,
+        marginBottom: theme.spacing.sm,
+    },
+    answerAvatar: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: theme.colors.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: theme.colors.primary,
+    },
+    answerAvatarPartner: {
+        borderColor: theme.colors.accentPink,
+    },
+    answerAvatarText: {
+        fontSize: theme.typography.fontSize.sm,
+        fontWeight: '600',
+        color: theme.colors.text,
+    },
+    answerName: {
+        fontSize: theme.typography.fontSize.base,
+        fontWeight: '600',
+        color: theme.colors.text,
+    },
+    answerText: {
+        fontSize: theme.typography.fontSize.base,
+        color: theme.colors.text,
+        lineHeight: 22,
+    },
+    closeRevealButton: {
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.border,
+        borderWidth: 1,
+        borderRadius: theme.borderRadius.lg,
+        paddingVertical: theme.spacing.md,
+        alignItems: 'center',
+        marginTop: theme.spacing.sm,
+    },
+    closeRevealButtonText: {
+        fontSize: theme.typography.fontSize.md,
+        fontWeight: '600',
+        color: theme.colors.text,
     },
 
     // Signal Section

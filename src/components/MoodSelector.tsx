@@ -179,30 +179,7 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
                   ) : (
                     /* Optional details */
                     <View style={styles.causeSection}>
-
-                      <View style={styles.causeGrid}>
-                        {MOOD_CAUSES.map((cause) => {
-                          const isSelected = selectedCause === cause.type;
-                          return (
-                            <TouchableOpacity
-                              key={cause.type}
-                              style={[
-                                styles.causeButton,
-                                isSelected && { backgroundColor: getMoodColor() + '20', borderColor: getMoodColor() },
-                              ]}
-                              onPress={() => handleCauseSelect(cause.type)}
-                              activeOpacity={0.7}
-                            >
-                              <Text style={styles.causeEmoji}>{cause.emoji}</Text>
-                              <Text style={[styles.causeLabel, isSelected && { color: getMoodColor(), fontWeight: '600' }]}>
-                                {cause.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-
-                      {/* Note input */}
+                      {/* Note input only */}
                       <View style={styles.noteSection}>
                         <Text style={styles.noteLabel}>💭 Want to share more?</Text>
                         <TextInput

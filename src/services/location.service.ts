@@ -178,4 +178,78 @@ export class LocationService {
         const hour = time.getHours();
         return hour >= 6 && hour < 20; // 6 AM to 8 PM is daytime
     }
+
+    /**
+     * Calculate distance between two coordinates in kilometers
+     */
+    static calculateDistance(
+        lat1: number,
+        lon1: number,
+        lat2: number,
+        lon2: number
+    ): number {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * (Math.PI / 180)) *
+            Math.cos(lat2 * (Math.PI / 180)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    /**
+     * Start monitoring location changes
+     * @param userId User ID to update
+     * @param previousLocation Previous location to compare against
+     * @param onLocationChange Callback when significant location change detected (>1km)
+     * @returns Unsubscribe function
+     */
+    static async startLocationMonitoring(
+        userId: string,
+        previousLocation: { latitude: number; longitude: number } | null,
+        onLocationChange: (newLocation: UserLocation) => void
+    ): Promise<(() => void) | null> {
+        try {
+            const hasPermission = await this.hasPermissions();
+            if (!hasPermission) return null;
+
+            // Watch position with sensitivity threshold
+            const subscription = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.Balanced,
+                    timeInterval: 60000, // Check every minute
+                    distanceInterval: 1000, // Or when moved 1km
+                },
+                async (location) => {
+                    // If we have previous location, check distance
+                    if (previousLocation) {
+                        const distance = this.calculateDistance(
+                            previousLocation.latitude,
+                            previousLocation.longitude,
+                            location.coords.latitude,
+                            location.coords.longitude
+                        );
+
+                        // Only update if moved more than 1km
+                        if (distance < 1) return;
+                    }
+
+                    // Significant location change detected - update
+                    const newLocation = await this.updateUserLocation(userId);
+                    if (newLocation) {
+                        onLocationChange(newLocation);
+                    }
+                }
+            );
+
+            return () => subscription.remove();
+        } catch (error) {
+            console.error('Error starting location monitoring:', error);
+            return null;
+        }
+    }
 }

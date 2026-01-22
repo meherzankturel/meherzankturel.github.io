@@ -48,13 +48,20 @@ const SEVERE_WEATHER_IDS = [200, 201, 202, 210, 211, 212, 221, 230, 231, 232, //
 export class WeatherService {
     private static apiKey = OPENWEATHER_API_KEY;
     private static cache: Map<string, { data: WeatherData; timestamp: number }> = new Map();
-    private static CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+    private static CACHE_DURATION = 3 * 60 * 1000; // 3 minutes for more real-time updates
 
     /**
      * Set the API key (call this on app init)
      */
     static setApiKey(key: string) {
         this.apiKey = key;
+    }
+
+    /**
+     * Clear weather cache to force fresh data
+     */
+    static clearCache(): void {
+        this.cache.clear();
     }
 
     /**

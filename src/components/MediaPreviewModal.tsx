@@ -71,7 +71,7 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
 
   useEffect(() => {
     if (!videoRef.current || !hasLoaded) return;
-    
+
     if (isActive) {
       videoRef.current.playAsync().catch(console.error);
     } else {
@@ -96,7 +96,7 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
 
   const togglePlayPause = useCallback(async () => {
     if (!videoRef.current) return;
-    
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       if (isPlaying) {
@@ -147,7 +147,7 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
           </View>
           <Text style={styles.videoErrorTitle}>Unable to play video</Text>
           <Text style={styles.videoErrorSubtext}>{error}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.openExternalButton}
             onPress={() => Linking.openURL(uri)}
           >
@@ -166,7 +166,7 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
         colors={['#0a0a0a', '#1a1a1a', '#0a0a0a']}
         style={StyleSheet.absoluteFill}
       />
-      
+
       {loading && (
         <View style={styles.videoLoading}>
           <View style={styles.loadingSpinner}>
@@ -175,7 +175,7 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
           <Text style={styles.loadingText}>Loading video...</Text>
         </View>
       )}
-      
+
       <Video
         ref={videoRef}
         source={{ uri }}
@@ -194,9 +194,9 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
         }}
         onLoadStart={() => setLoading(true)}
       />
-      
+
       {/* Tap overlay for play/pause */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.videoTapArea}
         onPress={togglePlayPause}
         activeOpacity={1}
@@ -221,7 +221,7 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
             {/* Progress bar */}
             <View style={styles.progressSection}>
               <Text style={styles.timeText}>{formatTime(progress)}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.progressBarContainer}
                 onPress={(e) => {
                   const { locationX } = e.nativeEvent;
@@ -238,13 +238,13 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
               </TouchableOpacity>
               <Text style={styles.timeText}>{formatTime(duration)}</Text>
             </View>
-            
+
             {/* Control buttons */}
             <View style={styles.controlButtons}>
               <TouchableOpacity onPress={togglePlayPause} style={styles.controlButton}>
                 <Ionicons name={isPlaying ? 'pause' : 'play'} size={28} color="#fff" />
               </TouchableOpacity>
-              
+
               <TouchableOpacity onPress={toggleMute} style={styles.controlButton}>
                 <Ionicons name={isMuted ? 'volume-mute' : 'volume-high'} size={24} color="#fff" />
               </TouchableOpacity>
@@ -257,12 +257,12 @@ function VideoPlayer({ uri, isActive }: { uri: string; isActive: boolean }) {
 }
 
 // Beautiful Image Viewer Component
-function ImageViewer({ 
-  uri, 
+function ImageViewer({
+  uri,
   isActive,
   onTap,
-}: { 
-  uri: string; 
+}: {
+  uri: string;
   isActive: boolean;
   onTap: () => void;
 }) {
@@ -281,7 +281,7 @@ function ImageViewer({
 
   const handleDoubleTap = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
+
     if (lastScale.current > 1) {
       lastScale.current = 1;
       Animated.spring(scale, {
@@ -314,7 +314,7 @@ function ImageViewer({
   }
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.imageContainer}
       activeOpacity={1}
       onPress={onTap}
@@ -359,11 +359,13 @@ export default function MediaPreviewModal({
   initialIndex = 0,
   onClose,
 }: MediaPreviewModalProps) {
+  console.log('📱 MediaPreviewModal render:', { visible, itemCount: mediaItems.length, initialIndex });
+
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [saving, setSaving] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const flatListRef = useRef<FlatList>(null);
-  
+
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -371,13 +373,15 @@ export default function MediaPreviewModal({
 
   // Reset and animate in when modal opens
   useEffect(() => {
+    console.log('📱 MediaPreviewModal useEffect - visible changed:', visible);
     if (visible) {
+      console.log('📱 Modal opening with', mediaItems.length, 'items');
       setCurrentIndex(initialIndex);
       setShowControls(true);
       fadeAnim.setValue(0);
       slideAnim.setValue(50);
       controlsOpacity.setValue(1);
-      
+
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -390,7 +394,7 @@ export default function MediaPreviewModal({
           friction: 8,
         }),
       ]).start();
-      
+
       setTimeout(() => {
         flatListRef.current?.scrollToIndex({
           index: initialIndex,
@@ -448,12 +452,12 @@ export default function MediaPreviewModal({
     setSaving(true);
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      
+
       // Request permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(
-          'Permission Required', 
+          'Permission Required',
           'We need access to your photo library to save media. Please enable it in Settings.',
           [
             { text: 'Cancel', style: 'cancel' },
@@ -467,7 +471,7 @@ export default function MediaPreviewModal({
       // Determine file extension
       const isVideo = currentMedia.type === 'video';
       let extension = isVideo ? 'mp4' : 'jpg';
-      
+
       // Try to get extension from URL
       const urlParts = currentMedia.uri.split('.');
       if (urlParts.length > 1) {
@@ -476,7 +480,7 @@ export default function MediaPreviewModal({
           extension = urlExt;
         }
       }
-      
+
       const fileName = `sync_${Date.now()}.${extension}`;
       const filePath = `${FileSystem.cacheDirectory}${fileName}`;
 
@@ -485,14 +489,14 @@ export default function MediaPreviewModal({
 
       // Download the file
       const downloadResult = await FileSystem.downloadAsync(currentMedia.uri, filePath);
-      
+
       console.log('📥 Download result:', downloadResult.status);
 
       if (downloadResult.status === 200) {
         // Save to media library
         const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
         console.log('📥 Asset created:', asset.id);
-        
+
         // Try to add to SYNC album
         try {
           const album = await MediaLibrary.getAlbumAsync('SYNC');
@@ -508,11 +512,11 @@ export default function MediaPreviewModal({
         // Clean up temp file
         try {
           await FileSystem.deleteAsync(filePath, { idempotent: true });
-        } catch {}
+        } catch { }
 
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert(
-          'Saved! ✨', 
+          'Saved! ✨',
           `${isVideo ? 'Video' : 'Photo'} saved to your photo library.`,
           [{ text: 'OK' }]
         );
@@ -523,7 +527,7 @@ export default function MediaPreviewModal({
       console.error('Save error:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
-        'Save Failed', 
+        'Save Failed',
         `Could not save media: ${error.message || 'Unknown error'}. Please try again.`,
         [{ text: 'OK' }]
       );
@@ -538,7 +542,7 @@ export default function MediaPreviewModal({
 
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      
+
       // Download file first for reliable sharing
       const isVideo = currentMedia.type === 'video';
       const extension = isVideo ? 'mp4' : 'jpg';
@@ -548,16 +552,16 @@ export default function MediaPreviewModal({
       console.log('📤 Downloading for share:', currentMedia.uri.substring(0, 100));
 
       const downloadResult = await FileSystem.downloadAsync(currentMedia.uri, filePath);
-      
+
       if (downloadResult.status === 200) {
         // Share the local file
         const shareResult = await Share.share(
           Platform.OS === 'ios'
             ? { url: downloadResult.uri }
-            : { 
-                message: 'A special memory from SYNC 💕',
-                url: downloadResult.uri,
-              }
+            : {
+              message: 'A special memory from SYNC 💕',
+              url: downloadResult.uri,
+            }
         );
 
         console.log('📤 Share result:', shareResult);
@@ -566,7 +570,7 @@ export default function MediaPreviewModal({
         setTimeout(async () => {
           try {
             await FileSystem.deleteAsync(filePath, { idempotent: true });
-          } catch {}
+          } catch { }
         }, 5000);
       } else {
         // Fallback: try to share URL directly
@@ -600,7 +604,7 @@ export default function MediaPreviewModal({
 
   const renderItem = useCallback(({ item, index }: { item: MediaItem; index: number }) => {
     const isActive = index === currentIndex && visible;
-    
+
     if (item.type === 'video') {
       return (
         <View style={styles.mediaSlide}>
@@ -611,8 +615,8 @@ export default function MediaPreviewModal({
 
     return (
       <View style={styles.mediaSlide}>
-        <ImageViewer 
-          uri={item.uri} 
+        <ImageViewer
+          uri={item.uri}
           isActive={isActive}
           onTap={toggleControls}
         />
@@ -636,10 +640,20 @@ export default function MediaPreviewModal({
     index,
   }), []);
 
-  if (!visible || mediaItems.length === 0) return null;
-
   const currentMedia = mediaItems[currentIndex];
   const isVideo = currentMedia?.type === 'video';
+
+  console.log('📱 MediaPreviewModal about to render Modal:', {
+    visible,
+    hasMedia: mediaItems.length > 0,
+    currentMedia
+  });
+
+  // Don't render if no media items
+  if (!visible || mediaItems.length === 0) {
+    console.log('📱 MediaPreviewModal early return - not visible or no items');
+    return null;
+  }
 
   return (
     <Modal
@@ -656,7 +670,7 @@ export default function MediaPreviewModal({
           colors={['#000000', '#0a0a0a', '#000000']}
           style={StyleSheet.absoluteFill}
         />
-        
+
         <Animated.View style={[styles.content, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
           <Animated.View style={[styles.header, { opacity: controlsOpacity }]}>
@@ -664,7 +678,7 @@ export default function MediaPreviewModal({
               <TouchableOpacity onPress={handleClose} style={styles.headerButton}>
                 <Ionicons name="close" size={26} color="#fff" />
               </TouchableOpacity>
-              
+
               <View style={styles.headerCenter}>
                 {mediaItems.length > 1 && (
                   <View style={styles.counterPill}>
@@ -674,7 +688,7 @@ export default function MediaPreviewModal({
                   </View>
                 )}
               </View>
-              
+
               <View style={styles.headerActions}>
                 <TouchableOpacity onPress={handleCopy} style={styles.headerButton}>
                   <Ionicons name="copy-outline" size={22} color="#fff" />
@@ -682,8 +696,8 @@ export default function MediaPreviewModal({
                 <TouchableOpacity onPress={handleShare} style={styles.headerButton}>
                   <Ionicons name="share-outline" size={24} color="#fff" />
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  onPress={handleSave} 
+                <TouchableOpacity
+                  onPress={handleSave}
                   style={styles.headerButton}
                   disabled={saving}
                 >
@@ -725,17 +739,17 @@ export default function MediaPreviewModal({
                 end={{ x: 1, y: 0 }}
                 style={styles.badgeGradient}
               >
-                <Ionicons 
-                  name={isVideo ? 'videocam' : 'image'} 
-                  size={14} 
-                  color="#fff" 
+                <Ionicons
+                  name={isVideo ? 'videocam' : 'image'}
+                  size={14}
+                  color="#fff"
                 />
                 <Text style={styles.badgeText}>
                   {isVideo ? 'Video' : 'Photo'}
                 </Text>
               </LinearGradient>
             </View>
-            
+
             {/* Pagination dots */}
             {mediaItems.length > 1 && mediaItems.length <= 8 && (
               <View style={styles.pagination}>
@@ -750,7 +764,7 @@ export default function MediaPreviewModal({
                 ))}
               </View>
             )}
-            
+
             {/* Hint text */}
             <Text style={styles.hintText}>
               {isVideo ? 'Tap to play/pause' : 'Double-tap to zoom'}

@@ -15,11 +15,11 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [
+  ? ([
     process.env.FRONTEND_URL,
     /^exp:\/\/.*$/, // Expo development URLs
     /^https:\/\/.*\.vercel\.app$/, // Vercel deployments
-  ].filter(Boolean)
+  ].filter((origin): origin is string | RegExp => origin !== undefined))
   : '*'; // Allow all in development
 
 app.use(cors({
