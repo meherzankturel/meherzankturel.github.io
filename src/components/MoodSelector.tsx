@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Animated, Pressable, Keyboard, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import EmojiSelector from 'react-native-emoji-selector';
 import { theme } from '../config/theme';
 import { MoodType, MoodCause, MOOD_CAUSES } from '../services/mood.service';
 import * as Haptics from 'expo-haptics';
@@ -20,7 +21,7 @@ const MOODS: Array<{ type: MoodType; emoji: string; label: string; color: string
 interface MoodSelectorProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (mood: MoodType, note?: string, cause?: MoodCause) => void;
+  onSubmit: (mood: MoodType, note?: string, cause?: MoodCause, customEmoji?: string) => void;
   loading?: boolean;
   partnerName?: string;
 }
@@ -30,13 +31,17 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
   const [selectedCause, setSelectedCause] = useState<MoodCause | null>(null);
   const [note, setNote] = useState('');
   const [scaleAnim] = useState(new Animated.Value(0));
-  const [step, setStep] = useState<'mood' | 'cause'>('mood');
+  const [step, setStep] = useState<'mood' | 'cause' | 'emoji'>('mood');
+  const [customEmoji, setCustomEmoji] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   React.useEffect(() => {
     if (visible) {
       setSelectedMood(null);
       setSelectedCause(null);
       setNote('');
+      setCustomEmoji(null);
+      setShowEmojiPicker(false);
       setStep('mood');
       Animated.spring(scaleAnim, {
         toValue: 1,
@@ -66,7 +71,13 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
 
     Keyboard.dismiss();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSubmit(selectedMood, note.trim() || undefined, selectedCause || undefined);
+    onSubmit(selectedMood, note.trim() || undefined, selectedCause || undefined, customEmoji || undefined);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCustomEmoji(emoji);
+    setShowEmojiPicker(false);
   };
 
   const handleOverlayPress = () => {
@@ -417,5 +428,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
     fontWeight: '500',
+  },
+  customEmojiButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '40',
+    backgroundColor: theme.colors.primary + '10',
+  },
+  customEmojiText: {
+    marginLeft: theme.spacing.sm,
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  emojiPickerContainer: {
+    height: 300,
+    marginTop: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
   },
 });

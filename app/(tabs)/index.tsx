@@ -1329,7 +1329,7 @@ export default function HomeScreen() {
         await signOut(auth);
     };
 
-    const handleMoodSelect = async (mood: MoodType, note?: string, cause?: any) => {
+    const handleMoodSelect = async (mood: MoodType, note?: string, cause?: any, customEmoji?: string) => {
         if (!user || updatingMood) return;
         setUpdatingMood(true);
 
