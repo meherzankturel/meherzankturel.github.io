@@ -13,7 +13,6 @@ const MOODS: Array<{ type: MoodType; emoji: string; label: string; color: string
   { type: 'excited', emoji: '🤩', label: 'Excited', color: theme.colors.moodExcited },
   { type: 'grateful', emoji: '🙏', label: 'Grateful', color: theme.colors.moodGrateful },
   { type: 'calm', emoji: '😌', label: 'Calm', color: theme.colors.moodCalm },
-  { type: 'neutral', emoji: '😐', label: 'Meh', color: theme.colors.moodNeutral },
   { type: 'sad', emoji: '😢', label: 'Sad', color: theme.colors.moodSad },
   { type: 'anxious', emoji: '😰', label: 'Anxious', color: theme.colors.moodAnxious },
 ];
