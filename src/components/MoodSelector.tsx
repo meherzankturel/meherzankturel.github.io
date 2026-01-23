@@ -77,6 +77,9 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setCustomEmoji(emoji);
     setShowEmojiPicker(false);
+    // Set a default mood type for custom emoji and advance to step 2
+    setSelectedMood('happy'); // Use 'happy' as base type for custom emoji
+    setTimeout(() => setStep('cause'), 200);
   };
 
   const handleOverlayPress = () => {
