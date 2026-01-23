@@ -98,122 +98,154 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={() => {
-        Keyboard.dismiss();
-        onClose();
-      }}
-    >
-      <Pressable style={styles.overlay} onPress={handleOverlayPress}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardAvoid}
-        >
-          <Animated.View
-            style={[
-              styles.modalContent,
-              {
-                transform: [{ scale: scaleAnim }],
-                opacity: scaleAnim,
-              },
-            ]}
+    <>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          onClose();
+        }}
+      >
+        <Pressable style={styles.overlay} onPress={handleOverlayPress}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardAvoid}
           >
-            <Pressable onPress={(e) => e.stopPropagation()}>
-              <ScrollView
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-              >
-                {/* Header with mood indicator */}
-                <View style={styles.header}>
-                  <View style={styles.headerLeft}>
-                    {selectedMood && step === 'cause' && (
-                      <TouchableOpacity
-                        onPress={() => setStep('mood')}
-                        style={styles.backButton}
-                      >
-                        <Ionicons name="chevron-back" size={24} color={theme.colors.textSecondary} />
-                      </TouchableOpacity>
-                    )}
-                    <Text style={styles.title}>
-                      {step === 'mood' ? 'How are you feeling?' : 'Share your mood'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      onClose();
-                    }}
-                    style={styles.closeButton}
-                  >
-                    <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Selected mood indicator */}
-                {selectedMood && step === 'cause' && (
-                  <View style={[styles.selectedMoodBanner, { backgroundColor: getMoodColor() + '15' }]}>
-                    <Text style={styles.selectedMoodEmoji}>{getMoodEmoji()}</Text>
-                    <Text style={[styles.selectedMoodText, { color: getMoodColor() }]}>
-                      Feeling {MOODS.find(m => m.type === selectedMood)?.label}
-                    </Text>
-                  </View>
-                )}
-
-                <View style={styles.content}>
-                  {step === 'mood' ? (
-                    /* Mood Selection Grid */
-                    <>
-                      <View style={styles.grid}>
-                        {MOODS.map((mood) => {
-                          const isSelected = selectedMood === mood.type;
-                          return (
-                            <TouchableOpacity
-                              key={mood.type}
-                              style={[
-                                styles.moodButton,
-                                isSelected && { backgroundColor: mood.color + '20', borderColor: mood.color },
-                                loading && styles.disabledButton,
-                              ]}
-                              onPress={() => handleMoodSelect(mood.type)}
-                              disabled={loading}
-                              activeOpacity={0.7}
-                            >
-                              <Text style={[styles.emoji, isSelected && styles.emojiSelected]}>{mood.emoji}</Text>
-                              <Text style={[styles.label, isSelected && { color: mood.color, fontWeight: '700' }]}>
-                                {mood.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-
-                        {/* Add Custom Emoji Button in Grid */}
+            <Animated.View
+              style={[
+                styles.modalContent,
+                {
+                  transform: [{ scale: scaleAnim }],
+                  opacity: scaleAnim,
+                },
+              ]}
+            >
+              <Pressable onPress={(e) => e.stopPropagation()}>
+                <ScrollView
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                >
+                  {/* Header with mood indicator */}
+                  <View style={styles.header}>
+                    <View style={styles.headerLeft}>
+                      {selectedMood && step === 'cause' && (
                         <TouchableOpacity
-                          style={[
-                            styles.moodButton,
-                            customEmoji && { backgroundColor: theme.colors.primary + '20', borderColor: theme.colors.primary },
-                          ]}
-                          onPress={() => setShowEmojiPicker(!showEmojiPicker)}
-                          activeOpacity={0.7}
+                          onPress={() => setStep('mood')}
+                          style={styles.backButton}
                         >
-                          <Text style={styles.emoji}>{customEmoji || '➕'}</Text>
-                          <Text style={[styles.label, customEmoji && { color: theme.colors.primary, fontWeight: '700' }]}>
-                            {customEmoji ? 'Custom' : 'Add'}
+                          <Ionicons name="chevron-back" size={24} color={theme.colors.textSecondary} />
+                        </TouchableOpacity>
+                      )}
+                      <Text style={styles.title}>
+                        {step === 'mood' ? 'How are you feeling?' : 'Share your mood'}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        onClose();
+                      }}
+                      style={styles.closeButton}
+                    >
+                      <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Selected mood indicator */}
+                  {selectedMood && step === 'cause' && (
+                    <View style={[styles.selectedMoodBanner, { backgroundColor: getMoodColor() + '15' }]}>
+                      <Text style={styles.selectedMoodEmoji}>{getMoodEmoji()}</Text>
+                      <Text style={[styles.selectedMoodText, { color: getMoodColor() }]}>
+                        Feeling {MOODS.find(m => m.type === selectedMood)?.label}
+                      </Text>
+                    </View>
+                  )}
+
+                  <View style={styles.content}>
+                    {step === 'mood' ? (
+                      /* Mood Selection Grid */
+                      <>
+                        <View style={styles.grid}>
+                          {MOODS.map((mood) => {
+                            const isSelected = selectedMood === mood.type;
+                            return (
+                              <TouchableOpacity
+                                key={mood.type}
+                                style={[
+                                  styles.moodButton,
+                                  isSelected && { backgroundColor: mood.color + '20', borderColor: mood.color },
+                                  loading && styles.disabledButton,
+                                ]}
+                                onPress={() => handleMoodSelect(mood.type)}
+                                disabled={loading}
+                                activeOpacity={0.7}
+                              >
+                                <Text style={[styles.emoji, isSelected && styles.emojiSelected]}>{mood.emoji}</Text>
+                                <Text style={[styles.label, isSelected && { color: mood.color, fontWeight: '700' }]}>
+                                  {mood.label}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+
+                          {/* Add Custom Emoji Button in Grid */}
+                          <TouchableOpacity
+                            style={[
+                              styles.moodButton,
+                              customEmoji && { backgroundColor: theme.colors.primary + '20', borderColor: theme.colors.primary },
+                            ]}
+                            onPress={() => setShowEmojiPicker(!showEmojiPicker)}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.emoji}>{customEmoji || '➕'}</Text>
+                            <Text style={[styles.label, customEmoji && { color: theme.colors.primary, fontWeight: '700' }]}>
+                              {customEmoji ? 'Custom' : 'Add'}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </>
+                    ) : (
+                      /* Optional details */
+                      <View style={styles.causeSection}>
+                        {/* Note input only */}
+                        <View style={styles.noteSection}>
+                          <Text style={styles.noteLabel}>💭 Want to share more?</Text>
+                          <TextInput
+                            style={styles.noteInput}
+                            placeholder={`Tell ${partnerName} what's on your mind...`}
+                            placeholderTextColor={theme.colors.textLight}
+                            value={note}
+                            onChangeText={setNote}
+                            multiline
+                            numberOfLines={3}
+                            maxLength={200}
+                          />
+                          {note.length > 0 && (
+                            <Text style={styles.charCount}>{note.length}/200</Text>
+                          )}
+                        </View>
+
+                        {/* Custom Emoji Picker Button */}
+                        <TouchableOpacity
+                          style={styles.customEmojiButton}
+                          onPress={() => setShowEmojiPicker(!showEmojiPicker)}
+                        >
+                          <Ionicons
+                            name={customEmoji ? "happy" : "happy-outline"}
+                            size={20}
+                            color={theme.colors.primary}
+                          />
+                          <Text style={styles.customEmojiText}>
+                            {customEmoji ? `Custom: ${customEmoji}` : 'Pick Custom Emoji'}
                           </Text>
                         </TouchableOpacity>
-                      </View>
 
-                      {/* Emoji Picker on Step 1 */}
-                      {showEmojiPicker && (
-                        <View style={styles.emojiPickerContainer}>
-                          <ScrollView
-                            horizontal={false}
-                            nestedScrollEnabled={true}
-                            style={{ flex: 1 }}
-                          >
+                        {/* Emoji Picker */}
+                        {showEmojiPicker && (
+                          <View style={styles.emojiPickerContainer}>
                             <EmojiSelector
                               onEmojiSelected={handleEmojiSelect}
                               showSearchBar={false}
@@ -221,83 +253,60 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
                               showHistory={false}
                               columns={8}
                             />
-                          </ScrollView>
-                        </View>
-                      )}
-                    </>
-                  ) : (
-                    /* Optional details */
-                    <View style={styles.causeSection}>
-                      {/* Note input only */}
-                      <View style={styles.noteSection}>
-                        <Text style={styles.noteLabel}>💭 Want to share more?</Text>
-                        <TextInput
-                          style={styles.noteInput}
-                          placeholder={`Tell ${partnerName} what's on your mind...`}
-                          placeholderTextColor={theme.colors.textLight}
-                          value={note}
-                          onChangeText={setNote}
-                          multiline
-                          numberOfLines={3}
-                          maxLength={200}
-                        />
-                        {note.length > 0 && (
-                          <Text style={styles.charCount}>{note.length}/200</Text>
+                          </View>
                         )}
+
+                        {/* Submit button */}
+                        <TouchableOpacity
+                          style={[
+                            styles.submitButton,
+                            { backgroundColor: getMoodColor() },
+                            loading && styles.submitButtonDisabled,
+                          ]}
+                          onPress={handleSubmit}
+                          disabled={loading}
+                        >
+                          <Text style={styles.submitButtonText}>
+                            {loading ? 'Sharing with love...' : '💕 Share with Partner'}
+                          </Text>
+                        </TouchableOpacity>
+
                       </View>
+                    )}
+                  </View>
+                </ScrollView>
+              </Pressable>
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </Pressable>
+      </Modal>
 
-                      {/* Custom Emoji Picker Button */}
-                      <TouchableOpacity
-                        style={styles.customEmojiButton}
-                        onPress={() => setShowEmojiPicker(!showEmojiPicker)}
-                      >
-                        <Ionicons
-                          name={customEmoji ? "happy" : "happy-outline"}
-                          size={20}
-                          color={theme.colors.primary}
-                        />
-                        <Text style={styles.customEmojiText}>
-                          {customEmoji ? `Custom: ${customEmoji}` : 'Pick Custom Emoji'}
-                        </Text>
-                      </TouchableOpacity>
-
-                      {/* Emoji Picker */}
-                      {showEmojiPicker && (
-                        <View style={styles.emojiPickerContainer}>
-                          <EmojiSelector
-                            onEmojiSelected={handleEmojiSelect}
-                            showSearchBar={false}
-                            showTabs={true}
-                            showHistory={false}
-                            columns={8}
-                          />
-                        </View>
-                      )}
-
-                      {/* Submit button */}
-                      <TouchableOpacity
-                        style={[
-                          styles.submitButton,
-                          { backgroundColor: getMoodColor() },
-                          loading && styles.submitButtonDisabled,
-                        ]}
-                        onPress={handleSubmit}
-                        disabled={loading}
-                      >
-                        <Text style={styles.submitButtonText}>
-                          {loading ? 'Sharing with love...' : '💕 Share with Partner'}
-                        </Text>
-                      </TouchableOpacity>
-
-                    </View>
-                  )}
-                </View>
-              </ScrollView>
-            </Pressable>
-          </Animated.View>
-        </KeyboardAvoidingView>
-      </Pressable>
-    </Modal >
+      {/* Separate Modal for Emoji Picker to avoid VirtualizedList nesting */}
+      <Modal
+        visible={showEmojiPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowEmojiPicker(false)}
+      >
+        <View style={styles.emojiModalOverlay}>
+          <View style={styles.emojiModalContent}>
+            <View style={styles.emojiModalHeader}>
+              <Text style={styles.emojiModalTitle}>Pick an Emoji</Text>
+              <TouchableOpacity onPress={() => setShowEmojiPicker(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.text} />
+              </TouchableOpacity>
+            </View>
+            <EmojiSelector
+              onEmojiSelected={handleEmojiSelect}
+              showSearchBar={false}
+              showTabs={true}
+              showHistory={false}
+              columns={8}
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -517,5 +526,31 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
+  },
+  emojiModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  emojiModalContent: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: theme.borderRadius['2xl'],
+    borderTopRightRadius: theme.borderRadius['2xl'],
+    height: '70%',
+    padding: theme.spacing.md,
+  },
+  emojiModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    marginBottom: theme.spacing.sm,
+  },
+  emojiModalTitle: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text,
   },
 });
