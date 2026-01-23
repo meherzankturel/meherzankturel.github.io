@@ -281,7 +281,7 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
         </Pressable>
       </Modal>
 
-      {/* Separate Modal for Emoji Picker to avoid VirtualizedList nesting */}
+      {/* Emoji Picker Modal */}
       <Modal
         visible={showEmojiPicker}
         transparent
