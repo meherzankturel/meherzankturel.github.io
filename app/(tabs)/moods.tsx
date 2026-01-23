@@ -46,7 +46,7 @@ const moodColors: Record<MoodType, string> = {
 
 function formatTimeAgo(timestamp: any): string {
   if (!timestamp) return 'just now';
-  
+
   const now = new Date();
   const time = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   const diffMs = now.getTime() - time.getTime();
@@ -59,29 +59,29 @@ function formatTimeAgo(timestamp: any): string {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  
+
   return time.toLocaleDateString();
 }
 
 // Format full date and time for timeline
 function formatDateTime(timestamp: any): { date: string; time: string } {
   if (!timestamp) return { date: 'Today', time: 'just now' };
-  
+
   const time = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   const now = new Date();
   const isToday = time.toDateString() === now.toDateString();
-  
+
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   const isYesterday = time.toDateString() === yesterday.toDateString();
-  
+
   // Format time as "2:30 PM"
-  const timeStr = time.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
+  const timeStr = time.toLocaleTimeString('en-US', {
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: true 
+    hour12: true
   });
-  
+
   // Format date
   let dateStr: string;
   if (isToday) {
@@ -90,30 +90,30 @@ function formatDateTime(timestamp: any): { date: string; time: string } {
     dateStr = 'Yesterday';
   } else {
     // Format as "Mon, Jan 13"
-    dateStr = time.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    dateStr = time.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
     });
   }
-  
+
   return { date: dateStr, time: timeStr };
 }
 
 // Mood sync messages based on both moods
 const getMoodSyncMessage = (myMood: MoodType | null, partnerMood: MoodType | null): { message: string; emoji: string; color: string } | null => {
   if (!myMood || !partnerMood) return null;
-  
+
   const happyMoods = ['happy', 'excited', 'loved', 'grateful'];
   const calmMoods = ['calm', 'neutral'];
   const needsSupportMoods = ['sad', 'anxious'];
-  
+
   const bothHappy = happyMoods.includes(myMood) && happyMoods.includes(partnerMood);
   const bothNeedSupport = needsSupportMoods.includes(myMood) && needsSupportMoods.includes(partnerMood);
   const partnerNeedsSupport = needsSupportMoods.includes(partnerMood);
   const iNeedSupport = needsSupportMoods.includes(myMood);
   const bothCalm = calmMoods.includes(myMood) && calmMoods.includes(partnerMood);
-  
+
   if (bothHappy) {
     return { message: "You're both radiating joy! 🎉", emoji: '✨', color: '#4CAF50' };
   }
@@ -161,7 +161,7 @@ export default function MoodsScreen() {
   const celebrationAnim = useRef(new Animated.Value(0)).current;
   const heartScaleAnim = useRef(new Animated.Value(1)).current;
   const heartRotateAnim = useRef(new Animated.Value(0)).current;
-  
+
   // Keep reference for MOOD_REACTIONS animation (used in handleReaction)
   const reactionScaleAnims = useRef<{ [key: string]: Animated.Value }>({ heart: heartScaleAnim }).current;
   const reactionRotateAnims = useRef<{ [key: string]: Animated.Value }>({ heart: heartRotateAnim }).current;
@@ -180,7 +180,7 @@ export default function MoodsScreen() {
     try {
       const myMood = await MoodService.getTodayMood(userId, pairId);
       setTodayMood(myMood);
-      
+
       if (partnerId) {
         const partnerMood = await MoodService.getTodayMood(partnerId, pairId);
         setPartnerTodayMood(partnerMood);
@@ -193,18 +193,18 @@ export default function MoodsScreen() {
   const calculateStreaks = useCallback(async (pairId: string, userId: string, partnerId?: string) => {
     try {
       const allMoods = await MoodService.getMoodTimeline(pairId, 100);
-      
+
       // Calculate user streak
       const userMoods = allMoods.filter(m => m.userId === userId);
       let streak = 0;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       for (let i = 0; i < userMoods.length; i++) {
         const moodDate = userMoods[i].createdAt?.toDate ? userMoods[i].createdAt.toDate() : new Date(userMoods[i].createdAt);
         moodDate.setHours(0, 0, 0, 0);
         const daysDiff = Math.floor((today.getTime() - moodDate.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         if (daysDiff === streak) {
           streak++;
         } else {
@@ -217,12 +217,12 @@ export default function MoodsScreen() {
       if (partnerId) {
         const partnerMoods = allMoods.filter(m => m.userId === partnerId);
         let partnerStreak = 0;
-        
+
         for (let i = 0; i < partnerMoods.length; i++) {
           const moodDate = partnerMoods[i].createdAt?.toDate ? partnerMoods[i].createdAt.toDate() : new Date(partnerMoods[i].createdAt);
           moodDate.setHours(0, 0, 0, 0);
           const daysDiff = Math.floor((today.getTime() - moodDate.getTime()) / (1000 * 60 * 60 * 24));
-          
+
           if (daysDiff === partnerStreak) {
             partnerStreak++;
           } else {
@@ -304,21 +304,21 @@ export default function MoodsScreen() {
           id: doc.id,
           ...doc.data(),
         })) as Mood[];
-        
+
         // Sort manually if orderBy didn't work
         timeline.sort((a, b) => {
           const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds * 1000 || 0);
           const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds * 1000 || 0);
           return bTime - aTime;
         });
-        
+
         console.log('📊 Timeline updated:', {
           totalMoods: timeline.length,
           myMoods: timeline.filter(m => m.userId === user.uid).length,
           partnerMoods: timeline.filter(m => m.userId === userData.partnerId).length,
           pairId: pairId,
         });
-        
+
         setMoods(timeline);
       },
       (error: any) => {
@@ -338,26 +338,26 @@ export default function MoodsScreen() {
                 id: doc.id,
                 ...doc.data(),
               })) as Mood[];
-              
+
               timeline.sort((a, b) => {
                 const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds * 1000 || 0);
                 const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds * 1000 || 0);
                 return bTime - aTime;
               });
-              
+
               console.log('✅ Fallback timeline loaded:', {
                 totalMoods: timeline.length,
                 myMoods: timeline.filter(m => m.userId === user.uid).length,
                 partnerMoods: timeline.filter(m => m.userId === userData.partnerId).length,
               });
-              
-      setMoods(timeline);
+
+              setMoods(timeline);
             },
             (fallbackError) => {
               console.error('❌ Fallback timeline query also failed:', fallbackError);
             }
           );
-          
+
           // Clean up fallback listener on component unmount
           return unsubscribeFallback;
         }
@@ -392,22 +392,41 @@ export default function MoodsScreen() {
             id: doc.id,
             ...doc.data(),
           })) as Mood[];
-          
+
           // Sort by createdAt if not already sorted
           docs.sort((a, b) => {
             const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds * 1000 || 0);
             const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds * 1000 || 0);
             return bTime - aTime;
           });
-          
+
           const moodData = docs[0];
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          const moodDate = moodData.createdAt?.toDate ? moodData.createdAt.toDate() : new Date(moodData.createdAt);
-          moodDate.setHours(0, 0, 0, 0);
-          
+
+          // Properly parse Firestore timestamp
+          let moodDate: Date;
+          if (moodData.createdAt?.toDate) {
+            moodDate = moodData.createdAt.toDate();
+          } else if (moodData.createdAt?.seconds) {
+            moodDate = new Date(moodData.createdAt.seconds * 1000);
+          } else {
+            moodDate = new Date(moodData.createdAt);
+          }
+
+          const moodDateOnly = new Date(moodDate);
+          moodDateOnly.setHours(0, 0, 0, 0);
+
+          console.log('🎯 Today Mood Check:', {
+            moodType: moodData.mood,
+            rawCreatedAt: moodData.createdAt,
+            parsedMoodDate: moodDate.toISOString(),
+            today: today.toISOString(),
+            match: moodDateOnly.getTime() === today.getTime()
+          });
+
           // Check if mood is from today
-          if (moodDate.getTime() === today.getTime()) {
+          if (moodDateOnly.getTime() === today.getTime()) {
             setTodayMood(moodData);
           } else {
             setTodayMood(null);
@@ -490,19 +509,19 @@ export default function MoodsScreen() {
             id: doc.id,
             ...doc.data(),
           })) as Mood[];
-          
+
           docs.sort((a, b) => {
             const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds * 1000 || 0);
             const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds * 1000 || 0);
             return bTime - aTime;
           });
-          
+
           const moodData = docs[0];
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const moodDate = moodData.createdAt?.toDate ? moodData.createdAt.toDate() : new Date(moodData.createdAt);
           moodDate.setHours(0, 0, 0, 0);
-          
+
           // Check if mood is from today
           if (moodDate.getTime() === today.getTime()) {
             setPartnerTodayMood(moodData);
@@ -580,7 +599,7 @@ export default function MoodsScreen() {
     }
     setRefreshing(false);
   }, [userData?.pairId, userData?.partnerId, user, getPairId, loadMoodTimeline, loadTodayMoods, calculateStreaks, loadInsights]);
-  
+
   // Load insights on mount and when moods change
   useEffect(() => {
     if (user && userData?.partnerId) {
@@ -590,7 +609,7 @@ export default function MoodsScreen() {
       }
     }
   }, [user, userData?.partnerId, userData?.pairId, moods.length, getPairId, loadInsights]);
-  
+
   // Celebration animation when both partners are happy
   useEffect(() => {
     const moodSync = getMoodSyncMessage(todayMood?.mood || null, partnerTodayMood?.mood || null);
@@ -609,11 +628,11 @@ export default function MoodsScreen() {
     try {
       const pairId = getPairId(user.uid, userData.partnerId, userData.pairId);
       if (!pairId) return;
-      
+
       await MoodService.submitMood(user.uid, pairId, mood, note, cause);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowMoodModal(false);
-      
+
       // Send push notification to partner
       if (partnerData?.pushToken) {
         const senderName = userData?.name || userData?.displayName || user?.email?.split('@')[0] || 'Your partner';
@@ -629,7 +648,7 @@ export default function MoodsScreen() {
         };
         const causeText = cause ? MOOD_CAUSES.find(c => c.type === cause)?.label : null;
         const emoji = moodEmojis[mood] || '😊';
-        
+
         sendPushNotification(
           partnerData.pushToken,
           "Mood Update 💕",
@@ -638,7 +657,7 @@ export default function MoodsScreen() {
           console.error('Failed to send mood notification:', notifErr);
         });
       }
-      
+
       // Real-time listeners will automatically update the UI, but refresh streaks and insights
       calculateStreaks(pairId, user.uid, userData.partnerId);
       loadInsights(pairId, user.uid, userData.partnerId);
@@ -650,7 +669,7 @@ export default function MoodsScreen() {
       setSubmittingMood(false);
     }
   };
-  
+
   // Load mood insights
   const loadInsights = useCallback(async (pairId: string, userId: string, partnerId: string) => {
     try {
@@ -660,11 +679,11 @@ export default function MoodsScreen() {
       console.error('Error loading insights:', error);
     }
   }, []);
-  
+
   // Send love to partner with elegant animation
   const handleReaction = async (moodId: string, reaction: MoodReaction) => {
     if (!user || sendingReaction) return;
-    
+
     // Start heart animation immediately
     Animated.parallel([
       Animated.sequence([
@@ -698,26 +717,26 @@ export default function MoodsScreen() {
         }),
       ]),
     ]).start();
-    
+
     setSendingReaction(moodId);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
+
     try {
       await MoodService.reactToMood(moodId, user.uid, reaction);
-      
+
       // Send notification to partner
       if (partnerData?.pushToken) {
         const senderName = userData?.name || userData?.displayName || user?.email?.split('@')[0] || 'Your partner';
-        
+
         sendPushNotification(
           partnerData.pushToken,
           '❤️ Love Received',
           `${senderName} sent you love!`
         ).catch(console.error);
       }
-      
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
+
       // Keep "Sent!" showing briefly
       setTimeout(() => {
         setSendingReaction(null);
@@ -728,7 +747,7 @@ export default function MoodsScreen() {
       setSendingReaction(null);
     }
   };
-  
+
 
   if (loading) {
     return (
@@ -755,7 +774,7 @@ export default function MoodsScreen() {
 
   const userName = userData?.name || userData?.displayName || user?.email?.split('@')[0] || 'You';
   const partnerName = partnerData?.name || partnerData?.displayName || partnerData?.email?.split('@')[0] || 'Partner';
-  
+
   // Debug: Log current state
   console.log('🔍 Moods Screen State:', {
     totalMoodsInTimeline: moods.length,
@@ -777,20 +796,20 @@ export default function MoodsScreen() {
             <Text style={styles.title}>Mood Tracker</Text>
             <Text style={styles.subtitle}>Stay connected through feelings</Text>
           </View>
-      </View>
+        </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.colors.primary}
+            />
+          }
+        >
           {/* Mood Sync Banner */}
           {moodSync && (
             <Animated.View style={[
@@ -889,10 +908,12 @@ export default function MoodsScreen() {
                           {
                             transform: [
                               { scale: reactionScaleAnims['heart'] },
-                              { rotateZ: reactionRotateAnims['heart'].interpolate({
-                                inputRange: [-1, 0, 1],
-                                outputRange: ['-10deg', '0deg', '10deg'],
-                              })},
+                              {
+                                rotateZ: reactionRotateAnims['heart'].interpolate({
+                                  inputRange: [-1, 0, 1],
+                                  outputRange: ['-10deg', '0deg', '10deg'],
+                                })
+                              },
                             ],
                           },
                         ]}>
@@ -950,67 +971,67 @@ export default function MoodsScreen() {
           {/* Timeline Section */}
           <View style={styles.timelineSection}>
             <Text style={styles.sectionTitle}>Mood Timeline</Text>
-        {moods.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="heart-outline" size={64} color={theme.colors.textLight} />
-            <Text style={styles.emptyText}>No moods yet</Text>
-            <Text style={styles.emptySubtext}>Share your first mood with your partner</Text>
-          </View>
-        ) : (
-              moods.map((mood, index) => {
-            const isCurrentUser = mood.userId === user?.uid;
-            const displayName = isCurrentUser ? userName : partnerName;
-            const moodColor = moodColors[mood.mood] || theme.colors.primary;
-            const causeInfo = mood.cause ? MOOD_CAUSES.find(c => c.type === mood.cause) : null;
-            const dateTime = formatDateTime(mood.createdAt);
-
-            return (
-                  <View key={mood.id || index} style={styles.moodCard}>
-                <View style={styles.moodHeader}>
-                  <View style={[styles.moodIconContainer, { backgroundColor: moodColor + '20' }]}>
-                    <Text style={styles.moodEmoji}>{moodEmojis[mood.mood]}</Text>
-                  </View>
-                  <View style={styles.moodInfo}>
-                        <View style={styles.moodNameRow}>
-                    <Text style={styles.moodName}>{displayName}</Text>
-                        </View>
-                    <Text style={styles.moodType}>
-                      {moodLabels[mood.mood]}
-                      {causeInfo && <Text style={styles.causeBecause}> • {causeInfo.emoji} {causeInfo.label}</Text>}
-                    </Text>
-                  </View>
-                  <View style={styles.moodTimeContainer}>
-                    <Text style={styles.moodDate}>{dateTime.date}</Text>
-                    <Text style={styles.moodTime}>{dateTime.time}</Text>
-                  </View>
-                </View>
-                {mood.note && (
-                  <Text style={styles.moodNote}>"{mood.note}"</Text>
-                )}
-                {/* Show reactions that have been sent */}
-                {mood.reactions && mood.reactions.length > 0 && (
-                  <View style={styles.reactionsRow}>
-                    {mood.reactions.map((r, i) => (
-                      <View key={i} style={styles.reactionBubble}>
-                        <Text>{MOOD_REACTIONS.find(mr => mr.type === r.type)?.emoji}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
+            {moods.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="heart-outline" size={64} color={theme.colors.textLight} />
+                <Text style={styles.emptyText}>No moods yet</Text>
+                <Text style={styles.emptySubtext}>Share your first mood with your partner</Text>
               </View>
-            );
-          })
-        )}
-          </View>
-      </ScrollView>
+            ) : (
+              moods.map((mood, index) => {
+                const isCurrentUser = mood.userId === user?.uid;
+                const displayName = isCurrentUser ? userName : partnerName;
+                const moodColor = moodColors[mood.mood] || theme.colors.primary;
+                const causeInfo = mood.cause ? MOOD_CAUSES.find(c => c.type === mood.cause) : null;
+                const dateTime = formatDateTime(mood.createdAt);
 
-      <MoodSelector
-        visible={showMoodModal}
-        onClose={() => setShowMoodModal(false)}
-        onSubmit={handleMoodSubmit}
-        loading={submittingMood}
-        partnerName={partnerName}
-      />
+                return (
+                  <View key={mood.id || index} style={styles.moodCard}>
+                    <View style={styles.moodHeader}>
+                      <View style={[styles.moodIconContainer, { backgroundColor: moodColor + '20' }]}>
+                        <Text style={styles.moodEmoji}>{moodEmojis[mood.mood]}</Text>
+                      </View>
+                      <View style={styles.moodInfo}>
+                        <View style={styles.moodNameRow}>
+                          <Text style={styles.moodName}>{displayName}</Text>
+                        </View>
+                        <Text style={styles.moodType}>
+                          {moodLabels[mood.mood]}
+                          {causeInfo && <Text style={styles.causeBecause}> • {causeInfo.emoji} {causeInfo.label}</Text>}
+                        </Text>
+                      </View>
+                      <View style={styles.moodTimeContainer}>
+                        <Text style={styles.moodDate}>{dateTime.date}</Text>
+                        <Text style={styles.moodTime}>{dateTime.time}</Text>
+                      </View>
+                    </View>
+                    {mood.note && (
+                      <Text style={styles.moodNote}>"{mood.note}"</Text>
+                    )}
+                    {/* Show reactions that have been sent */}
+                    {mood.reactions && mood.reactions.length > 0 && (
+                      <View style={styles.reactionsRow}>
+                        {mood.reactions.map((r, i) => (
+                          <View key={i} style={styles.reactionBubble}>
+                            <Text>{MOOD_REACTIONS.find(mr => mr.type === r.type)?.emoji}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })
+            )}
+          </View>
+        </ScrollView>
+
+        <MoodSelector
+          visible={showMoodModal}
+          onClose={() => setShowMoodModal(false)}
+          onSubmit={handleMoodSubmit}
+          loading={submittingMood}
+          partnerName={partnerName}
+        />
       </SafeAreaView>
     </SwipeableTabWrapper>
   );
