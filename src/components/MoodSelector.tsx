@@ -208,6 +208,34 @@ export default function MoodSelector({ visible, onClose, onSubmit, loading = fal
                         )}
                       </View>
 
+                      {/* Custom Emoji Picker Button */}
+                      <TouchableOpacity
+                        style={styles.customEmojiButton}
+                        onPress={() => setShowEmojiPicker(!showEmojiPicker)}
+                      >
+                        <Ionicons
+                          name={customEmoji ? "happy" : "happy-outline"}
+                          size={20}
+                          color={theme.colors.primary}
+                        />
+                        <Text style={styles.customEmojiText}>
+                          {customEmoji ? `Custom: ${customEmoji}` : 'Pick Custom Emoji'}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {/* Emoji Picker */}
+                      {showEmojiPicker && (
+                        <View style={styles.emojiPickerContainer}>
+                          <EmojiSelector
+                            onEmojiSelected={handleEmojiSelect}
+                            showSearchBar={false}
+                            showTabs={true}
+                            showHistory={false}
+                            columns={8}
+                          />
+                        </View>
+                      )}
+
                       {/* Submit button */}
                       <TouchableOpacity
                         style={[
