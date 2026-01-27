@@ -5,12 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 interface SyncLogoHeaderProps {
     onSettingsPress?: () => void;
     onLogoutPress?: () => void;
+    onMapPress?: () => void;
     showButtons?: boolean;
 }
 
 export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
     onSettingsPress,
     onLogoutPress,
+    onMapPress,
     showButtons = true,
 }) => {
     return (
@@ -34,6 +36,14 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
             {/* Header Buttons */}
             {showButtons && (
                 <View style={styles.headerButtons}>
+                    {onMapPress && (
+                        <TouchableOpacity
+                            style={styles.headerButton}
+                            onPress={onMapPress}
+                        >
+                            <Ionicons name="map-outline" size={22} color="#7A8599" />
+                        </TouchableOpacity>
+                    )}
                     {onSettingsPress && (
                         <TouchableOpacity
                             style={styles.headerButton}

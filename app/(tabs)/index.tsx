@@ -504,45 +504,23 @@ export default function HomeScreen() {
         setShowEchoRevealModal(true);
     };
 
-    // Handle photo selection
+    // Handle photo capture - Camera only for live moments
     const handleAddMoment = async () => {
         const hasPermission = await MomentService.requestPermissions();
         if (!hasPermission) {
             Alert.alert(
-                'Permission Required',
-                'Please grant camera and photo library permissions to share your moment.'
+                'Camera Permission Required',
+                'Please grant camera permission to share your live moment.'
             );
             return;
         }
 
-        // Show action sheet
-        Alert.alert(
-            'Add Your Moment',
-            'Choose how you want to share your moment for today',
-            [
-                {
-                    text: 'Take Photo',
-                    onPress: async () => {
-                        const uri = await MomentService.takePhoto();
-                        if (uri) {
-                            setSelectedImageUri(uri);
-                            setShowCaptionInput(true);
-                        }
-                    },
-                },
-                {
-                    text: 'Choose from Library',
-                    onPress: async () => {
-                        const uri = await MomentService.pickImage();
-                        if (uri) {
-                            setSelectedImageUri(uri);
-                            setShowCaptionInput(true);
-                        }
-                    },
-                },
-                { text: 'Cancel', style: 'cancel' },
-            ]
-        );
+        // Open camera directly - no gallery option for live moments
+        const uri = await MomentService.takePhoto();
+        if (uri) {
+            setSelectedImageUri(uri);
+            setShowCaptionInput(true);
+        }
     };
 
     // Handle moment upload
@@ -1351,6 +1329,21 @@ export default function HomeScreen() {
                 .then(() => {
                     console.log('Mood submitted successfully');
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+                    // Update widget with new mood
+                    const moodEmojis: Record<MoodType, string> = {
+                        happy: '😊',
+                        calm: '😌',
+                        neutral: '😐',
+                        sad: '😢',
+                        anxious: '😰',
+                        excited: '🤩',
+                        grateful: '🙏',
+                        loved: '💕',
+                    };
+                    const emoji = moodEmojis[mood] || '😊';
+                    const moodText = note ? `${emoji} ${note}` : emoji;
+                    WidgetService.updateMood(moodText, null);
                 })
                 .catch((error) => {
                     console.error('Failed to submit mood:', error);
@@ -1663,6 +1656,7 @@ export default function HomeScreen() {
                     >
                         {/* HEADER */}
                         <SyncLogoHeader
+                            onMapPress={() => router.push('/map')}
                             onSettingsPress={() => router.push('/settings')}
                             onLogoutPress={handleLogout}
                         />

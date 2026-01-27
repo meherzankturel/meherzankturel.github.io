@@ -29,7 +29,7 @@ const getApiUrl = (): string => {
 
   // Priority 3: Development fallback
   // Use your computer's IP for physical device testing (phone must be on same Wi-Fi)
-  return 'http://192.168.2.100:3000/api';
+  return 'http://192.168.2.121:3000/api';
 };
 
 export const MONGODB_API_BASE_URL = getApiUrl();

@@ -22,6 +22,7 @@ import * as Haptics from 'expo-haptics';
 import { signOut } from 'firebase/auth';
 import * as Device from 'expo-device';
 import * as Application from 'expo-application';
+import { ProfileImagePicker } from '../src/components/ProfileImagePicker';
 
 export default function SettingsScreen() {
     const { user } = useAuth();
@@ -196,6 +197,21 @@ export default function SettingsScreen() {
                 {/* ACCOUNT SETTINGS */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account</Text>
+
+                    {/* Profile Image */}
+                    <View style={styles.profileSection}>
+                        <ProfileImagePicker
+                            currentImageUrl={userData?.profileImage}
+                            userId={user?.uid || ''}
+                            userName={displayName}
+                            onImageUpdated={(newUrl) => {
+                                setUserData((prev: any) => ({ ...prev, profileImage: newUrl }));
+                                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            }}
+                            size={80}
+                        />
+                        <Text style={styles.profileHint}>Tap to change profile photo</Text>
+                    </View>
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingInfo}>
@@ -611,5 +627,15 @@ const styles = StyleSheet.create({
         fontSize: theme.typography.fontSize.sm,
         color: theme.colors.textMuted,
         marginTop: theme.spacing.xl,
+    },
+    profileSection: {
+        alignItems: 'center',
+        marginBottom: theme.spacing.lg,
+        paddingVertical: theme.spacing.md,
+    },
+    profileHint: {
+        marginTop: theme.spacing.sm,
+        fontSize: theme.typography.fontSize.xs,
+        color: theme.colors.textMuted,
     },
 });

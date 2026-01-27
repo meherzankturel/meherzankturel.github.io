@@ -16,7 +16,12 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sync.app"
+      "bundleIdentifier": "com.sync.app",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.sync.app"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
