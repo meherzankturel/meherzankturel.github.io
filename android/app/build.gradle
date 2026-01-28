@@ -179,4 +179,9 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    // Snap Kit
+    implementation 'com.snapchat.kit.sdk:login:2.5.0'
+    implementation 'com.snapchat.kit.sdk:bitmoji:2.5.0'
+    implementation 'com.snapchat.kit.sdk:core:2.5.0'
 }

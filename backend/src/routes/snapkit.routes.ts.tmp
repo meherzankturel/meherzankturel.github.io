@@ -1,0 +1,21 @@
+import express, { Request, Response } from 'express';
+import axios from 'axios';
+import { getFirestore } from 'firebase-admin/firestore';
+import mongoose from 'mongoose';
+import { UserProfile } from '../models/UserProfile.model'; // Need to create this model
+
+const router = express.Router();
+const db = getFirestore();
+
+// MongoDB User Profile Model should be in a separate file, but for now I'll check if it exists or define basic interaction
+// Actually, I should create the model first. 
+// Let's postpone this file creation slightly to create the model first.
+
+// Wait, I can define the route and imports, and then create the model.
+// Or I can use raw mongoose connection as in the plan.
+// The plan used: 
+// const mongodb = await getMongoDb();
+// const userProfileCollection = mongodb.collection('user_profile');
+// But the project uses mongoose. I should probably stick to mongoose schema.
+
+// Let's see if there is a UserProfile model.

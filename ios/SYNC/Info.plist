@@ -38,6 +38,21 @@
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>snapchat</string>
+      <string>bitmoji-sdk</string>
+      <string>itms-apps</string>
+    </array>
+    <key>SCSDKClientID</key>
+    <string>YOUR_SNAP_CLIENT_ID</string>
+    <key>SCSDKRedirectUrl</key>
+    <string>syncapp://snap-kit/oauth2</string>
+    <key>SCSDKScopes</key>
+    <array>
+      <string>https://auth.snapchat.com/oauth2/api/user.display_name</string>
+      <string>https://auth.snapchat.com/oauth2/api/user.bitmoji.avatar</string>
+    </array>
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSAllowsArbitraryLoads</key>

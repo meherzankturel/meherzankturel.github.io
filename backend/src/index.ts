@@ -7,6 +7,7 @@ import mediaRoutes from './routes/media.routes';
 import authRoutes from './routes/auth.routes';
 import reviewRoutes from './routes/review.routes';
 import momentRoutes from './routes/moment.routes';
+import snapkitRoutes from './routes/snapkit.routes';
 import { initGridFS } from './utils/gridfs';
 import { generalRateLimiter } from './middleware/rateLimit.middleware';
 
@@ -106,6 +107,8 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/moments', momentRoutes);
+app.use('/api/snapkit', snapkitRoutes);
+app.use('/api/bitmoji', snapkitRoutes); // Mount same router for bitmoji routes for now, or just use snapkit
 
 // ===== HEALTH CHECK =====
 app.get('/api/health', (req, res) => {
