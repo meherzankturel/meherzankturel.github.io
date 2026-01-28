@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Doodle Date Nights Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&amp;family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "background-light": "#ffffff",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"],
+                        "hand": ["Gochi Hand", "cursive"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.wobbly-border {
+    border: 2px solid #141118;
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px
+    }
+.scribble-bg {
+    background-image: repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(127, 19, 236, 0.1) 2px, rgba(127, 19, 236, 0.1) 4px)
+    }
+.wobbly-underline {
+    position: relative
+    }
+.wobbly-underline::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCVuT5Wgk_grsY-tRa5qVZgh3BTNq3596mXY171ArofRV1SeJb4X4n6GfFYGywlDkbqCJcC1oeNQ5d4Xwri2FJWwEaJHHyPMGSmkFFxRbK9xKxQv0gPGsvccbwN05hKYaYWLU5_c0VYaops_YVbKi2XF0ytlp_OzL9xwinz0HgIOo62JAuDHKgktrQuY9C82-bQ6idB5ak5oFRBCxo62KwCeZRILiAoV7kdxBLAz25Olt4Bgyz3WEyBZ8hdKsOoO_QuBBRX965hnuRJ);
+    background-repeat: no-repeat;
+    background-size: 100% 100%
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#141118] dark:text-white">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden border-x border-gray-100">
+<!-- Header -->
+<header class="pt-8 pb-4 px-6 flex flex-col items-center gap-6">
+<h1 class="font-hand text-3xl font-bold tracking-tight">Doodle Date Nights</h1>
+<!-- Custom Segmented Buttons (Doodle Style) -->
+<div class="flex gap-8 items-center justify-center">
+<button class="relative font-hand text-2xl text-primary wobbly-underline">
+                    Upcoming
+                </button>
+<button class="font-hand text-2xl text-gray-400">
+                    Past
+                </button>
+</div>
+</header>
+<!-- Date Nights List -->
+<main class="flex-1 px-6 pt-4 pb-24 space-y-10">
+<!-- Date Card 1 -->
+<div class="relative group cursor-pointer">
+<div class="wobbly-border p-6 bg-white dark:bg-background-dark shadow-sm group-hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="font-hand text-primary text-xl font-medium">Coming up!</span>
+<h2 class="text-2xl font-bold font-display mt-1">Stargazing &amp; S'mores</h2>
+<p class="text-gray-500 font-display mt-1">Friday, Oct 20th • 9:00 PM</p>
+</div>
+<div class="text-primary">
+<span class="material-symbols-outlined !text-4xl">bedtime</span>
+</div>
+</div>
+<div class="w-full h-48 rounded-xl bg-center bg-no-repeat bg-cover mb-4 grayscale hover:grayscale-0 transition-all duration-500" data-alt="Couple sitting on a blanket looking at the stars" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgddkiWwFR8_mgYcAJodfh9WgJGVhaH-rugNz7cdOWJiGbBHZJybaNRCnf7uGFdztgj7FetZT_7XMiY1NhDqhdAtkRKOYd6G1HlDyTXjYNxH-ASc-mZi1kYXJ9VXYSpx7pqiAJA3DSEoiJcNb2gLIJ2xgOi6FbxmCQzPGJMV8XSF8VW1z4qkPQ7sObR8gVP8dbvPQOa1yVek1Z8lDbf-gsHgr3Ni6tQJSAD0wFXHsO_XGcd8yegaIBguZMSxTI52ELFweBNJrvjyM0");'>
+</div>
+<div class="flex justify-end">
+<button class="font-hand text-xl underline underline-offset-4 decoration-primary">Details</button>
+</div>
+</div>
+</div>
+<!-- Date Card 2 -->
+<div class="relative group cursor-pointer">
+<div class="wobbly-border p-6 bg-white dark:bg-background-dark shadow-sm group-hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="font-hand text-primary text-xl font-medium">Next Week</span>
+<h2 class="text-2xl font-bold font-display mt-1">Art Gallery Hop</h2>
+<p class="text-gray-500 font-display mt-1">Saturday, Oct 28th • 2:30 PM</p>
+</div>
+<div class="text-primary">
+<span class="material-symbols-outlined !text-4xl">palette</span>
+</div>
+</div>
+<div class="w-full h-48 rounded-xl bg-center bg-no-repeat bg-cover mb-4 grayscale hover:grayscale-0 transition-all duration-500" data-alt="Abstract colorful painting in a modern art gallery" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDyNvQjsB6tfxEjK3AafI5gSWDoSw8IGJdrWARO2QJDlDY1_Ybmre4vzpAD86pp5_RYKVQZUsZZuaEvl1_ak3tj9EMyDRVHtfNZ0WV54TZ-I8emFg9yJm7yO8ZLY2b1AfBWHx_xHui5ZCoSNvX4op6fosEwHDCei2FJfWoeqv2dAXeFlQlMaDICCDeQevpwOUgDGFEUz_IDQj0F2ehuhjvEEb1z__wbOCCzpNUnrsJEY8eVBjswuBhrLSbWipbXLQTZv89GDADNpQIj");'>
+</div>
+<div class="flex justify-end">
+<button class="font-hand text-xl underline underline-offset-4 decoration-primary">Details</button>
+</div>
+</div>
+</div>
+<!-- Section Divider -->
+<div class="py-4 flex flex-col items-center">
+<h3 class="font-hand text-2xl text-gray-400">Recently Past</h3>
+<div class="w-32 h-1 bg-gray-100 mt-2 rounded-full"></div>
+</div>
+<!-- Past Date Card -->
+<div class="relative opacity-70 hover:opacity-100 transition-opacity">
+<div class="wobbly-border p-6 bg-gray-50 dark:bg-background-dark/50">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="text-xl font-bold font-display">Sushi Rolling Class</h2>
+<p class="text-gray-500 font-display text-sm">Oct 12th • 6:00 PM</p>
+</div>
+<div class="text-gray-400">
+<span class="material-symbols-outlined !text-3xl">restaurant</span>
+</div>
+</div>
+<!-- Star Ratings Doodle -->
+<div class="flex gap-1 text-primary">
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined">star</span>
+<span class="ml-2 font-hand text-lg text-gray-500">Super fun!</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 w-16 h-16 bg-primary text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-50 overflow-hidden">
+<!-- Scribble texture overlay -->
+<div class="absolute inset-0 scribble-bg pointer-events-none opacity-40"></div>
+<span class="material-symbols-outlined !text-4xl relative z-10">add</span>
+</button>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-t border-gray-100 dark:border-white/10 px-10 py-4 flex justify-between items-center z-40">
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined !text-3xl text-primary">home</span>
+<span class="font-hand text-sm text-primary">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 group text-gray-400">
+<span class="material-symbols-outlined !text-3xl">favorite</span>
+<span class="font-hand text-sm">Moods</span>
+</button>
+<button class="flex flex-col items-center gap-1 group text-gray-400">
+<span class="material-symbols-outlined !text-3xl">person</span>
+<span class="font-hand text-sm">Profile</span>
+</button>
+</nav>
+</div>
+<!-- Style for filling the material symbols stars -->
+<style>
+        .fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</body></html>

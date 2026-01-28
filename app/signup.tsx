@@ -8,6 +8,7 @@ import { theme } from '../src/config/theme';
 import { AuthService } from '../src/services/auth.service';
 
 export default function SignUpScreen() {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,63 +20,42 @@ export default function SignUpScreen() {
 
   // Helper function to validate phone number
   const validatePhoneNumber = (phone: string): boolean => {
-    // Remove spaces, dashes, parentheses, and plus signs for validation
     const cleaned = phone.replace(/[\s\-\(\)\+]/g, '');
-    // Check if it contains only digits and is between 10-15 digits
     return /^\d{10,15}$/.test(cleaned);
   };
 
-  // Helper function to validate email
   const validateEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleSignUp = async () => {
-    // Reset error
+  const validateStep1 = () => {
     setError('');
+    if (!name.trim()) return setError('Name is required');
+    if (!email.trim()) return setError('Email is required');
+    if (!validateEmail(email)) return setError('Invalid email format');
+    setStep(2);
+  };
 
-    // Validate all required fields
-    if (!email || !password || !confirmPassword || !name || !phoneNumber || !faceTimeEmail) {
-      setError('Please fill in all fields');
-      return;
-    }
+  const validateStep2 = () => {
+    setError('');
+    if (!password) return setError('Password is required');
+    if (password.length < 6) return setError('Password must be at least 6 characters');
+    if (password !== confirmPassword) return setError('Passwords do not match');
+    setStep(3);
+  };
 
-    // Validate email format
-    if (!validateEmail(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    // Validate password
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    // Validate phone number
-    if (!validatePhoneNumber(phoneNumber)) {
-      setError('Please enter a valid phone number (10-15 digits)');
-      return;
-    }
-
-    // Validate FaceTime email
-    if (!validateEmail(faceTimeEmail)) {
-      setError('Please enter a valid FaceTime email address');
-      return;
-    }
+  const handleSignUp = async () => {
+    setError('');
+    if (!phoneNumber) return setError('Phone number is required');
+    if (!validatePhoneNumber(phoneNumber)) return setError('Invalid phone number (10-15 digits)');
+    if (!faceTimeEmail) return setError('FaceTime email is required');
+    if (!validateEmail(faceTimeEmail)) return setError('Invalid FaceTime email format');
 
     setLoading(true);
-    setError('');
-
     try {
       await AuthService.signUp(
-        email, 
-        password, 
+        email,
+        password,
         name.trim(),
         phoneNumber.trim(),
         faceTimeEmail.trim()
@@ -102,77 +82,105 @@ export default function SignUpScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.appName}>SYNC</Text>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Start your journey together</Text>
+          <Text style={styles.title}>
+            {step === 1 && 'Who are you?'}
+            {step === 2 && 'Secure Account'}
+            {step === 3 && 'Stay Connected'}
+          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: step >= 1 ? theme.colors.primary : '#ccc' }} />
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: step >= 2 ? theme.colors.primary : '#ccc' }} />
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: step >= 3 ? theme.colors.primary : '#ccc' }} />
+          </View>
 
-          <Input
-            label="Name *"
-            placeholder="Your full name"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            autoComplete="name"
-          />
+          <Text style={styles.subtitle}>
+            {step === 1 && 'Let\'s get to know you'}
+            {step === 2 && 'Set a password'}
+            {step === 3 && 'Enable SOS features'}
+          </Text>
 
-          <Input
-            label="Email *"
-            placeholder="your@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
+          {step === 1 && (
+            <>
+              <Input
+                label="Name *"
+                placeholder="Your full name"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                autoComplete="name"
+              />
 
-          <Input
-            label="Password *"
-            placeholder="At least 6 characters"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="password-new"
-          />
+              <Input
+                label="Email *"
+                placeholder="your@email.com"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+              />
+              <Button title="Next" onPress={validateStep1} style={styles.button} />
+            </>
+          )}
 
-          <Input
-            label="Confirm Password *"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="password-new"
-          />
+          {step === 2 && (
+            <>
+              <Input
+                label="Password *"
+                placeholder="At least 6 characters"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+              />
 
-          <Input
-            label="Phone Number *"
-            placeholder="+1 234 567 8900"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            keyboardType="phone-pad"
-            autoComplete="tel"
-            helperText="For SOS cellular calls"
-          />
+              <Input
+                label="Confirm Password *"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="password-new"
+              />
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Button title="Back" onPress={() => setStep(1)} variant="outline" style={[styles.button, { flex: 1 }]} />
+                <Button title="Next" onPress={validateStep2} style={[styles.button, { flex: 1 }]} />
+              </View>
+            </>
+          )}
 
-          <Input
-            label="FaceTime Email *"
-            placeholder="facetime@email.com"
-            value={faceTimeEmail}
-            onChangeText={setFaceTimeEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            helperText="For SOS FaceTime calls"
-          />
+          {step === 3 && (
+            <>
+              <Input
+                label="Phone Number *"
+                placeholder="+1 234 567 8900"
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                helperText="For SOS cellular calls"
+              />
+
+              <Input
+                label="FaceTime Email *"
+                placeholder="facetime@email.com"
+                value={faceTimeEmail}
+                onChangeText={setFaceTimeEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                helperText="For SOS FaceTime calls"
+              />
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Button title="Back" onPress={() => setStep(2)} variant="outline" style={[styles.button, { flex: 1 }]} />
+                <Button title="Sign Up" onPress={handleSignUp} loading={loading} style={[styles.button, { flex: 1 }]} />
+              </View>
+            </>
+          )}
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          <Button
-            title="Sign Up"
-            onPress={handleSignUp}
-            loading={loading}
-            style={styles.button}
-          />
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>

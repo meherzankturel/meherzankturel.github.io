@@ -2,24 +2,138 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow authenticated users to read and write review files
-    // This allows both partners to upload and view each other's review media
-    match /reviews/{allPaths=**} {
-      allow read, write: if request.auth != null;
+
+    // ===== HELPER FUNCTIONS =====
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
     }
-    
-    // Allow authenticated users to upload and view daily moments
-    // This allows both partners to upload and view each other's moments
+
+    // Get current user's ID
+    function userId() {
+      return request.auth.uid;
+    }
+
+    // Check file size (max 50MB for images, 200MB for videos)
+    function isValidFileSize() {
+      return request.resource.size < 200 * 1024 * 1024;
+    }
+
+    // Check if file is an allowed image type
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Check if file is an allowed video type
+    function isVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    // Check if file is a valid media type (image or video)
+    function isValidMediaType() {
+      return isImage() || isVideo();
+    }
+
+    // ===== PROFILE PHOTOS =====
+    // Path: /profiles/{userId}/{filename}
+    match /profiles/{uid}/{allPaths=**} {
+      // Anyone authenticated can read profile photos (needed to display partner's photo)
+      allow read: if isAuthenticated();
+
+      // Only the user can upload/update/delete their own profile photo
+      allow write: if isAuthenticated() &&
+        userId() == uid &&
+        isImage() &&
+        request.resource.size < 10 * 1024 * 1024; // Max 10MB for profile photos
+    }
+
+    // ===== DATE NIGHT REVIEWS =====
+    // Path: /reviews/{dateNightId}/{uploaderId}/{filename}
+    match /reviews/{dateNightId}/{uploaderId}/{allPaths=**} {
+      // Both partners can read review media
+      // We allow any authenticated user to read since pair verification
+      // happens at the Firestore level
+      allow read: if isAuthenticated();
+
+      // Only the uploader can write to their folder
+      allow write: if isAuthenticated() &&
+        userId() == uploaderId &&
+        isValidMediaType() &&
+        isValidFileSize();
+
+      // Only the uploader can delete their files
+      allow delete: if isAuthenticated() && userId() == uploaderId;
+    }
+
+    // ===== DAILY MOMENTS =====
+    // Path: /moments/{pairId}/{uploaderId}/{date}/{filename}
+    match /moments/{pairId}/{uploaderId}/{date}/{allPaths=**} {
+      // Both partners can read moments
+      allow read: if isAuthenticated();
+
+      // Only the uploader can write to their folder
+      allow write: if isAuthenticated() &&
+        userId() == uploaderId &&
+        isValidMediaType() &&
+        isValidFileSize();
+
+      // Only the uploader can delete their files
+      allow delete: if isAuthenticated() && userId() == uploaderId;
+    }
+
+    // ===== LEGACY MOMENTS PATH =====
+    // Path: /moments/{allPaths=**}
+    // Support for existing moments that may use simpler path structure
     match /moments/{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidMediaType() && isValidFileSize();
     }
-    
-    // More restrictive rule (uncomment after testing):
-    // Allow users to upload to their own folder, but read all reviews
-    // match /reviews/{dateNightId}/{userId}/{allPaths=**} {
-    //   allow read: if request.auth != null;
-    //   allow write: if request.auth != null && request.auth.uid == userId;
-    // }
+
+    // ===== CHAT MEDIA (if implemented) =====
+    // Path: /chat/{pairId}/{senderId}/{filename}
+    match /chat/{pairId}/{senderId}/{allPaths=**} {
+      // Both partners can read chat media
+      allow read: if isAuthenticated();
+
+      // Only the sender can upload
+      allow write: if isAuthenticated() &&
+        userId() == senderId &&
+        isValidMediaType() &&
+        isValidFileSize();
+    }
+
+    // ===== GAME MEDIA (if implemented) =====
+    // Path: /games/{gameId}/{userId}/{filename}
+    match /games/{gameId}/{uid}/{allPaths=**} {
+      allow read: if isAuthenticated();
+
+      allow write: if isAuthenticated() &&
+        userId() == uid &&
+        isValidMediaType() &&
+        request.resource.size < 20 * 1024 * 1024; // Max 20MB for game media
+    }
+
+    // ===== TEMP UPLOADS (for processing) =====
+    // Path: /temp/{userId}/{filename}
+    match /temp/{uid}/{allPaths=**} {
+      // Only the uploader can read their temp files
+      allow read: if isAuthenticated() && userId() == uid;
+
+      // Only the uploader can write
+      allow write: if isAuthenticated() &&
+        userId() == uid &&
+        isValidMediaType() &&
+        isValidFileSize();
+
+      // Auto-cleanup happens via Cloud Functions, but user can also delete
+      allow delete: if isAuthenticated() && userId() == uid;
+    }
+
+    // ===== CATCH-ALL: Deny all other paths =====
+    // Any path not explicitly matched above is denied
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
   }
 }
-

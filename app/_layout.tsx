@@ -2,9 +2,9 @@ import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { useCallback, useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import { View } from 'react-native';
+import { View, LogBox } from 'react-native';
 import { AuthProvider } from '../src/contexts/AuthContext';
-import { LogBox } from 'react-native';
+import ErrorBoundary from '../src/components/ErrorBoundary';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -35,14 +35,16 @@ export default function RootLayout() {
     }
 
     return (
-        <AuthProvider>
-            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                </Stack>
-            </View>
-        </AuthProvider>
+        <ErrorBoundary>
+            <AuthProvider>
+                <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                    <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    </Stack>
+                </View>
+            </AuthProvider>
+        </ErrorBoundary>
     );
 }

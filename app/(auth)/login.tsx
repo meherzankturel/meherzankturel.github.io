@@ -14,32 +14,56 @@ import {
     ScrollView,
     Dimensions
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, db } from '../../src/config/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { SyncLogo } from '../../src/components/SyncLogo';
 import { StatusBar } from 'expo-status-bar';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// SYNC Brand Colors
+// Doodle Theme Colors
 const colors = {
-    background: '#0A0A0F',
-    surface: '#12141C',
-    surfaceLight: '#1A1D28',
-    primary: '#00D4FF',
-    primaryDark: '#00A8CC',
-    text: '#FFFFFF',
-    textSecondary: '#7A8599',
-    textMuted: '#4A5568',
-    border: '#2A2D3A',
+    background: '#fefefe',
+    surface: '#ffffff',
+    surfaceSoft: '#f8f5ff',
+    primary: '#7f13ec',
+    primaryDark: '#6910c2',
+    text: '#141118',
+    textSecondary: '#756189',
+    textMuted: '#9a8ba8',
+    border: '#e8e0f0',
+    doodlePink: '#ff85a2',
+    doodlePurple: '#a855f7',
     error: '#FF6B6B',
     success: '#4ADE80',
 };
+
+// Decorative Doodle Components (using Views instead of SVG)
+const HeartDoodle = ({ style }: { style?: any }) => (
+    <View style={[{ width: 24, height: 22 }, style]}>
+        <View style={{
+            width: 24,
+            height: 22,
+            backgroundColor: colors.doodlePink,
+            borderRadius: 12,
+            opacity: 0.7,
+            transform: [{ rotate: '-45deg' }],
+        }} />
+    </View>
+);
+
+const SparklesDoodle = ({ style }: { style?: any }) => (
+    <View style={[{ width: 16, height: 16 }, style]}>
+        <Ionicons name="sparkles" size={16} color={colors.doodlePurple} style={{ opacity: 0.5 }} />
+    </View>
+);
+
+const DotDoodle = ({ style, color = colors.doodlePurple }: { style?: any; color?: string }) => (
+    <View style={[{ width: 6, height: 6, borderRadius: 3, backgroundColor: color, opacity: 0.3 }, style]} />
+);
 
 export default function LoginScreen() {
     const { user } = useAuth();
@@ -164,14 +188,13 @@ export default function LoginScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar style="light" />
-            <LinearGradient
-                colors={['#0A0A0F', '#0D0D14', '#0A0A0F']}
-                style={StyleSheet.absoluteFill}
-            />
+            <StatusBar style="dark" />
 
-            {/* Ambient glow */}
-            <View style={styles.ambientGlow} />
+            {/* Decorative doodles */}
+            <HeartDoodle style={styles.heartDoodle} />
+            <SparklesDoodle style={styles.sparklesDoodle} />
+            <DotDoodle style={styles.dotDoodle1} />
+            <DotDoodle style={styles.dotDoodle2} color={colors.doodlePink} />
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -185,113 +208,135 @@ export default function LoginScreen() {
                     >
                         {/* Logo Section */}
                         <View style={styles.logoSection}>
-                            <SyncLogo size="medium" showText={true} />
+                            {/* SYNC Logo with hand-drawn style */}
+                            <View style={styles.logoContainer}>
+                                <Text style={styles.logoText}>SYNC</Text>
+                                <View style={styles.logoUnderline} />
+                            </View>
+
+                            <Text style={styles.welcomeText}>
+                                {isSignUp ? 'Create Account' : 'Welcome Back'}
+                            </Text>
                             <Text style={styles.tagline}>
                                 {isSignUp ? 'Start your journey together' : 'Stay connected, always'}
                             </Text>
                         </View>
 
-                        {/* Form Card */}
-                        <View style={styles.formCard}>
-                            <Text style={styles.formTitle}>
-                                {isSignUp ? 'Create Account' : 'Welcome Back'}
-                            </Text>
-
+                        {/* Form Section */}
+                        <View style={styles.formSection}>
                             {isSignUp && (
                                 <View style={styles.inputWrapper}>
-                                    <Ionicons name="person-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                                    <TextInput
-                                        placeholder="Full Name"
-                                        placeholderTextColor={colors.textMuted}
-                                        value={name}
-                                        onChangeText={setName}
-                                        autoCapitalize="words"
-                                        textContentType="name"
-                                        autoComplete="name"
-                                        style={styles.input}
-                                    />
+                                    <Text style={styles.inputLabel}>Full Name</Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="person-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                                        <TextInput
+                                            placeholder="Enter your name"
+                                            placeholderTextColor={colors.textMuted}
+                                            value={name}
+                                            onChangeText={setName}
+                                            autoCapitalize="words"
+                                            textContentType="name"
+                                            autoComplete="name"
+                                            style={styles.input}
+                                        />
+                                    </View>
                                 </View>
                             )}
 
                             <View style={styles.inputWrapper}>
-                                <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                                <TextInput
-                                    placeholder="Email"
-                                    placeholderTextColor={colors.textMuted}
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    autoCapitalize="none"
-                                    keyboardType="email-address"
-                                    textContentType="emailAddress"
-                                    autoComplete="email"
-                                    style={styles.input}
-                                />
+                                <Text style={styles.inputLabel}>Email address</Text>
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="mail-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                                    <TextInput
+                                        placeholder="your@email.com"
+                                        placeholderTextColor={colors.textMuted}
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        autoCapitalize="none"
+                                        keyboardType="email-address"
+                                        textContentType="emailAddress"
+                                        autoComplete="email"
+                                        style={styles.input}
+                                    />
+                                </View>
                             </View>
 
                             <View style={styles.inputWrapper}>
-                                <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                                <TextInput
-                                    placeholder="Password"
-                                    placeholderTextColor={colors.textMuted}
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry={!showPassword}
-                                    textContentType={isSignUp ? "newPassword" : "password"}
-                                    autoComplete={isSignUp ? "password-new" : "password"}
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                    style={[styles.input, { flex: 1 }]}
-                                />
-                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
-                                    <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textMuted} />
-                                </TouchableOpacity>
+                                <Text style={styles.inputLabel}>Password</Text>
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="lock-closed-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                                    <TextInput
+                                        placeholder="••••••••"
+                                        placeholderTextColor={colors.textMuted}
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry={!showPassword}
+                                        textContentType={isSignUp ? "newPassword" : "password"}
+                                        autoComplete={isSignUp ? "password-new" : "password"}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                        style={[styles.input, { flex: 1 }]}
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+                                        <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={18} color={colors.textMuted} />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
                             {isSignUp && (
                                 <>
                                     <View style={styles.inputWrapper}>
-                                        <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                                        <TextInput
-                                            placeholder="Confirm Password"
-                                            placeholderTextColor={colors.textMuted}
-                                            value={confirmPassword}
-                                            onChangeText={setConfirmPassword}
-                                            secureTextEntry={!showPassword}
-                                            textContentType="newPassword"
-                                            autoComplete="password-new"
-                                            autoCapitalize="none"
-                                            autoCorrect={false}
-                                            style={[styles.input, { flex: 1 }]}
-                                        />
+                                        <Text style={styles.inputLabel}>Confirm Password</Text>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="lock-closed-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                                            <TextInput
+                                                placeholder="••••••••"
+                                                placeholderTextColor={colors.textMuted}
+                                                value={confirmPassword}
+                                                onChangeText={setConfirmPassword}
+                                                secureTextEntry={!showPassword}
+                                                textContentType="newPassword"
+                                                autoComplete="password-new"
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                                style={[styles.input, { flex: 1 }]}
+                                            />
+                                        </View>
                                     </View>
 
                                     <View style={styles.inputWrapper}>
-                                        <Ionicons name="call-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                                        <TextInput
-                                            placeholder="Phone Number (for SOS)"
-                                            placeholderTextColor={colors.textMuted}
-                                            value={phoneNumber}
-                                            onChangeText={setPhoneNumber}
-                                            keyboardType="phone-pad"
-                                            textContentType="telephoneNumber"
-                                            autoComplete="tel"
-                                            style={styles.input}
-                                        />
+                                        <Text style={styles.inputLabel}>Phone Number (for SOS)</Text>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="call-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                                            <TextInput
+                                                placeholder="+1 234 567 8900"
+                                                placeholderTextColor={colors.textMuted}
+                                                value={phoneNumber}
+                                                onChangeText={setPhoneNumber}
+                                                keyboardType="phone-pad"
+                                                textContentType="telephoneNumber"
+                                                autoComplete="tel"
+                                                style={styles.input}
+                                            />
+                                        </View>
                                     </View>
 
                                     <View style={styles.inputWrapper}>
-                                        <Ionicons name="videocam-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                                        <TextInput
-                                            placeholder="FaceTime Email (for SOS)"
-                                            placeholderTextColor={colors.textMuted}
-                                            value={faceTimeEmail}
-                                            onChangeText={setFaceTimeEmail}
-                                            autoCapitalize="none"
-                                            keyboardType="email-address"
-                                            textContentType="emailAddress"
-                                            autoComplete="email"
-                                            style={styles.input}
-                                        />
+                                        <Text style={styles.inputLabel}>FaceTime Email (for SOS)</Text>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="videocam-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                                            <TextInput
+                                                placeholder="facetime@email.com"
+                                                placeholderTextColor={colors.textMuted}
+                                                value={faceTimeEmail}
+                                                onChangeText={setFaceTimeEmail}
+                                                autoCapitalize="none"
+                                                keyboardType="email-address"
+                                                textContentType="emailAddress"
+                                                autoComplete="email"
+                                                style={styles.input}
+                                            />
+                                        </View>
                                     </View>
                                 </>
                             )}
@@ -305,27 +350,24 @@ export default function LoginScreen() {
                                 </TouchableOpacity>
                             )}
 
-                            {/* Primary Button */}
+                            {/* Primary Button with doodle style */}
                             <TouchableOpacity
                                 onPress={handleAuth}
                                 style={styles.primaryButton}
                                 disabled={loading}
                                 activeOpacity={0.8}
                             >
-                                <LinearGradient
-                                    colors={['#00D4FF', '#00A8CC']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    style={styles.buttonGradient}
-                                >
+                                <View style={styles.buttonInner}>
                                     {loading ? (
-                                        <ActivityIndicator color="#0A0A0F" />
+                                        <ActivityIndicator color="#ffffff" />
                                     ) : (
                                         <Text style={styles.buttonText}>
                                             {isSignUp ? 'Create Account' : 'Sign In'}
                                         </Text>
                                     )}
-                                </LinearGradient>
+                                </View>
+                                {/* Decorative diagonal lines on button */}
+                                <View style={styles.buttonLines} />
                             </TouchableOpacity>
                         </View>
 
@@ -341,9 +383,11 @@ export default function LoginScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Footer */}
+                        {/* Footer with theme toggle */}
                         <View style={styles.footer}>
-                            {/* Footer branding removed */}
+                            <View style={styles.themeToggle}>
+                                <Ionicons name="contrast-outline" size={20} color={colors.textMuted} />
+                            </View>
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
@@ -357,62 +401,97 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
     },
-    ambientGlow: {
+    // Decorative doodles positioning
+    heartDoodle: {
         position: 'absolute',
-        top: -100,
-        left: SCREEN_WIDTH / 2 - 150,
-        width: 300,
-        height: 300,
-        borderRadius: 150,
-        backgroundColor: colors.primary,
-        opacity: 0.08,
+        top: 100,
+        left: 30,
+        zIndex: 1,
+    },
+    sparklesDoodle: {
+        position: 'absolute',
+        top: 80,
+        right: 40,
+        zIndex: 1,
+    },
+    dotDoodle1: {
+        position: 'absolute',
+        top: 200,
+        right: 60,
+        zIndex: 1,
+    },
+    dotDoodle2: {
+        position: 'absolute',
+        bottom: 200,
+        left: 50,
+        zIndex: 1,
     },
     scrollContent: {
         flexGrow: 1,
-        paddingHorizontal: 24,
-        paddingTop: 60,
+        paddingHorizontal: 28,
+        paddingTop: 80,
         paddingBottom: 40,
     },
     logoSection: {
         alignItems: 'center',
-        marginBottom: 32,
+        marginBottom: 40,
+    },
+    logoContainer: {
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    logoText: {
+        fontSize: 42,
+        fontWeight: '300',
+        color: colors.primary,
+        fontStyle: 'italic',
+        letterSpacing: 2,
+    },
+    logoUnderline: {
+        width: 60,
+        height: 2,
+        backgroundColor: colors.doodlePurple,
+        marginTop: 4,
+        borderRadius: 1,
+        transform: [{ rotate: '-2deg' }],
+    },
+    welcomeText: {
+        fontSize: 28,
+        fontWeight: '600',
+        color: colors.text,
+        marginBottom: 8,
     },
     tagline: {
         fontSize: 15,
         color: colors.textSecondary,
-        marginTop: 16,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
     },
-    formCard: {
-        backgroundColor: colors.surface,
-        borderRadius: 24,
-        padding: 24,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    formTitle: {
-        fontSize: 22,
-        fontWeight: '600',
-        color: colors.text,
+    formSection: {
         marginBottom: 24,
-        textAlign: 'center',
     },
     inputWrapper: {
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 13,
+        color: colors.textSecondary,
+        marginBottom: 8,
+        fontWeight: '500',
+    },
+    inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.surfaceLight,
-        borderRadius: 14,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: colors.border,
-        paddingHorizontal: 16,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1.5,
+        borderBottomColor: colors.border,
+        paddingHorizontal: 4,
     },
     inputIcon: {
         marginRight: 12,
     },
     input: {
         flex: 1,
-        paddingVertical: 16,
+        paddingVertical: 14,
         fontSize: 16,
         color: colors.text,
     },
@@ -422,7 +501,7 @@ const styles = StyleSheet.create({
     },
     forgotButton: {
         alignSelf: 'flex-end',
-        marginBottom: 20,
+        marginBottom: 24,
         marginTop: -8,
     },
     forgotText: {
@@ -431,26 +510,39 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     primaryButton: {
-        borderRadius: 14,
+        backgroundColor: colors.primary,
+        borderRadius: 28,
         overflow: 'hidden',
         marginTop: 8,
+        position: 'relative',
     },
-    buttonGradient: {
+    buttonInner: {
         paddingVertical: 16,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    buttonLines: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.1,
+        // This creates a subtle diagonal line pattern effect
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+    },
     buttonText: {
-        color: colors.background,
+        color: '#ffffff',
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '600',
         letterSpacing: 0.5,
     },
     toggleSection: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 28,
+        marginTop: 20,
         gap: 6,
     },
     toggleText: {
@@ -467,17 +559,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: 40,
-        gap: 12,
     },
-    footerLine: {
+    themeToggle: {
         width: 40,
-        height: 1,
-        backgroundColor: colors.border,
-    },
-    footerText: {
-        color: colors.textMuted,
-        fontSize: 12,
-        letterSpacing: 1,
-        textTransform: 'uppercase',
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: colors.surfaceSoft,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

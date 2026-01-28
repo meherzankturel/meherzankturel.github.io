@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Minimalist Icon-Only Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#7f13ec",
+              "background-light": "#fefefe",
+              "background-dark": "#191022",
+              "doodle-pink": "#ff85a2",
+              "doodle-purple": "#a855f7",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"],
+              "handwritten": ["Caveat", "cursive"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .hand-drawn-frame {
+                border: 2px solid #141118;
+                border-radius: 255px 25px 225px 25px/25px 225px 25px 255px;
+            }
+            .dark .hand-drawn-frame {
+                border-color: rgba(255, 255, 255, 0.4);
+            }
+            .wobbly-border {
+                border: 1.5px solid #a855f7;
+                border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+            }
+            .scribble-mask {
+                mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+                mask-size: contain;
+                mask-repeat: no-repeat;
+                mask-position: center;
+            }
+            .scribble-mask-circle {
+                mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E");
+                mask-size: contain;
+                mask-repeat: no-repeat;
+                mask-position: center;
+            }
+            .tape-doodle {
+                background: rgba(255, 255, 255, 0.5);
+                backdrop-filter: blur(1px);
+                border: 1px solid rgba(0,0,0,0.05);
+                transform: rotate(-15deg);
+                box-shadow: 1px 1px 2px rgba(0,0,0,0.02);
+            }
+            .scribble-bg {
+                background-image: radial-gradient(#a855f715 1px, transparent 1px);
+                background-size: 8px 8px;
+            }
+            .scribble-pink-fill {
+                background: radial-gradient(#ff85a2 1px, transparent 1.2px);
+                background-size: 3px 3px;
+            }
+            .scribble-purple-fill {
+                background: radial-gradient(#a855f7 1px, transparent 1.2px);
+                background-size: 3px 3px;
+            }
+            .wobbly-circle-container {
+                position: relative;
+                padding: 1rem;
+            }
+            .wobbly-circle-svg {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 140%;
+                height: 140%;
+                pointer-events: none;
+                z-index: 0;
+            }
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#141118] dark:text-white transition-colors duration-300">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto">
+<div class="absolute inset-0 pointer-events-none opacity-20 dark:opacity-40">
+<span class="material-symbols-outlined absolute top-40 left-10 text-[12px] rotate-12">auto_awesome</span>
+<span class="material-symbols-outlined absolute top-20 right-20 text-[10px] -rotate-12">fiber_manual_record</span>
+<span class="material-symbols-outlined absolute bottom-64 left-16 text-[8px]">fiber_manual_record</span>
+<span class="material-symbols-outlined absolute top-[50%] right-8 text-[14px] rotate-45 text-doodle-pink">colors_spark</span>
+<span class="material-symbols-outlined absolute top-[25%] left-[15%] text-[10px] text-doodle-purple">circle</span>
+</div>
+<div class="flex items-center bg-transparent p-6 pb-2 justify-between z-10">
+<div class="flex -space-x-3 items-center">
+<div class="relative z-20">
+<div class="size-9 rounded-full border-2 border-primary overflow-hidden bg-white shadow-sm" style="border-radius: 54% 46% 52% 48% / 50% 51% 49% 50%;">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD54uuco4mrsgTZdgdOxgjUBv6SfqQRM2NFXFitMIWESlCNw4jxoeol2U1g1emS6O2Mw9hrEgH1Id5uczqAFCWXDcy_8i7z7jz6HFmyjJQYsClnoCEYFkU7ohrHkpNbl-cf24Y9mMTWvsHHygmewc6sSHjrnbBsNQFa6i4FrYEOObkwFHONRKE0oLILLwHz5jgemH7N_0kq7O4ue6_bvCNe-wIXxu4rIIip2pUM5ZZYgSwMaSPWURZJ-oHkfGcRZkHP_FlhGBgKib8T");'></div>
+</div>
+</div>
+<div class="relative z-10">
+<div class="size-9 rounded-full border-2 border-[#141118] dark:border-white/50 overflow-hidden bg-white shadow-sm" style="border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%;">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoY2HeH3XzPb-Du1PuAn3T6SWyWqXzEJM0jGvfQJy5k-nnXSWiE1DcslZXph1IAs6KtHqPMxy66cRYyER4a-qwDDapb6-hiG_jMxqn27LgJOPqNSF-dkNz_c82e0OJS7L3-Syc2-iMPUMgGfI39JJi0DhFGkwHtMsFgUQyHn750MW5zA3YPiPLMbOMndOotGQu8PGB4Kl8_2-z9u8HakGTSYTtEZg9YNriGJXm8DgWKNeFesyDohd6-3Ql54_HmBUI3n2awT3HpU4h");'></div>
+</div>
+</div>
+</div>
+<button class="flex items-center justify-center size-10 rounded-full">
+<span class="material-symbols-outlined text-[#141118] dark:text-white" style="font-variation-settings: 'FILL' 0, 'wght' 300;">settings</span>
+</button>
+</div>
+<main class="flex-1 flex flex-col items-center pt-4 px-6 z-10 relative">
+<div class="w-full aspect-[4/3] relative mb-16 group">
+<div class="tape-doodle absolute -top-3 left-1/2 -translate-x-1/2 w-12 h-5 z-30 opacity-80"></div>
+<div class="hand-drawn-frame absolute inset-0 rotate-1 transition-transform group-hover:rotate-0"></div>
+<div class="absolute inset-2 overflow-hidden" style="border-radius: 240px 15px 210px 15px/15px 210px 15px 240px;">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD54uuco4mrsgTZdgdOxgjUBv6SfqQRM2NFXFitMIWESlCNw4jxoeol2U1g1emS6O2Mw9hrEgH1Id5uczqAFCWXDcy_8i7z7jz6HFmyjJQYsClnoCEYFkU7ohrHkpNbl-cf24Y9mMTWvsHHygmewc6sSHjrnbBsNQFa6i4FrYEOObkwFHONRKE0oLILLwHz5jgemH7N_0kq7O4ue6_bvCNe-wIXxu4rIIip2pUM5ZZYgSwMaSPWURZJ-oHkfGcRZkHP_FlhGBgKib8T"); opacity: 0.9;'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+</div>
+<div class="absolute -bottom-4 -right-2 bg-white dark:bg-[#251b2e] px-4 py-1 hand-drawn-frame text-[10px] tracking-widest uppercase font-semibold">
+                Featured Memory
+            </div>
+</div>
+<div class="flex items-center justify-between w-full relative h-48 mt-4">
+<button class="flex flex-col items-center gap-1.5 group absolute left-0 z-20">
+<div class="size-12 flex items-center justify-center relative">
+<div class="absolute inset-0 bg-doodle-pink/20 scribble-mask scale-125 rotate-6 transition-transform group-hover:scale-150"></div>
+<span class="material-symbols-outlined text-doodle-pink text-2xl relative z-10" style="font-variation-settings: 'FILL' 1, 'wght' 300;">favorite</span>
+</div>
+<span class="text-[9px] uppercase tracking-widest text-[#756189] dark:text-gray-400 font-bold">Send Love</span>
+</button>
+<div class="wobbly-circle-container flex flex-col items-center justify-center mx-auto scale-110">
+<svg class="wobbly-circle-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<filter id="wobbly-effect">
+<feTurbulence baseFrequency="0.015" numOctaves="3" result="noise" type="fractalNoise"></feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="4"></feDisplacementMap>
+</filter>
+</defs>
+<path class="text-[#141118]/80 dark:text-white/60" d="M190,60 C190,95 150,115 100,115 C50,115 10,95 10,60 C10,25 50,5 100,5 C150,5 190,25 190,60 Z" fill="none" stroke="currentColor" stroke-width="0.8" style="filter: url(#wobbly-effect);"></path>
+</svg>
+<div class="relative w-32 h-20 flex justify-center items-center">
+<div class="absolute left-4 rotate-[-15deg]">
+<div class="relative w-12 h-12">
+<svg class="absolute inset-0 w-full h-full drop-shadow-sm" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path class="scribble-purple-fill opacity-20" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+<path class="dark:stroke-white/80" d="M11.5 20.8c-0.2-0.1-0.5-0.3-0.8-0.5C5.1 15.1 1.8 12.1 1.8 8.4c0-2.8 2.2-5.1 5-5.1c1.6 0 3.1 0.7 4.1 1.9c0.1 0.1 0.3 0.1 0.4 0c1-1.2 2.5-1.9 4.1-1.9c2.8 0 5 2.2 5 5.1c0 3.7-3.3 6.7-8.9 11.9c-0.1 0.1-0.2 0.1-0.3 0.1z" stroke="#141118" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8"></path>
+</svg>
+</div>
+</div>
+<div class="absolute right-4 rotate-[12deg]">
+<div class="relative w-14 h-14">
+<svg class="absolute inset-0 w-full h-full drop-shadow-sm" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path class="scribble-pink-fill opacity-30" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+<path class="dark:stroke-white/80" d="M12.2 21.1c-0.1 0.1-0.3 0.1-0.4 0c-5.5-5.2-8.8-8.2-8.8-11.9c0-2.8 2.2-5.1 5-5.1c1.6 0 3.1 0.7 4.1 1.9c1-1.2 2.5-1.9 4.1-1.9c2.8 0 5 2.2 5 5.1c0 3.7-3.3 6.7-8.8 11.9z" stroke="#141118" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<button class="flex flex-col items-center gap-1.5 group absolute right-0 z-20">
+<div class="size-12 flex items-center justify-center relative">
+<div class="absolute inset-0 bg-doodle-purple/20 scribble-mask-circle scale-125 -rotate-6 transition-transform group-hover:scale-150"></div>
+<span class="material-symbols-outlined text-doodle-purple text-2xl relative z-10" style="font-variation-settings: 'FILL' 0, 'wght' 300;">fire_extinguisher</span>
+</div>
+<span class="text-[9px] uppercase tracking-widest text-[#756189] dark:text-gray-400 font-bold">SOS</span>
+</button>
+</div>
+<div class="w-10 h-[1px] bg-primary/20 mx-auto mt-12 mb-4"></div>
+<div class="mt-auto mb-6 w-full max-w-[280px] relative">
+<div class="wobbly-border scribble-bg bg-primary/5 p-5 text-center relative overflow-hidden">
+<div class="absolute top-1 left-1 opacity-20">
+<svg fill="none" height="20" stroke="currentColor" viewBox="0 0 20 20" width="20">
+<path d="M2 10C2 10 5 2 10 2C15 2 18 10 18 10" stroke-linecap="round" stroke-width="1"></path>
+</svg>
+</div>
+<p class="text-[10px] uppercase tracking-[0.2em] text-primary/60 mb-2 font-bold">Daily Echo</p>
+<p class="font-handwritten text-lg leading-tight text-[#141118] dark:text-white/90">
+                    What's one small thing I did this week that made you smile?
+                </p>
+</div>
+</div>
+<p class="mb-4 text-[10px] text-[#756189] dark:text-gray-400 font-light tracking-[0.3em] uppercase">
+            In Sync
+        </p>
+</main>
+<nav class="bg-background-light dark:bg-background-dark pb-10 pt-4 px-12 z-20">
+<div class="flex justify-between items-center max-w-xs mx-auto">
+<a class="flex flex-col items-center gap-1.5 transition-all" href="#">
+<div class="flex items-center justify-center size-9 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 300;">house</span>
+</div>
+<span class="text-[9px] font-bold tracking-widest text-primary uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 transition-all text-[#756189] dark:text-gray-400 hover:text-primary" href="#">
+<div class="flex items-center justify-center size-9 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0, 'wght' 300;">auto_awesome</span>
+</div>
+<span class="text-[9px] font-medium tracking-widest uppercase">Moods</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 transition-all text-[#756189] dark:text-gray-400 hover:text-primary" href="#">
+<div class="flex items-center justify-center size-9 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0, 'wght' 300;">person</span>
+</div>
+<span class="text-[9px] font-medium tracking-widest uppercase">Profile</span>
+</a>
+</div>
+</nav>
+<div class="absolute -bottom-8 -left-8 opacity-[0.07] pointer-events-none rotate-45 text-primary">
+<svg fill="none" height="150" viewBox="0 0 200 200" width="150" xmlns="http://www.w3.org/2000/svg">
+<path d="M40 40C40 40 80 10 120 40C160 70 120 120 120 120C120 120 150 160 100 180C50 200 20 150 40 120C60 90 20 60 40 40Z" stroke="currentColor" stroke-width="2.5"></path>
+</svg>
+</div>
+</div>
+
+</body></html>

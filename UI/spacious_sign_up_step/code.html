@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spacious Sign Up Step</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8c2bee",
+                        "background-light": "#ffffff",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .wobbly-line {
+            border: none;
+            border-bottom: 2px solid #8c2bee;
+            border-radius: 40% 60% 70% 30% / 10% 10% 10% 10%;
+            transition: all 0.3s ease;
+        }
+        .wobbly-line:focus {
+            outline: none;
+            border-bottom-width: 3px;
+            border-radius: 60% 40% 30% 70% / 15% 15% 15% 15%;
+        }
+        .scribble-bg {
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(140, 43, 238, 0.2) 2px,
+                rgba(140, 43, 238, 0.2) 4px
+            ),
+            repeating-linear-gradient(
+                -45deg,
+                rgba(140, 43, 238, 0.8),
+                rgba(140, 43, 238, 0.8) 2px,
+                #8c2bee 2px,
+                #8c2bee 4px
+            );
+        }
+        /* Custom hand-drawn like circle border */
+        .hand-drawn-circle {
+            border: 2px solid #140d1b;
+            border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col transition-colors duration-300">
+<!-- Top Navigation -->
+<div class="flex items-center bg-transparent p-6 justify-between">
+<div class="text-[#140d1b] dark:text-white flex size-12 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined text-3xl">chevron_left</span>
+</div>
+<h2 class="text-[#140d1b] dark:text-white text-sm font-medium tracking-widest uppercase flex-1 text-center pr-12 opacity-50">Step 1 of 5</h2>
+</div>
+<!-- Progress Indicator -->
+<div class="flex w-full flex-row items-center justify-center gap-2 py-4">
+<div class="h-1.5 w-6 rounded-full bg-primary"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-center px-8 pb-24">
+<!-- Headline -->
+<div class="max-w-md w-full mb-12">
+<h1 class="text-[#140d1b] dark:text-white text-[40px] font-bold leading-tight text-center">
+                What's your name?
+            </h1>
+<p class="text-[#140d1b]/60 dark:text-white/60 text-lg font-normal leading-normal text-center mt-4">
+                This is how you'll appear to others.
+            </p>
+</div>
+<!-- Single Wobbly Input -->
+<div class="max-w-[320px] w-full relative">
+<input autofocus="" class="w-full bg-transparent text-[#140d1b] dark:text-white text-3xl font-medium text-center pb-4 wobbly-line placeholder:text-gray-300 focus:ring-0 border-0" placeholder="Type here..." type="text"/>
+</div>
+<!-- Next Button - Hand-drawn Style -->
+<div class="mt-20">
+<button class="relative group flex items-center justify-center size-20">
+<!-- Scribble Background -->
+<div class="absolute inset-0 scribble-bg rounded-full hand-drawn-circle shadow-lg group-hover:scale-105 transition-transform duration-200"></div>
+<!-- Arrow Icon -->
+<span class="material-symbols-outlined text-white text-4xl relative z-10 font-bold">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- Aesthetic Decorative Doodle (Optional subtle touch) -->
+<div class="fixed bottom-10 left-10 pointer-events-none opacity-10 dark:invert">
+<svg data-alt="Small minimalist hand drawn heart doodle" fill="none" height="60" viewbox="0 0 60 60" width="60" xmlns="http://www.w3.org/2000/svg">
+<path d="M30 50C30 50 55 35 55 20C55 10 45 5 35 5C30 5 27 8 25 10C23 8 20 5 15 5C5 5 -5 10 -5 20C-5 35 20 50 30 50Z" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Safe area for iOS keyboard simulation spacing -->
+<div class="h-12 bg-transparent"></div>
+</body></html>

@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "=== Expo Server Status ==="
+lsof -i :8081 2>/dev/null | grep LISTEN && echo "✅ Server is running on port 8081" || echo "❌ Server not running"
+echo ""
+echo "=== To see QR code and connection info ==="
+echo "1. Open a new terminal window"
+echo "2. Run: cd '/Users/harshiv/Documents/Meherzan Boundless/SYNC'"
+echo "3. Run: npx expo start --tunnel"
+echo ""
+echo "Or press 's' in the Expo terminal to switch to tunnel mode"

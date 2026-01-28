@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, SafeAreaView, Animated, Platform, Image } from 'react-native';
+import { WobblySquare, WobblyCard, WobblyCircle } from '../../src/components/doodle';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { doc, onSnapshot, getDoc, collection, query, where, orderBy, limit } from 'firebase/firestore';
@@ -165,6 +166,9 @@ export default function MoodsScreen() {
   // Keep reference for MOOD_REACTIONS animation (used in handleReaction)
   const reactionScaleAnims = useRef<{ [key: string]: Animated.Value }>({ heart: heartScaleAnim }).current;
   const reactionRotateAnims = useRef<{ [key: string]: Animated.Value }>({ heart: heartRotateAnim }).current;
+  const [showHistory, setShowHistory] = useState(false);
+
+  const ALL_MOODS: MoodType[] = ['happy', 'calm', 'neutral', 'sad', 'anxious', 'excited', 'grateful', 'loved'];
 
   // Define functions before using them in useEffect
   const loadMoodTimeline = useCallback(async (pairId: string) => {
@@ -233,6 +237,16 @@ export default function MoodsScreen() {
       }
     } catch (error) {
       console.error('Error calculating streaks:', error);
+    }
+  }, []);
+
+  // Load mood insights
+  const loadInsights = useCallback(async (pairId: string, userId: string, partnerId: string) => {
+    try {
+      const data = await MoodService.getMoodInsights(pairId, userId, partnerId);
+      setInsights(data);
+    } catch (error) {
+      console.error('Error loading insights:', error);
     }
   }, []);
 
@@ -670,15 +684,7 @@ export default function MoodsScreen() {
     }
   };
 
-  // Load mood insights
-  const loadInsights = useCallback(async (pairId: string, userId: string, partnerId: string) => {
-    try {
-      const data = await MoodService.getMoodInsights(pairId, userId, partnerId);
-      setInsights(data);
-    } catch (error) {
-      console.error('Error loading insights:', error);
-    }
-  }, []);
+
 
   // Send love to partner with elegant animation
   const handleReaction = async (moodId: string, reaction: MoodReaction) => {
@@ -751,632 +757,417 @@ export default function MoodsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      </SafeAreaView>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
     );
   }
 
   // Show content if partnerId exists - partner connection is determined by partnerId
   if (!userData?.partnerId) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.emptyContainer}>
-          <Ionicons name="heart-outline" size={64} color={theme.colors.textLight} />
           <Text style={styles.emptyText}>No partner connected</Text>
-          <Text style={styles.emptySubtext}>Connect with your partner to start sharing moods</Text>
+          <Text style={styles.emptyText}>Connect with your partner to start sharing moods</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const userName = userData?.name || userData?.displayName || user?.email?.split('@')[0] || 'You';
   const partnerName = partnerData?.name || partnerData?.displayName || partnerData?.email?.split('@')[0] || 'Partner';
 
-  // Debug: Log current state
-  console.log('🔍 Moods Screen State:', {
-    totalMoodsInTimeline: moods.length,
-    myMoodsCount: moods.filter(m => m.userId === user?.uid).length,
-    partnerMoodsCount: moods.filter(m => m.userId === userData?.partnerId).length,
-    hasTodayMood: !!todayMood,
-    hasPartnerTodayMood: !!partnerTodayMood,
-    partnerId: userData?.partnerId,
-    myUserId: user?.uid,
-  });
-
-  const moodSync = getMoodSyncMessage(todayMood?.mood || null, partnerTodayMood?.mood || null);
-
   return (
-    <SwipeableTabWrapper tabIndex={1} totalTabs={4}>
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Mood Tracker</Text>
-            <Text style={styles.subtitle}>Stay connected through feelings</Text>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerAvatarColumn}>
+          <WobblySquare
+            rotate="2deg"
+            style={styles.avatarContainer}
+            borderColor={todayMood ? moodColors[todayMood.mood] : theme.colors.doodlePurple}
+          >
+            {userData?.profileImage ? (
+              <View style={{ width: '100%', height: '100%' }}>
+                <Image source={{ uri: userData.profileImage }} style={styles.avatarImage} />
+                {todayMood && (
+                  <View style={styles.emojiBadge}>
+                    <Text style={{ fontSize: 14 }}>{moodEmojis[todayMood.mood]}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={[styles.avatarImage, {
+                backgroundColor: todayMood ? moodColors[todayMood.mood] + '20' : '#f0f0f0',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }]}>
+                <Text style={{ fontSize: 32 }}>{todayMood ? moodEmojis[todayMood.mood] : ''}</Text>
+              </View>
+            )}
+          </WobblySquare>
+          <Text style={[styles.avatarLabel, { color: todayMood ? moodColors[todayMood.mood] : theme.colors.doodlePurple }]}>Me</Text>
+        </View>
+
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Mood Hub</Text>
+        </View>
+
+        <View style={styles.headerAvatarColumn}>
+          <WobblySquare
+            rotate="-2deg"
+            style={styles.avatarContainer}
+            borderColor={partnerTodayMood ? moodColors[partnerTodayMood.mood] : theme.colors.doodlePink}
+          >
+            {partnerData?.profileImage ? (
+              <View style={{ width: '100%', height: '100%' }}>
+                <Image source={{ uri: partnerData.profileImage }} style={styles.avatarImage} />
+                {partnerTodayMood && (
+                  <View style={styles.emojiBadge}>
+                    <Text style={{ fontSize: 14 }}>{moodEmojis[partnerTodayMood.mood]}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={[styles.avatarImage, {
+                backgroundColor: partnerTodayMood ? moodColors[partnerTodayMood.mood] + '20' : '#f0f0f0',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }]}>
+                <Text style={{ fontSize: 32 }}>{partnerTodayMood ? moodEmojis[partnerTodayMood.mood] : ''}</Text>
+              </View>
+            )}
+          </WobblySquare>
+          <Text style={[styles.avatarLabel, { color: partnerTodayMood ? moodColors[partnerTodayMood.mood] : theme.colors.doodlePink }]}>{partnerName}</Text>
+        </View>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        {/* How are you now section - Moved to Top */}
+        <View style={styles.promptSection}>
+          <Text style={styles.promptTitle}>How are you now?</Text>
+
+          <View style={styles.moodGrid}>
+            {ALL_MOODS.map((m) => {
+              const moodType = m;
+              const emoji = moodEmojis[moodType];
+              const label = moodLabels[moodType];
+              const isActive = todayMood?.mood === moodType;
+
+              return (
+                <TouchableOpacity
+                  key={m}
+                  style={styles.moodBtn}
+                  onPress={() => handleMoodSubmit(moodType)}
+                >
+                  <WobblyCircle
+                    style={[
+                      styles.moodBtnCircle,
+                      isActive && { backgroundColor: moodColors[moodType] + '20' }
+                    ]}
+                    borderColor={isActive ? moodColors[moodType] : theme.colors.text + '20'}
+                  >
+                    <Text style={{ fontSize: 24 }}>{emoji}</Text>
+                  </WobblyCircle>
+                  <Text style={[
+                    styles.moodBtnLabel,
+                    isActive && { opacity: 1, color: moodColors[moodType] }
+                  ]}>{label}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.colors.primary}
-            />
-          }
+        {/* History Toggle */}
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => setShowHistory(!showHistory)}
         >
-          {/* Mood Sync Banner */}
-          {moodSync && (
-            <Animated.View style={[
-              styles.moodSyncBanner,
-              { backgroundColor: moodSync.color + '15', borderColor: moodSync.color + '30' },
-              { transform: [{ scale: celebrationAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.02] }) }] }
-            ]}>
-              <Text style={styles.moodSyncEmoji}>{moodSync.emoji}</Text>
-              <Text style={[styles.moodSyncText, { color: moodSync.color }]}>{moodSync.message}</Text>
-            </Animated.View>
-          )}
+          <Text style={styles.historyButtonText}>{showHistory ? 'Hide Past Moods' : 'See Past Moods'}</Text>
+          <Ionicons name={showHistory ? 'chevron-up' : 'chevron-down'} size={16} color={theme.colors.textSecondary} />
+        </TouchableOpacity>
 
-
-          {/* Today's Moods Side-by-Side */}
-          <View style={styles.todaySection}>
-            <Text style={styles.sectionTitle}>Today's Moods</Text>
-            <View style={styles.todayMoodsContainer}>
-              {/* Your Mood */}
-              <TouchableOpacity
-                style={[styles.todayMoodCard, !todayMood && styles.todayMoodCardEmpty]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setShowMoodModal(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={styles.todayMoodHeader}>
-                  <Text style={styles.todayMoodLabel}>{userName}</Text>
-                  {moodStreak > 0 && (
-                    <View style={styles.streakBadge}>
-                      <Ionicons name="flame" size={14} color={theme.colors.accent} />
-                      <Text style={styles.streakText}>{moodStreak}</Text>
-                    </View>
-                  )}
-                </View>
-                {todayMood ? (
-                  <>
-                    <View style={[styles.todayMoodIcon, { backgroundColor: moodColors[todayMood.mood] + '20' }]}>
-                      <Text style={styles.todayMoodEmoji}>{todayMood.customEmoji || moodEmojis[todayMood.mood]}</Text>
-                    </View>
-                    <Text style={styles.todayMoodType}>{todayMood.customEmoji ? 'Custom' : moodLabels[todayMood.mood]}</Text>
-                    {todayMood.cause && (
-                      <Text style={styles.todayCause}>
-                        {MOOD_CAUSES.find(c => c.type === todayMood.cause)?.emoji} {MOOD_CAUSES.find(c => c.type === todayMood.cause)?.label}
-                      </Text>
-                    )}
-                    {todayMood.note && (
-                      <Text style={styles.todayMoodNote} numberOfLines={2}>{todayMood.note}</Text>
-                    )}
-                    <Text style={styles.updatePrompt}>Tap to update</Text>
-                  </>
-                ) : (
-                  <View style={styles.emptyMoodPrompt}>
-                    <Ionicons name="add-circle-outline" size={32} color={theme.colors.textLight} />
-                    <Text style={styles.emptyMoodText}>How are you feeling?</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              {/* Partner's Mood */}
-              <View style={[styles.todayMoodCard, !partnerTodayMood && styles.todayMoodCardEmpty]}>
-                <View style={styles.todayMoodHeader}>
-                  <Text style={styles.todayMoodLabel}>{partnerName}</Text>
-                  {partnerMoodStreak > 0 && (
-                    <View style={styles.streakBadge}>
-                      <Ionicons name="flame" size={14} color={theme.colors.accent} />
-                      <Text style={styles.streakText}>{partnerMoodStreak}</Text>
-                    </View>
-                  )}
-                </View>
-                {partnerTodayMood ? (
-                  <>
-                    <View style={[styles.todayMoodIcon, { backgroundColor: moodColors[partnerTodayMood.mood] + '20' }]}>
-                      <Text style={styles.todayMoodEmoji}>{moodEmojis[partnerTodayMood.mood]}</Text>
-                    </View>
-                    <Text style={styles.todayMoodType}>{moodLabels[partnerTodayMood.mood]}</Text>
-                    {partnerTodayMood.cause && (
-                      <Text style={styles.todayCause}>
-                        {MOOD_CAUSES.find(c => c.type === partnerTodayMood.cause)?.emoji} {MOOD_CAUSES.find(c => c.type === partnerTodayMood.cause)?.label}
-                      </Text>
-                    )}
-                    {partnerTodayMood.note && (
-                      <Text style={styles.todayMoodNote} numberOfLines={2}>{partnerTodayMood.note}</Text>
-                    )}
-                    {/* Simple Send Love Button */}
-                    {partnerTodayMood.id && (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => handleReaction(partnerTodayMood.id!, 'heart')}
-                        disabled={!!sendingReaction}
-                        style={styles.sendLoveButtonWrapper}
-                      >
-                        <Animated.View style={[
-                          styles.sendLoveButton,
-                          sendingReaction && styles.sendLoveButtonSending,
-                          {
-                            transform: [
-                              { scale: reactionScaleAnims['heart'] },
-                              {
-                                rotateZ: reactionRotateAnims['heart'].interpolate({
-                                  inputRange: [-1, 0, 1],
-                                  outputRange: ['-10deg', '0deg', '10deg'],
-                                })
-                              },
-                            ],
-                          },
-                        ]}>
-                          <Text style={styles.sendLoveEmoji}>
-                            {sendingReaction ? '💕' : '❤️'}
-                          </Text>
-                          <Text style={styles.sendLoveText}>
-                            {sendingReaction ? 'Sent!' : 'Send Love'}
-                          </Text>
-                        </Animated.View>
-                      </TouchableOpacity>
-                    )}
-                  </>
-                ) : (
-                  <View style={styles.emptyMoodPrompt}>
-                    <Ionicons name="time-outline" size={32} color={theme.colors.textLight} />
-                    <Text style={styles.emptyMoodText}>Waiting...</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Weekly Insights */}
-          {insights && insights.totalMoods > 0 && (
-            <View style={styles.insightsSection}>
-              <Text style={styles.sectionTitle}>💫 This Week's Insights</Text>
-              <View style={styles.insightsGrid}>
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightEmoji}>💕</Text>
-                  <Text style={styles.insightValue}>{insights.lovedMoments}</Text>
-                  <Text style={styles.insightLabel}>Love Moments</Text>
-                </View>
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightEmoji}>🔄</Text>
-                  <Text style={styles.insightValue}>{insights.syncedDays}</Text>
-                  <Text style={styles.insightLabel}>Synced Days</Text>
-                </View>
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightEmoji}>😊</Text>
-                  <Text style={styles.insightValue}>{insights.userHappyDays + insights.partnerHappyDays}</Text>
-                  <Text style={styles.insightLabel}>Happy Vibes</Text>
-                </View>
-              </View>
-              {insights.topUserMood && insights.topPartnerMood && (
-                <View style={styles.topMoodsRow}>
-                  <Text style={styles.topMoodsText}>
-                    Your vibe: {moodEmojis[insights.topUserMood]} • {partnerName}'s vibe: {moodEmojis[insights.topPartnerMood]}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Timeline Section */}
+        {/* Mood Story Timeline - Conditionally Rendered */}
+        {showHistory && (
           <View style={styles.timelineSection}>
-            <Text style={styles.sectionTitle}>Mood Timeline</Text>
-            {moods.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <Ionicons name="heart-outline" size={64} color={theme.colors.textLight} />
-                <Text style={styles.emptyText}>No moods yet</Text>
-                <Text style={styles.emptySubtext}>Share your first mood with your partner</Text>
-              </View>
-            ) : (
-              moods.map((mood, index) => {
-                const isCurrentUser = mood.userId === user?.uid;
-                const displayName = isCurrentUser ? userName : partnerName;
+            <Text style={styles.timelineTitle}>OUR MOOD STORY</Text>
+
+            <View style={styles.timelineContainer}>
+              <View style={styles.timelineLine} />
+
+              {moods.slice(0, 20).map((mood, index) => {
+                const isMe = mood.userId === user?.uid;
                 const moodColor = moodColors[mood.mood] || theme.colors.primary;
-                const causeInfo = mood.cause ? MOOD_CAUSES.find(c => c.type === mood.cause) : null;
-                const dateTime = formatDateTime(mood.createdAt);
+                const emoji = mood.customEmoji || moodEmojis[mood.mood];
+                const timeAgo = formatTimeAgo(mood.createdAt);
 
                 return (
-                  <View key={mood.id || index} style={styles.moodCard}>
-                    <View style={styles.moodHeader}>
-                      <View style={[styles.moodIconContainer, { backgroundColor: moodColor + '20' }]}>
-                        <Text style={styles.moodEmoji}>{moodEmojis[mood.mood]}</Text>
-                      </View>
-                      <View style={styles.moodInfo}>
-                        <View style={styles.moodNameRow}>
-                          <Text style={styles.moodName}>{displayName}</Text>
-                        </View>
-                        <Text style={styles.moodType}>
-                          {moodLabels[mood.mood]}
-                          {causeInfo && <Text style={styles.causeBecause}> • {causeInfo.emoji} {causeInfo.label}</Text>}
-                        </Text>
-                      </View>
-                      <View style={styles.moodTimeContainer}>
-                        <Text style={styles.moodDate}>{dateTime.date}</Text>
-                        <Text style={styles.moodTime}>{dateTime.time}</Text>
-                      </View>
+                  <View key={mood.id || index} style={styles.timelineItem}>
+                    <View style={styles.timelineLeft}>
+                      {!isMe && (
+                        <>
+                          <Text style={{ fontSize: 24 }}>{emoji}</Text>
+                          <Text style={styles.timestamp}>{timeAgo}</Text>
+                        </>
+                      )}
                     </View>
-                    {mood.note && (
-                      <Text style={styles.moodNote}>"{mood.note}"</Text>
-                    )}
-                    {/* Show reactions that have been sent */}
-                    {mood.reactions && mood.reactions.length > 0 && (
-                      <View style={styles.reactionsRow}>
-                        {mood.reactions.map((r, i) => (
-                          <View key={i} style={styles.reactionBubble}>
-                            <Text>{MOOD_REACTIONS.find(mr => mr.type === r.type)?.emoji}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
+
+                    <View style={[styles.timelineCenter, { backgroundColor: moodColor, borderColor: '#fff' }]} />
+
+                    <View style={styles.timelineRight}>
+                      {isMe && (
+                        <>
+                          <Text style={{ fontSize: 24 }}>{emoji}</Text>
+                          <Text style={styles.timestamp}>{timeAgo}</Text>
+                        </>
+                      )}
+                    </View>
                   </View>
                 );
-              })
-            )}
+              })}
+              {moods.length === 0 && (
+                <Text style={styles.emptyText}>No recent moods</Text>
+              )}
+            </View>
           </View>
-        </ScrollView>
+        )}
 
-        <MoodSelector
-          visible={showMoodModal}
-          onClose={() => setShowMoodModal(false)}
-          onSubmit={handleMoodSubmit}
-          loading={submittingMood}
-          partnerName={partnerName}
-        />
-      </SafeAreaView>
-    </SwipeableTabWrapper>
+      </ScrollView>
+
+      <MoodSelector
+        visible={showMoodModal}
+        onClose={() => setShowMoodModal(false)}
+        onSubmit={handleMoodSubmit}
+        loading={submittingMood}
+        partnerName={partnerName}
+      />
+    </SafeAreaView>
   );
+
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#ffffff',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
+
+  // Header
+  headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    zIndex: 10,
   },
-  title: {
-    fontSize: theme.typography.fontSize['2xl'],
-    fontWeight: theme.typography.fontWeight.bold,
+  headerAvatarColumn: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  avatarContainer: {
+    width: 64,
+    height: 64,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  avatarLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  emojiBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+    zIndex: 10,
+  },
+  headerTitleContainer: {
+    transform: [{ rotate: '-2deg' }],
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontFamily: Platform.OS === 'ios' ? 'Noteworthy-Bold' : 'sans-serif-medium', // Fallback for 'handwritten'
     color: theme.colors.text,
   },
-  subtitle: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  // addButton style removed - button no longer in use
+
+  // Scroll Content
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
+    paddingHorizontal: 24,
+    paddingBottom: 100, // Space for bottom nav
   },
-  todaySection: {
-    marginBottom: theme.spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.md,
-  },
-  todayMoodsContainer: {
-    flexDirection: 'row',
-    gap: theme.spacing.md,
-  },
-  todayMoodCard: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
+
+  // Timeline
+  timelineSection: {
+    marginTop: 20,
+    marginBottom: 40,
     alignItems: 'center',
-    ...theme.shadows.md,
-    minHeight: 180,
   },
-  todayMoodCardEmpty: {
-    borderWidth: 2,
-    borderColor: theme.colors.border,
-    borderStyle: 'dashed',
-    backgroundColor: theme.colors.background,
+  timelineTitle: {
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    fontWeight: '700',
+    opacity: 0.3,
+    marginBottom: 32,
+    color: theme.colors.text,
   },
-  todayMoodHeader: {
+  timelineContainer: {
+    width: '100%',
+    maxWidth: 280,
+    position: 'relative',
+  },
+  timelineLine: {
+    position: 'absolute',
+    left: '50%',
+    top: 0,
+    bottom: 0,
+    width: 2,
+    backgroundColor: theme.colors.text,
+    opacity: 0.1,
+    transform: [{ translateX: -1 }],
+  },
+  timelineItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 48,
     width: '100%',
-    marginBottom: theme.spacing.sm,
   },
-  todayMoodLabel: {
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: theme.colors.textSecondary,
+  timelineLeft: {
+    width: '42%',
+    alignItems: 'flex-end',
+    paddingRight: 20,
   },
-  streakBadge: {
-    flexDirection: 'row',
+  timelineRight: {
+    width: '42%',
+    alignItems: 'flex-start',
+    paddingLeft: 20,
+  },
+  timelineCenter: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 3,
+    borderColor: '#fff',
+    zIndex: 1,
+  },
+  moodIcon: {
+    // Styling handled in component
+  },
+  timestamp: {
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    opacity: 0.4,
+    marginTop: 4,
+  },
+
+  // Reaction/Prompt Section
+  promptSection: {
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
-    gap: 4,
+    marginBottom: 40,
   },
-  streakText: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.accent,
-  },
-  todayMoodIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: theme.borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  todayMoodEmoji: {
-    fontSize: 40,
-  },
-  todayMoodType: {
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semibold,
+  promptTitle: {
+    fontSize: 32,
+    fontFamily: Platform.OS === 'ios' ? 'Noteworthy-Bold' : 'sans-serif-medium',
+    marginBottom: 32,
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    transform: [{ rotate: '-1deg' }],
   },
-  todayMoodNote: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginTop: theme.spacing.xs,
-  },
-  emptyMoodPrompt: {
-    flex: 1,
+  moodGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
+    gap: 20,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  moodBtn: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.lg,
+    gap: 8,
+    width: 70, // Fixed width for alignment
   },
-  emptyMoodText: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textLight,
-    marginTop: theme.spacing.xs,
+  moodBtnCircle: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  timelineSection: {
-    marginTop: theme.spacing.md,
+  moodBtnLabel: {
+    fontSize: 8,
+    textTransform: 'uppercase',
+    fontWeight: '900',
+    letterSpacing: 1,
+    opacity: 0.3,
   },
+
+  // Utility
   emptyContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.sm,
+    padding: 20,
   },
   emptyText: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: theme.colors.text,
-    marginTop: theme.spacing.md,
+    color: theme.colors.textMuted,
+    marginTop: 10,
   },
-  emptySubtext: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.textSecondary,
-    marginTop: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  moodCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    ...theme.shadows.sm,
-  },
-  moodHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  moodIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.borderRadius.full,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: theme.spacing.md,
-  },
-  moodEmoji: {
-    fontSize: 24,
-  },
-  moodInfo: {
-    flex: 1,
-  },
-  moodNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  moodName: {
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: theme.colors.text,
-  },
-  todayBadge: {
-    backgroundColor: theme.colors.primary + '20',
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.sm,
-  },
-  todayBadgeText: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: theme.colors.primary,
-  },
-  moodType: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  moodTimeContainer: {
-    alignItems: 'flex-end',
-  },
-  moodDate: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: theme.colors.textSecondary,
-  },
-  moodTime: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.textLight,
-    marginTop: 1,
-  },
-  moodNote: {
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.textSecondary,
-    marginTop: theme.spacing.sm,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.divider,
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
-  // Mood Sync Banner
-  moodSyncBanner: {
+
+  // Existing styles to keep for functionality (Modal etc)
+  historyButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    gap: theme.spacing.sm,
-  },
-  moodSyncEmoji: {
-    fontSize: 24,
-  },
-  moodSyncText: {
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semibold,
-  },
-  // Today's cause
-  todayCause: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  updatePrompt: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.primary,
-    marginTop: theme.spacing.xs,
-    fontWeight: theme.typography.fontWeight.medium,
-  },
-  // Send Love Button
-  sendLoveButtonWrapper: {
-    marginTop: theme.spacing.sm,
-    alignItems: 'center',
-  },
-  sendLoveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF0F3',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginBottom: 20,
+    backgroundColor: theme.colors.surface || '#f5f5f5',
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#FFD1DC',
-    gap: 6,
+    alignSelf: 'center',
+    gap: 8,
   },
-  sendLoveButtonSending: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#A5D6A7',
-  },
-  sendLoveEmoji: {
-    fontSize: 16,
-  },
-  sendLoveText: {
-    fontSize: 12,
-    fontWeight: theme.typography.fontWeight.semibold,
-    color: '#E91E63',
-  },
-  // Insights section
-  insightsSection: {
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  insightsGrid: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
-  insightCard: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    alignItems: 'center',
-    ...theme.shadows.sm,
-  },
-  insightEmoji: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  insightValue: {
-    fontSize: 24,
-    fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.text,
-  },
-  insightLabel: {
-    fontSize: theme.typography.fontSize.xs,
+  historyButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: theme.colors.textSecondary,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  topMoodsRow: {
-    marginTop: theme.spacing.sm,
-    alignItems: 'center',
-  },
-  topMoodsText: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textSecondary,
-  },
-  // Cause in timeline
-  causeBecause: {
-    color: theme.colors.textLight,
-  },
-  // Reactions in timeline
-  reactionsRow: {
-    flexDirection: 'row',
-    marginTop: theme.spacing.xs,
-    gap: 4,
-  },
-  reactionBubble: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: theme.colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });
 

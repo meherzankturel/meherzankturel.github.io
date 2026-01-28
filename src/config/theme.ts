@@ -1,39 +1,41 @@
 // Design System - "SYNC" Theme
-// Dark, modern palette with cyan accents
+// Light, playful doodle aesthetic with purple/pink accents
 
 export const theme = {
   colors: {
-    // Primary - Cyan/Teal accent
-    primary: '#00D4FF',           // Main accent (cyan)
-    primaryDark: '#00A8CC',       // Pressed/hover state
-    primaryLight: '#4DE8FF',      // Lighter variant
+    // Primary - Vibrant Purple
+    primary: '#7f13ec',           // Main accent (purple)
+    primaryDark: '#6910c2',       // Pressed/hover state
+    primaryLight: '#a855f7',      // Lighter variant
 
-    // Secondary - Soft blue-gray
-    secondary: '#4A5568',         // Secondary actions
-    secondaryDark: '#2D3748',     // Darker variant
-    secondaryLight: '#718096',    // Lighter variant
+    // Secondary - Soft Pink
+    secondary: '#ff85a2',         // Secondary actions (pink)
+    secondaryDark: '#e6758f',     // Darker variant
+    secondaryLight: '#ffb3c4',    // Lighter variant
 
-    // Background - Dark theme
-    background: '#0A0A0F',        // Main page background (dark)
-    backgroundAlt: '#0D0D14',     // Alternate sections
-    surface: '#12141C',           // Cards, modals
-    surfaceElevated: '#1A1D28',   // Elevated cards
-    surfaceSoft: '#1A1D28',       // Subtle surface
+    // Background - Light theme
+    background: '#fefefe',        // Main page background (cream white)
+    backgroundAlt: '#faf8f5',     // Alternate sections (warm white)
+    surface: '#ffffff',           // Cards, modals
+    surfaceElevated: '#ffffff',   // Elevated cards
+    surfaceSoft: '#f8f5ff',       // Subtle purple tint surface
 
-    // Text colors - Light on dark
-    text: '#FFFFFF',              // Primary text (white)
-    textSecondary: '#7A8599',     // Muted gray-blue
-    textMuted: '#4A5568',         // Very muted (placeholder)
-    textLight: '#7A8599',         // Alias for compatibility
-    textAccent: '#00D4FF',        // Accent text (cyan)
-    textOnPrimary: '#0A0A0F',     // Dark on primary buttons
+    // Text colors - Dark on light
+    text: '#141118',              // Primary text (dark)
+    textSecondary: '#756189',     // Muted purple-gray
+    textMuted: '#9a8ba8',         // Very muted (placeholder)
+    textLight: '#756189',         // Alias for compatibility
+    textAccent: '#7f13ec',        // Accent text (purple)
+    textOnPrimary: '#ffffff',     // White on primary buttons
 
-    // Accent colors
-    accent: '#00D4FF',            // Same as primary
-    accentPink: '#FF6B9D',        // Vibrant pink (love/heart elements)
+    // Doodle accent colors
+    accent: '#7f13ec',            // Same as primary
+    accentPink: '#ff85a2',        // Doodle pink
     accentMint: '#4ADE80',        // Bright mint (online)
     accentGold: '#FBBF24',        // Bright gold
     accentSky: '#38BDF8',         // Sky blue
+    doodlePink: '#ff85a2',        // Doodle pink
+    doodlePurple: '#a855f7',      // Light purple
 
     // Status colors
     success: '#4ADE80',           // Bright green
@@ -43,58 +45,58 @@ export const theme = {
 
     // Online/Offline indicators
     online: '#4ADE80',            // Bright green dot
-    offline: '#4A5568',           // Muted gray
+    offline: '#9a8ba8',           // Muted purple-gray
 
-    // Mood colors - Vibrant on dark
+    // Mood colors - Vibrant on light
     moodHappy: '#FBBF24',         // Bright gold
     moodCalm: '#38BDF8',          // Sky blue
-    moodNeutral: '#7A8599',       // Neutral gray
+    moodNeutral: '#756189',       // Neutral purple-gray
     moodSad: '#A78BFA',           // Purple
     moodAnxious: '#F472B6',       // Pink
-    moodLoved: '#FF6B9D',         // Vibrant pink
+    moodLoved: '#ff85a2',         // Doodle pink
     moodExcited: '#FB923C',       // Orange
     moodGrateful: '#4ADE80',      // Green
 
     // Borders & Dividers
-    border: '#2A2D3A',            // Dark border
-    borderLight: '#1F2937',       // Very subtle
-    divider: '#2A2D3A',           // Divider line
+    border: '#e8e0f0',            // Light purple border
+    borderLight: '#f0ebf7',       // Very subtle purple
+    divider: '#e8e0f0',           // Divider line
 
     // Special effects
-    glow: 'rgba(0, 212, 255, 0.2)',        // Cyan glow
-    glowStrong: 'rgba(0, 212, 255, 0.4)', // Stronger glow
-    overlay: 'rgba(0, 0, 0, 0.7)',        // Dark overlay
-    overlayLight: 'rgba(0, 0, 0, 0.4)',   // Light overlay
+    glow: 'rgba(127, 19, 236, 0.15)',      // Purple glow
+    glowStrong: 'rgba(127, 19, 236, 0.3)', // Stronger glow
+    overlay: 'rgba(20, 17, 24, 0.7)',      // Dark overlay
+    overlayLight: 'rgba(20, 17, 24, 0.4)', // Light overlay
   },
 
   // Gradient definitions
   gradients: {
-    // Dark gradients
-    background: ['#0A0A0F', '#0D0D14'],
-    surface: ['#12141C', '#1A1D28'],
-    card: ['#12141C', '#0D0D14'],
+    // Light gradients
+    background: ['#fefefe', '#faf8f5'],
+    surface: ['#ffffff', '#f8f5ff'],
+    card: ['#ffffff', '#fefefe'],
 
     // Accent gradients
-    primary: ['#00D4FF', '#00A8CC'],
-    rose: ['#FF6B9D', '#E91E63'],
+    primary: ['#7f13ec', '#6910c2'],
+    rose: ['#ff85a2', '#e6758f'],
     sage: ['#4ADE80', '#22C55E'],
 
     // Photo overlay gradient
-    photoOverlay: ['transparent', 'rgba(0, 0, 0, 0.6)'],
+    photoOverlay: ['transparent', 'rgba(20, 17, 24, 0.4)'],
 
     // Memories screen gradient
-    memories: ['#0A0A0F', '#0D0D14', '#12141C'],
-    memoriesAlt: ['#0A0A0F', '#0D0D14'],
+    memories: ['#fefefe', '#faf8f5', '#f8f5ff'],
+    memoriesAlt: ['#fefefe', '#faf8f5'],
 
     // Button gradients
-    button: ['#00D4FF', '#00A8CC'],
-    buttonSoft: ['#1A1D28', '#12141C'],
+    button: ['#7f13ec', '#6910c2'],
+    buttonSoft: ['#f8f5ff', '#ffffff'],
 
     // Tab bar
-    tabBar: ['#0D0D14', '#0A0A0F'],
+    tabBar: ['#fefefe', '#fefefe'],
 
-    // Dark ambient gradient
-    cloud: ['#0A0A0F', '#0D0D14', '#12141C'],
+    // Light ambient gradient
+    cloud: ['#fefefe', '#faf8f5', '#f8f5ff'],
   },
 
   typography: {
@@ -164,48 +166,48 @@ export const theme = {
   },
 
   shadows: {
-    // Dark theme shadows
+    // Light theme shadows
     sm: {
-      shadowColor: '#000000',
+      shadowColor: '#7f13ec',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
+      shadowOpacity: 0.08,
       shadowRadius: 4,
       elevation: 2,
     },
     md: {
-      shadowColor: '#000000',
+      shadowColor: '#7f13ec',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.4,
+      shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 4,
     },
     lg: {
-      shadowColor: '#000000',
+      shadowColor: '#7f13ec',
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.5,
+      shadowOpacity: 0.12,
       shadowRadius: 16,
       elevation: 8,
     },
-    // Cyan glow effects
+    // Purple glow effects
     glow: {
-      shadowColor: '#00D4FF',
+      shadowColor: '#7f13ec',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.3,
+      shadowOpacity: 0.2,
       shadowRadius: 12,
       elevation: 6,
     },
     glowStrong: {
-      shadowColor: '#00D4FF',
+      shadowColor: '#7f13ec',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5,
+      shadowOpacity: 0.35,
       shadowRadius: 20,
       elevation: 10,
     },
     // Lifted button
     lifted: {
-      shadowColor: '#00D4FF',
+      shadowColor: '#7f13ec',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
+      shadowOpacity: 0.2,
       shadowRadius: 12,
       elevation: 8,
     },
@@ -238,19 +240,19 @@ export const theme = {
   // Card preset styles
   cards: {
     default: {
-      backgroundColor: '#12141C',
+      backgroundColor: '#ffffff',
       borderRadius: 20,
       padding: 16,
       borderWidth: 1,
-      borderColor: '#2A2D3A',
+      borderColor: '#e8e0f0',
     },
     elevated: {
-      backgroundColor: '#1A1D28',
+      backgroundColor: '#ffffff',
       borderRadius: 24,
       padding: 20,
     },
     organic: {
-      backgroundColor: '#12141C',
+      backgroundColor: '#f8f5ff',
       borderRadius: 28,
       padding: 20,
     },
@@ -287,6 +289,29 @@ export const theme = {
       heightLg: 52,
     },
   },
+
+  // Doodle-specific utilities
+  doodle: {
+    // Hand-drawn border radii (asymmetric for organic feel)
+    handDrawnFrame: {
+      borderRadius: 24,
+      // Note: Use borderTopLeftRadius, borderTopRightRadius etc. individually for full effect
+    },
+    wobblyBorder: {
+      borderWidth: 1.5,
+      borderColor: '#a855f7',
+      borderRadius: 20,
+    },
+    organicAvatar: {
+      borderRadius: 24, // Slightly squared circle
+    },
+    // Scribble background pattern positions
+    scribblePositions: {
+      topRight: { top: 20, right: 20 },
+      bottomLeft: { bottom: 60, left: 16 },
+      center: { top: '50%', right: 8 },
+    },
+  },
 };
 
 export type Theme = typeof theme;
@@ -294,4 +319,36 @@ export type Theme = typeof theme;
 // Helper function to get gradient colors array
 export const getGradient = (name: keyof typeof theme.gradients): string[] => {
   return theme.gradients[name] as string[];
+};
+
+// Doodle-specific style helpers
+export const doodleStyles = {
+  // Hand-drawn frame style (apply to View)
+  handDrawnFrame: {
+    borderWidth: 2,
+    borderColor: '#141118',
+    borderRadius: 24,
+    // For a more organic look, apply slightly different radii to each corner
+  },
+  // Wobbly/scribble border for cards
+  wobblyBorder: {
+    borderWidth: 1.5,
+    borderColor: '#a855f7',
+    borderRadius: 20,
+  },
+  // Tape decoration style
+  tapeDecoration: {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    width: 48,
+    height: 20,
+    transform: [{ rotate: '-15deg' }],
+  },
+  // Pink scribble fill pattern
+  scribblePinkFill: {
+    backgroundColor: 'rgba(255, 133, 162, 0.2)',
+  },
+  // Purple scribble fill pattern  
+  scribblePurpleFill: {
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+  },
 };

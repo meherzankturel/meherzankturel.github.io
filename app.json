@@ -17,10 +17,54 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.sync.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SYNC needs access to your camera to capture moments and share photos with your partner.",
+        "NSPhotoLibraryUsageDescription": "SYNC needs access to your photo library to share photos and memories with your partner.",
+        "NSPhotoLibraryAddUsageDescription": "SYNC needs permission to save photos and memories to your photo library.",
+        "NSLocationWhenInUseUsageDescription": "SYNC uses your location to show your partner where you are and help plan date activities nearby.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "SYNC uses your location to share with your partner and provide location-based features.",
+        "NSContactsUsageDescription": "SYNC can access your contacts to help you invite your partner to the app.",
+        "NSCalendarsUsageDescription": "SYNC can access your calendar to schedule date nights and add important events.",
+        "NSFaceIDUsageDescription": "Use Face ID to securely access your SYNC account.",
+        "NSMicrophoneUsageDescription": "SYNC needs microphone access for voice messages and video calls with your partner.",
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ],
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "facetime",
+          "facetime-audio",
+          "tel",
+          "mailto"
+        ],
+        "CFBundleAllowMixedLocalizations": true,
+        "CFBundleLocalizations": [
+          "en"
+        ]
+      },
       "entitlements": {
         "com.apple.security.application-groups": [
           "group.com.sync.app"
+        ],
+        "aps-environment": "production"
+      },
+      "associatedDomains": [
+        "applinks:sync-app.com"
+      ],
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          }
         ]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {
@@ -28,12 +72,69 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A0F"
       },
-      "package": "com.sync.app"
+      "package": "com.sync.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_CONTACTS",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SYNC needs access to your camera to capture moments and share photos with your partner.",
+          "microphonePermission": "SYNC needs microphone access for voice messages and video calls with your partner.",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SYNC needs access to your photo library to share photos and memories with your partner.",
+          "cameraPermission": "SYNC needs access to your camera to capture moments and share photos with your partner."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "SYNC uses your location to share with your partner and provide location-based features.",
+          "locationAlwaysPermission": "SYNC uses your location in the background to keep your partner updated.",
+          "locationWhenInUsePermission": "SYNC uses your location to show your partner where you are."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "SYNC can access your contacts to help you invite your partner to the app."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "SYNC can access your calendar to schedule date nights and add important events."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FF6B6B",
+          "sounds": []
+        }
+      ]
     ],
     "scheme": "sync",
     "extra": {
@@ -42,6 +143,15 @@
         "projectId": "eac426b3-55ca-4fcf-a18e-44756dafae07"
       }
     },
-    "owner": "meherzan"
+    "owner": "meherzan",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/eac426b3-55ca-4fcf-a18e-44756dafae07"
+    },
+    "locales": {
+      "en": "./locales/en.json"
+    }
   }
 }

@@ -16,7 +16,10 @@ import MoodSelector from '../../src/components/MoodSelector';
 import SignalButton from '../../src/components/SignalButton';
 import HeartEffect from '../../src/components/HeartEffect';
 import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
-import { SyncLogoHeader } from '../../src/components/SyncLogoHeader';
+import { HomeHeaderDoodle } from '../../src/components/doodle/home/HomeHeaderDoodle';
+import { FeaturedMemory } from '../../src/components/doodle/home/FeaturedMemory';
+import { ControlCenter } from '../../src/components/doodle/home/ControlCenter';
+import { DailyEchoDoodle } from '../../src/components/doodle/home/DailyEchoDoodle';
 import { PhotoViewerModal } from '../../src/components/PhotoViewerModal';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
@@ -504,23 +507,44 @@ export default function HomeScreen() {
         setShowEchoRevealModal(true);
     };
 
-    // Handle photo capture - Camera only for live moments
+    // Handle photo capture - Camera or Library
     const handleAddMoment = async () => {
         const hasPermission = await MomentService.requestPermissions();
         if (!hasPermission) {
             Alert.alert(
-                'Camera Permission Required',
-                'Please grant camera permission to share your live moment.'
+                'Permissions Required',
+                'Please grant camera and photo library permissions to share your moment.'
             );
             return;
         }
 
-        // Open camera directly - no gallery option for live moments
-        const uri = await MomentService.takePhoto();
-        if (uri) {
-            setSelectedImageUri(uri);
-            setShowCaptionInput(true);
-        }
+        Alert.alert(
+            'Add Moment',
+            'Capture a new photo or choose one from your library',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Choose from Library',
+                    onPress: async () => {
+                        const uri = await MomentService.pickImage();
+                        if (uri) {
+                            setSelectedImageUri(uri);
+                            setShowCaptionInput(true);
+                        }
+                    }
+                },
+                {
+                    text: 'Take Photo',
+                    onPress: async () => {
+                        const uri = await MomentService.takePhoto();
+                        if (uri) {
+                            setSelectedImageUri(uri);
+                            setShowCaptionInput(true);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     // Handle moment upload
@@ -1654,280 +1678,43 @@ export default function HomeScreen() {
                             />
                         }
                     >
-                        {/* HEADER */}
-                        <SyncLogoHeader
-                            onMapPress={() => router.push('/map')}
-                            onSettingsPress={() => router.push('/settings')}
-                            onLogoutPress={handleLogout}
-                        />
-
-                        {/* SOS BANNER */}
-                        {activeSOS && (
-                            <TouchableOpacity
-                                style={styles.sosBanner}
-                                onPress={async () => {
-                                    const senderName = senderData?.name || partnerData?.name || 'Your partner';
-                                    Alert.alert(
-                                        'SOS Alert',
-                                        `${senderName} needs you right now!`,
-                                        [
-                                            { text: 'Dismiss', style: 'cancel' },
-                                            {
-                                                text: 'Call Partner',
-                                                onPress: async () => {
-                                                    const faceTimeContact = partnerData?.faceTimeContact || partnerData?.email;
-                                                    if (faceTimeContact) {
-                                                        await SOSService.launchFaceTime(faceTimeContact);
-                                                    }
-                                                    if (activeSOS?.id) {
-                                                        await SOSService.markResponded(activeSOS.id);
-                                                        setActiveSOS(null);
-                                                    }
-                                                },
-                                            },
-                                        ]
-                                    );
-                                }}
-                            >
-                                <Ionicons name="alert-circle" size={20} color="#fff" />
-                                <Text style={styles.sosBannerText}>
-                                    {senderData?.name || partnerData?.name || 'Partner'} needs you!
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-
                         {userData?.partnerId ? (
-                            <>
-                                {/* MOMENT OF THE DAY */}
-                                <Text style={styles.momentSectionTitle}>Today's Moments</Text>
-                                <TouchableOpacity
-                                    style={styles.momentCard}
+                            <View style={{ padding: 16 }}>
+                                <HomeHeaderDoodle
+                                    userImage={userData?.photoUrl}
+                                    partnerImage={partnerData?.photoUrl}
+                                    onSettingsPress={() => router.push('/settings')}
+                                    onProfilePress={() => router.push('/profile')}
+                                />
+
+                                <FeaturedMemory
+                                    imageUri={
+                                        MomentService.getPartnerPhoto(todayMoment, user?.uid || '')?.photoUrl ||
+                                        MomentService.getUserPhoto(todayMoment, user?.uid || '')?.photoUrl
+                                    }
                                     onPress={handleAddMoment}
-                                    activeOpacity={0.9}
-                                >
-                                    <View style={styles.momentSplitContainer}>
-                                        {/* My Photo */}
-                                        <View style={styles.momentPhotoHalf}>
-                                            {MomentService.getUserPhoto(todayMoment, user?.uid || '') ? (
-                                                <TouchableOpacity
-                                                    activeOpacity={0.9}
-                                                    onPress={() => {
-                                                        const photo = MomentService.getUserPhoto(todayMoment, user?.uid || '');
-                                                        if (photo) {
-                                                            setSelectedPhotoUrl(photo.photoUrl);
-                                                            setSelectedPhotoCaption(photo.caption);
-                                                            setSelectedMomentId(photo.id);
-                                                            setIsOwnPhoto(true);
-                                                            setPhotoViewerVisible(true);
-                                                        }
-                                                    }}
-                                                >
-                                                    <Image
-                                                        source={{ uri: MomentService.getUserPhoto(todayMoment, user?.uid || '')!.photoUrl }}
-                                                        style={styles.momentPhoto}
-                                                        resizeMode="cover"
-                                                    />
-                                                    {MomentService.getUserPhoto(todayMoment, user?.uid || '')?.caption && (
-                                                        <View style={styles.momentCaptionOverlay}>
-                                                            <Text style={styles.momentCaptionText}>
-                                                                {MomentService.getUserPhoto(todayMoment, user?.uid || '')!.caption}
-                                                            </Text>
-                                                        </View>
-                                                    )}
-                                                </TouchableOpacity>
-                                            ) : (
-                                                <View style={styles.momentPlaceholder}>
-                                                    <Ionicons name="camera-outline" size={32} color={theme.colors.textMuted} />
-                                                    <Text style={styles.momentPlaceholderText}>Add your moment</Text>
-                                                </View>
-                                            )}
-                                        </View>
+                                    label="FEATURED MEMORY"
+                                />
 
-                                        {/* Partner Photo */}
-                                        <View style={styles.momentPhotoHalf}>
-                                            {MomentService.getPartnerPhoto(todayMoment, user?.uid || '') ? (
-                                                <TouchableOpacity
-                                                    activeOpacity={0.9}
-                                                    onPress={() => {
-                                                        const photo = MomentService.getPartnerPhoto(todayMoment, user?.uid || '');
-                                                        if (photo) {
-                                                            setSelectedPhotoUrl(photo.photoUrl);
-                                                            setSelectedPhotoCaption(photo.caption);
-                                                            setSelectedMomentId(undefined);
-                                                            setIsOwnPhoto(false);
-                                                            setPhotoViewerVisible(true);
-                                                        }
-                                                    }}
-                                                >
-                                                    <Image
-                                                        source={{ uri: MomentService.getPartnerPhoto(todayMoment, user?.uid || '')!.photoUrl }}
-                                                        style={styles.momentPhoto}
-                                                        resizeMode="cover"
-                                                    />
-                                                    {MomentService.getPartnerPhoto(todayMoment, user?.uid || '')?.caption && (
-                                                        <View style={styles.momentCaptionOverlay}>
-                                                            <Text style={styles.momentCaptionText}>
-                                                                {MomentService.getPartnerPhoto(todayMoment, user?.uid || '')!.caption}
-                                                            </Text>
-                                                        </View>
-                                                    )}
-                                                </TouchableOpacity>
-                                            ) : (
-                                                <View style={styles.momentPlaceholder}>
-                                                    <Ionicons name="time-outline" size={32} color={theme.colors.textMuted} />
-                                                    <Text style={styles.momentPlaceholderText}>Waiting...</Text>
-                                                </View>
-                                            )}
-                                        </View>
-                                    </View>
+                                <ControlCenter
+                                    onSendLove={() => handleSignal('pulse')}
+                                    onSOS={() => handleSignal('sos')}
+                                    sendingSOS={sendingSOS}
+                                />
 
-                                </TouchableOpacity>
+                                <DailyEchoDoodle
+                                    question={dailyEcho?.question || "Loading..."}
+                                    hasAnswered={dailyEcho ? DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') : false}
+                                    onAnswer={() => setShowEchoAnswerModal(true)}
+                                    canReveal={dailyEcho ? DailyEchoService.canReveal(dailyEcho) && DailyEchoService.haveBothAnswered(dailyEcho) : false}
+                                    onReveal={handleRevealEcho}
+                                    countdown={DailyEchoService.formatCountdown(echoCountdown)}
+                                    waitingForPartner={dailyEcho ? !DailyEchoService.haveBothAnswered(dailyEcho) && DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') : false}
+                                />
 
-                                {/* TIMEZONE CARDS */}
-                                <View style={styles.timezoneRow}>
-                                    {/* My City */}
-                                    <TouchableOpacity
-                                        style={styles.timezoneCard}
-                                        onPress={!userData?.city ? handleLocationPermission : undefined}
-                                        activeOpacity={userData?.city ? 1 : 0.7}
-                                    >
-                                        {loadingLocation ? (
-                                            <ActivityIndicator size="small" color={theme.colors.primary} />
-                                        ) : (
-                                            <>
-                                                <View style={styles.timezoneHeader}>
-                                                    <Text style={styles.timezoneCity}>
-                                                        {userData?.city?.toUpperCase() || 'TAP TO SET'}
-                                                    </Text>
-                                                    <Ionicons
-                                                        name={LocationService.isDaytime(userData?.timezone || 'America/New_York') ? 'sunny-outline' : 'moon-outline'}
-                                                        size={16}
-                                                        color={theme.colors.textSecondary}
-                                                    />
-                                                </View>
-                                                <Text style={styles.timezoneTime}>
-                                                    {LocationService.formatTime(myTime)}
-                                                </Text>
-                                                {userData?.city ? (
-                                                    myWeather ? (
-                                                        <View style={styles.weatherRow}>
-                                                            <Ionicons
-                                                                name={WeatherService.getWeatherIcon(myWeather.condition, LocationService.isDaytime(userData?.timezone || 'America/New_York')) as any}
-                                                                size={14}
-                                                                color={WeatherService.getWeatherColor(myWeather.condition)}
-                                                            />
-                                                            <Text style={[styles.weatherText, myWeather.isSevere && styles.weatherSevere]}>
-                                                                {Math.round(myWeather.temp)}°
-                                                                <Text style={styles.feelsLikeText}>
-                                                                    {' '}(feels {Math.round(myWeather.feelsLike)}°)
-                                                                </Text>
-                                                            </Text>
-                                                        </View>
-                                                    ) : loadingWeather ? (
-                                                        <ActivityIndicator size="small" color={theme.colors.textMuted} />
-                                                    ) : null
-                                                ) : (
-                                                    <Text style={styles.timezoneHint}>
-                                                        <Ionicons name="location-outline" size={12} /> Enable location
-                                                    </Text>
-                                                )}
-                                            </>
-                                        )}
-                                    </TouchableOpacity>
-
-                                    {/* Partner City */}
-                                    <View style={styles.timezoneCard}>
-                                        <View style={styles.timezoneHeader}>
-                                            <Text style={styles.timezoneCity}>
-                                                {partnerData?.city?.toUpperCase() || 'PARTNER'}
-                                            </Text>
-                                            <Ionicons
-                                                name={LocationService.isDaytime(partnerData?.timezone || 'America/New_York') ? 'sunny-outline' : 'moon-outline'}
-                                                size={16}
-                                                color={theme.colors.textSecondary}
-                                            />
-                                        </View>
-                                        <Text style={styles.timezoneTime}>
-                                            {LocationService.formatTime(partnerTime)}
-                                        </Text>
-                                        {partnerWeather ? (
-                                            <View style={styles.weatherRow}>
-                                                <Ionicons
-                                                    name={WeatherService.getWeatherIcon(partnerWeather.condition, LocationService.isDaytime(partnerData?.timezone || 'America/New_York')) as any}
-                                                    size={14}
-                                                    color={WeatherService.getWeatherColor(partnerWeather.condition)}
-                                                />
-                                                <Text style={[styles.weatherText, partnerWeather.isSevere && styles.weatherSevere]}>
-                                                    {Math.round(partnerWeather.temp)}°
-                                                    <Text style={styles.feelsLikeText}>
-                                                        {' '}(feels {Math.round(partnerWeather.feelsLike)}°)
-                                                    </Text>
-                                                </Text>
-                                                {partnerWeather.isSevere && (
-                                                    <Ionicons name="warning" size={12} color={theme.colors.error} />
-                                                )}
-                                            </View>
-                                        ) : partnerData?.city ? (
-                                            <Text style={styles.timezoneRegion}>
-                                                {partnerData?.region || ''}
-                                            </Text>
-                                        ) : null}
-                                    </View>
-                                </View>
-
-
-                                {/* DAILY ECHO PROMPT - Mood section removed, use Moods tab instead */}
-                                <View style={styles.dailyEchoCard}>
-                                    <View style={styles.dailyEchoHeader}>
-                                        <View style={styles.dailyEchoIcon}>
-                                            <Ionicons name="chatbubble-ellipses" size={18} color={theme.colors.primary} />
-                                        </View>
-                                        <Text style={styles.dailyEchoLabel}>DAILY ECHO</Text>
-                                        {DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') && (
-                                            <Ionicons name="checkmark-circle" size={16} color={theme.colors.success} style={{ marginLeft: 'auto' }} />
-                                        )}
-                                    </View>
-                                    <Text style={styles.dailyEchoQuestion}>
-                                        {dailyEcho?.question || "What's one thing that made you think of me today?"}
-                                    </Text>
-
-                                    {!DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') ? (
-                                        <TouchableOpacity onPress={() => setShowEchoAnswerModal(true)}>
-                                            <Text style={styles.dailyEchoAction}>Answer now →</Text>
-                                        </TouchableOpacity>
-                                    ) : DailyEchoService.canReveal(dailyEcho!) && DailyEchoService.haveBothAnswered(dailyEcho) ? (
-                                        <TouchableOpacity onPress={handleRevealEcho} style={styles.revealButton}>
-                                            <Ionicons name="eye" size={16} color="#FFF" />
-                                            <Text style={styles.revealButtonText}>Reveal Answers</Text>
-                                        </TouchableOpacity>
-                                    ) : DailyEchoService.haveBothAnswered(dailyEcho) ? (
-                                        <View style={styles.countdownContainer}>
-                                            <Ionicons name="time-outline" size={14} color={theme.colors.textMuted} />
-                                            <Text style={styles.countdownText}>
-                                                Reveals in {DailyEchoService.formatCountdown(echoCountdown)}
-                                            </Text>
-                                        </View>
-                                    ) : (
-                                        <Text style={styles.waitingText}>
-                                            <Ionicons name="hourglass-outline" size={12} /> Waiting for partner...
-                                        </Text>
-                                    )}
-                                </View>
-
-                                {/* SIGNAL BUTTON */}
-                                <View style={styles.signalSection}>
-                                    {sendingSOS ? (
-                                        <View style={styles.sosLoadingContainer}>
-                                            <ActivityIndicator size="large" color={theme.colors.error} />
-                                            <Text style={styles.sosLoadingText}>Sending SOS...</Text>
-                                        </View>
-                                    ) : (
-                                        <SignalButton onSendSignal={handleSignal} />
-                                    )}
-                                </View>
-                            </>
+                                <Text style={{ textAlign: 'center', marginTop: 40, color: '#000', letterSpacing: 4, fontSize: 10 }}>IN SYNC</Text>
+                            </View>
                         ) : (
-                            /* UNLINKED STATE */
                             <View style={styles.unlinkedContainer}>
                                 <View style={styles.unlinkedCard}>
                                     <Text style={styles.unlinkedEmoji}>💕</Text>
@@ -2100,7 +1887,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
     // ═══════════════════════════════════════════
-    // ECHOES OF US - Dark Theme
+    // SYNC - Light Doodle Theme
     // ═══════════════════════════════════════════
 
     container: {
@@ -2621,7 +2408,7 @@ const styles = StyleSheet.create({
         borderRadius: theme.borderRadius.xl,
     },
     connectButtonText: {
-        color: theme.colors.text,
+        color: '#FFFFFF',
         fontWeight: '700',
         fontSize: theme.typography.fontSize.base,
     },

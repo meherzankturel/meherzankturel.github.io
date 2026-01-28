@@ -1,4 +1,12 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Modal, Pressable, Alert, Switch, RefreshControl, Keyboard, Image, AppState } from 'react-native';
+import { WobblyCard } from '../../src/components/doodle';
+import { DoodleDateCard } from '../../src/components/doodle/DoodleDateCard';
+import { DateNightsHeaderDoodle } from '../../src/components/doodle/date-night/DateNightsHeaderDoodle';
+import { DoodleTabSwitcher } from '../../src/components/doodle/date-night/DoodleTabSwitcher';
+import { PlanDateDoodle } from '../../src/components/doodle/date-night/PlanDateDoodle';
+import { PlanDateStep2 } from '../../src/components/doodle/date-night/PlanDateStep2';
+import { PlanDateStep3 } from '../../src/components/doodle/date-night/PlanDateStep3'; // Step 3
+import { ReviewDateDoodle } from '../../src/components/doodle/date-night/ReviewDateDoodle';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -373,6 +381,7 @@ export default function DateNightsScreen() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<DateNight | null>(null);
   const [activeDateTab, setActiveDateTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [createStep, setCreateStep] = useState(1);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -1235,6 +1244,7 @@ export default function DateNightsScreen() {
   };
 
   const openCreateModal = () => {
+    setCreateStep(1);
     console.log('Opening create modal');
     resetForm();
     setShowModal(true);
@@ -1627,21 +1637,17 @@ export default function DateNightsScreen() {
   return (
     <SwipeableTabWrapper tabIndex={2} totalTabs={4}>
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Date Nights</Text>
-        </View>
+        <DateNightsHeaderDoodle onAddPress={openCreateModal} />
 
-        {/* Tabs for Upcoming and Past dates - Always visible */}
-        <View style={styles.tabsContainer}>
-          <SimpleTabs
-            tabs={[
-              { id: 'upcoming', label: `Upcoming (${upcomingNights.length})` },
-              { id: 'past', label: `Past Moments (${sortedPastNights.length})` },
-            ]}
-            activeTab={activeDateTab}
-            onTabChange={(tabId) => setActiveDateTab(tabId as 'upcoming' | 'past')}
-          />
-        </View>
+        {/* Doodle Tabs */}
+        <DoodleTabSwitcher
+          tabs={[
+            { id: 'upcoming', label: `Upcoming` },
+            { id: 'past', label: `Recently Past` },
+          ]}
+          activeTab={activeDateTab}
+          onTabChange={(tabId) => setActiveDateTab(tabId as 'upcoming' | 'past')}
+        />
 
         <ScrollView
           style={styles.scrollView}
@@ -1695,19 +1701,18 @@ export default function DateNightsScreen() {
                         <Text style={styles.sectionSubtitle}>Your upcoming plans together</Text>
                       </View>
                       {upcomingNights.map((dateNight) => (
-                        <DateNightCard
+                        <DoodleDateCard
                           key={dateNight.id}
-                          dateNight={dateNight}
-                          partnerData={partnerData}
-                          user={user}
-                          userData={userData}
-                          reviews={reviews[dateNight.id!] || []}
-                          userReview={userReviews[dateNight.id!]}
+                          title={dateNight.title}
+                          date={dateNight.date?.toDate ? dateNight.date.toDate() : new Date(dateNight.date)}
+                          categoryIcon={CATEGORIES.find(cat => cat.id === dateNight.category)?.icon || 'ellipse'}
+                          categoryColor={CATEGORIES.find(cat => cat.id === dateNight.category)?.color || theme.colors.textSecondary}
+                          description={dateNight.description}
+                          isUpcoming={true}
                           onEdit={() => openEditModal(dateNight)}
                           onDelete={() => handleDelete(dateNight)}
-                          onMarkCompleted={() => handleMarkCompleted(dateNight)}
-                          onLaunchFaceTime={() => handleLaunchFaceTime(dateNight)}
-                          onReview={() => { }}
+                          onComplete={() => handleMarkCompleted(dateNight)}
+                          onAction={() => handleLaunchFaceTime(dateNight)}
                         />
                       ))}
                     </View>
@@ -1715,110 +1720,7 @@ export default function DateNightsScreen() {
                 </>
               )}
 
-              {/* Past Tab Content - Scrapbook Design */}
-              {activeDateTab === 'past' && (
-                <LinearGradient
-                  colors={['#F5E6D3', '#F0D4C4', '#EBC5B8', '#E8BDB0']}
-                  style={styles.scrapbookGradient}
-                >
-                  {sortedPastNights.length === 0 ? (
-                    <View style={styles.scrapbookEmptyContainer}>
-                      <Ionicons name="heart-outline" size={64} color="#C25068" />
-                      <Text style={styles.scrapbookEmptyText}>No memories yet</Text>
-                      <Text style={styles.scrapbookEmptySubtext}>Your date memories will appear here</Text>
-                    </View>
-                  ) : (
-                    <>
-                      {/* Scrapbook Header */}
-                      <View style={styles.scrapbookHeader}>
-                        <Text style={styles.scrapbookTitle}>Memories & Notes</Text>
-                        <View style={styles.scrapbookLocationRow}>
-                          <Ionicons name="location" size={14} color="#C25068" />
-                          <Text style={styles.scrapbookSubtitle}>Our Journey</Text>
-                        </View>
-                      </View>
 
-                      {/* Polaroid Memory Cards */}
-                      {sortedPastNights.map((dateNight, index) => {
-                        const date = dateNight.date?.toDate ? dateNight.date.toDate() : new Date(dateNight.date);
-                        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-
-                        // Get review data for this date
-                        const dateReviews = reviews[dateNight.id!] || [];
-                        const avgRating = dateReviews.length > 0
-                          ? dateReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / dateReviews.length
-                          : 0;
-                        const firstReview = dateReviews[0];
-
-                        // Get first media from reviews
-                        const firstMedia = firstReview?.images?.[0] || firstReview?.videos?.[0];
-                        const mediaType = firstReview?.videos?.[0] ? 'video' : 'image';
-
-                        // Collect ALL media from both partners' reviews for this date
-                        const allMedia: Array<{ uri: string; type: 'image' | 'video' }> = [];
-                        dateReviews.forEach(review => {
-                          // Add images
-                          review.images?.forEach(uri => allMedia.push({ uri, type: 'image' }));
-                          // Add videos
-                          review.videos?.forEach(uri => allMedia.push({ uri, type: 'video' }));
-                        });
-
-                        // Alternate rotation for visual interest
-                        const rotation = index % 3 === 0 ? 'left' : index % 3 === 1 ? 'right' : 'none';
-
-                        return (
-                          <PolaroidMemoryCard
-                            key={dateNight.id}
-                            title={dateNight.title || 'Date Night'}
-                            date={formattedDate}
-                            location={dateNight.location}
-                            rating={Math.round(avgRating)}
-                            comment={firstReview?.message}
-                            mediaUri={firstMedia}
-                            mediaType={mediaType}
-                            rotation={rotation}
-                            hasTape={index % 2 === 0}
-                            hasClip={index % 2 === 1}
-                            onPress={() => {
-                              console.log('Polaroid card tapped!', {
-                                dateNightId: dateNight.id,
-                                allMediaCount: allMedia.length,
-                                allMedia: allMedia
-                              });
-                              if (allMedia.length > 0) {
-                                // Open media preview with all images/videos
-                                console.log('Opening media preview with', allMedia.length, 'items');
-                                openMediaPreview(allMedia, 0);
-                              } else {
-                                // No media - open review modal
-                                console.log('No media found, opening review modal');
-                                handleOpenReview(dateNight);
-                              }
-                            }}
-                            onEdit={() => handleOpenReview(dateNight)}
-                          />
-                        );
-                      })}
-
-                      {/* Memory Stats Section */}
-                      <MemoryStats
-                        averageRating={
-                          Object.values(reviews).flat().length > 0
-                            ? Object.values(reviews).flat().reduce((sum, r) => sum + (r.rating || 0), 0) / Object.values(reviews).flat().length
-                            : 0
-                        }
-                        totalMemories={sortedPastNights.length}
-                      />
-
-                      {/* Footer prompt */}
-                      <View style={styles.scrapbookFooter}>
-                        <Text style={styles.scrapbookFooterText}>Where will we go next?</Text>
-                        <Ionicons name="airplane" size={20} color="#C25068" />
-                      </View>
-                    </>
-                  )}
-                </LinearGradient>
-              )}
 
 
             </View>
@@ -1858,17 +1760,18 @@ export default function DateNightsScreen() {
                   ) : (
                     <View style={styles.section}>
                       {upcomingNights.map((dateNight) => (
-                        <DateNightCard
+                        <DoodleDateCard
                           key={dateNight.id}
-                          dateNight={dateNight}
-                          partnerData={partnerData}
-                          user={user}
-                          userData={userData}
+                          title={dateNight.title}
+                          date={dateNight.date?.toDate ? dateNight.date.toDate() : new Date(dateNight.date)}
+                          categoryIcon={CATEGORIES.find(cat => cat.id === dateNight.category)?.icon || 'ellipse'}
+                          categoryColor={CATEGORIES.find(cat => cat.id === dateNight.category)?.color || theme.colors.textSecondary}
+                          description={dateNight.description}
+                          isUpcoming={true}
                           onEdit={() => openEditModal(dateNight)}
                           onDelete={() => handleDelete(dateNight)}
-                          onMarkCompleted={() => handleMarkCompleted(dateNight)}
-                          onLaunchFaceTime={() => handleLaunchFaceTime(dateNight)}
-                          onReview={() => { }}
+                          onComplete={() => handleMarkCompleted(dateNight)}
+                          onAction={() => handleLaunchFaceTime(dateNight)}
                         />
                       ))}
                     </View>
@@ -1876,85 +1779,36 @@ export default function DateNightsScreen() {
                 </>
               )}
 
-              {/* Past Tab Content - Scrapbook Design */}
+              {/* Past Tab Content - Doodle Style */}
               {activeDateTab === 'past' && (
-                <LinearGradient
-                  colors={['#F5E6D3', '#F0D4C4', '#EBC5B8', '#E8BDB0']}
-                  style={styles.scrapbookGradient}
-                >
+                <View style={[styles.section, { opacity: 0.8 }]}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Recently Past</Text>
+                  </View>
                   {sortedPastNights.length === 0 ? (
-                    <View style={styles.scrapbookEmptyContainer}>
-                      <Ionicons name="heart-outline" size={64} color="#C25068" />
-                      <Text style={styles.scrapbookEmptyText}>No memories yet</Text>
-                      <Text style={styles.scrapbookEmptySubtext}>Your date memories will appear here</Text>
+                    <View style={styles.emptyContainer}>
+                      <Ionicons name="heart-outline" size={64} color={theme.colors.textLight} />
+                      <Text style={styles.emptyText}>No past moments yet</Text>
                     </View>
                   ) : (
-                    <>
-                      {/* Scrapbook Header */}
-                      <View style={styles.scrapbookHeader}>
-                        <Text style={styles.scrapbookTitle}>Memories & Notes</Text>
-                        <View style={styles.scrapbookLocationRow}>
-                          <Ionicons name="location" size={14} color="#C25068" />
-                          <Text style={styles.scrapbookSubtitle}>Our Journey</Text>
-                        </View>
+                    sortedPastNights.map((dateNight) => (
+                      <View key={dateNight.id} style={{ opacity: 0.7 }}>
+                        <DoodleDateCard
+                          title={dateNight.title}
+                          date={dateNight.date?.toDate ? dateNight.date.toDate() : new Date(dateNight.date)}
+                          categoryIcon={CATEGORIES.find(cat => cat.id === dateNight.category)?.icon || 'ellipse'}
+                          categoryColor={CATEGORIES.find(cat => cat.id === dateNight.category)?.color || theme.colors.textSecondary}
+                          description={dateNight.description}
+                          isUpcoming={false}
+                          onEdit={() => handleOpenReview(dateNight)}
+                          onDelete={() => handleDelete(dateNight)}
+                        />
                       </View>
-
-                      {/* Polaroid Memory Cards */}
-                      {sortedPastNights.map((dateNight, index) => {
-                        const date = dateNight.date?.toDate ? dateNight.date.toDate() : new Date(dateNight.date);
-                        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-
-                        // Get review data for this date
-                        const dateReviews = reviews[dateNight.id!] || [];
-                        const avgRating = dateReviews.length > 0
-                          ? dateReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / dateReviews.length
-                          : 0;
-                        const firstReview = dateReviews[0];
-
-                        // Get first media from reviews
-                        const firstMedia = firstReview?.images?.[0] || firstReview?.videos?.[0];
-                        const mediaType = firstReview?.videos?.[0] ? 'video' : 'image';
-
-                        // Alternate rotation for visual interest
-                        const rotation = index % 3 === 0 ? 'left' : index % 3 === 1 ? 'right' : 'none';
-
-                        return (
-                          <PolaroidMemoryCard
-                            key={dateNight.id}
-                            title={dateNight.title || 'Date Night'}
-                            date={formattedDate}
-                            location={dateNight.location}
-                            rating={Math.round(avgRating)}
-                            comment={firstReview?.message}
-                            mediaUri={firstMedia}
-                            mediaType={mediaType}
-                            rotation={rotation}
-                            hasTape={index % 2 === 0}
-                            hasClip={index % 2 === 1}
-                            onPress={() => handleOpenReview(dateNight)}
-                          />
-                        );
-                      })}
-
-                      {/* Memory Stats Section */}
-                      <MemoryStats
-                        averageRating={
-                          Object.values(reviews).flat().length > 0
-                            ? Object.values(reviews).flat().reduce((sum, r) => sum + (r.rating || 0), 0) / Object.values(reviews).flat().length
-                            : 0
-                        }
-                        totalMemories={sortedPastNights.length}
-                      />
-
-                      {/* Footer prompt */}
-                      <View style={styles.scrapbookFooter}>
-                        <Text style={styles.scrapbookFooterText}>Where will we go next?</Text>
-                        <Ionicons name="airplane" size={20} color="#C25068" />
-                      </View>
-                    </>
+                    ))
                   )}
-                </LinearGradient>
+                </View>
               )}
+
 
             </>
 
@@ -1973,190 +1827,79 @@ export default function DateNightsScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Create/Edit Modal - Simplified */}
+        {/* Create/Edit Modal - Doodle Style */}
         <Modal
           visible={showModal}
           animationType="slide"
-          transparent={true}
+          transparent={false}
           onRequestClose={() => setShowModal(false)}
         >
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => {
-              Keyboard.dismiss();
-              setShowModal(false);
-            }}
-          >
-            <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>
-                  {editingDateNight ? 'Edit Date' : '✨ Plan a Date'}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setShowModal(false);
-                  }}
-                >
-                  <Ionicons name="close" size={24} color={theme.colors.text} />
-                </TouchableOpacity>
-              </View>
+          <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            {createStep === 1 && (
+              <PlanDateDoodle
+                title={title}
+                setTitle={setTitle}
+                selectedVibe={category}
+                setVibe={(id) => setCategory(id as any)}
+                vibes={CATEGORIES.map(c => ({
+                  id: c.id,
+                  label: c.name,
+                  icon: c.icon
+                }))}
+                onNext={() => setCreateStep(2)}
+                onBack={() => setShowModal(false)}
+              />
+            )}
 
-              <ScrollView
-                style={styles.modalScroll}
-                showsVerticalScrollIndicator={true}
-                contentContainerStyle={{ paddingBottom: theme.spacing.md }}
-                keyboardShouldPersistTaps="handled"
+            {createStep === 2 && (
+              <PlanDateStep2
+                date={selectedDate}
+                setDate={setSelectedDate}
+                time={selectedTime}
+                setTime={setSelectedTime}
+                location={location}
+                setLocation={setLocation}
+                onNext={() => setCreateStep(3)}
+                onBack={() => setCreateStep(1)}
               >
-                {/* Essential: Title */}
-                <Input
-                  label="What's the plan? *"
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="e.g., Movie Night, Dinner at Olive Garden..."
-                />
-
-                {/* Essential: Date & Time in one row */}
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <DateTimePicker
-                      label="When?"
-                      value={selectedDate}
-                      onChange={(date) => setSelectedDate(date)}
-                      mode="date"
-                      minimumDate={new Date()}
-                    />
-                  </View>
-
-                  <View style={styles.halfWidth}>
-                    <DateTimePicker
-                      label="Time"
-                      value={selectedTime}
-                      onChange={(time) => setSelectedTime(time)}
-                      mode="time"
-                    />
-                  </View>
-                </View>
-
-                {/* Quick Category Selection - Icon buttons */}
-                <Text style={styles.inputLabel}>Type</Text>
-                <View style={styles.quickCategoryRow}>
-                  {CATEGORIES.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={[
-                        styles.quickCategoryButton,
-                        category === cat.id && styles.quickCategoryButtonActive,
-                        category === cat.id && { borderColor: cat.color, backgroundColor: cat.color + '15' },
-                      ]}
-                      onPress={() => {
-                        setCategory(cat.id as DateNight['category']);
-                        if (cat.id !== 'other') setOtherCategoryText('');
-                        Keyboard.dismiss();
-                      }}
-                    >
-                      <Ionicons
-                        name={cat.icon as any}
-                        size={24}
-                        color={category === cat.id ? cat.color : theme.colors.textSecondary}
-                      />
-                      <Text style={[
-                        styles.quickCategoryText,
-                        category === cat.id && { color: cat.color, fontWeight: '600' },
-                      ]}>
-                        {cat.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                {category === 'other' && (
-                  <Input
-                    label="Specify type"
-                    value={otherCategoryText}
-                    onChangeText={setOtherCategoryText}
-                    placeholder="e.g., Concert, Festival..."
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#666' }}>Date</Text>
+                  <DateTimePicker
+                    label=""
+                    value={selectedDate}
+                    onChange={(date) => setSelectedDate(date)}
+                    mode="date"
+                    minimumDate={new Date()}
                   />
-                )}
-
-                {/* Optional fields in collapsible style - always visible but compact */}
-                <View style={styles.optionalSection}>
-                  <Input
-                    label="Location (optional)"
-                    value={location}
-                    onChangeText={setLocation}
-                    placeholder="Where will you go?"
-                  />
-
-                  <Input
-                    label="Notes (optional)"
-                    value={description}
-                    onChangeText={setDescription}
-                    placeholder="Any special plans or ideas..."
-                    multiline
-                    numberOfLines={2}
-                  />
-
-                  {/* Duration - Simplified */}
-                  <Text style={styles.inputLabel}>Duration</Text>
-                  <View style={styles.simpleDurationRow}>
-                    {[
-                      { label: '1h', value: 60 },
-                      { label: '2h', value: 120 },
-                      { label: '3h', value: 180 },
-                      { label: '4h+', value: 240 },
-                    ].map((option) => (
-                      <TouchableOpacity
-                        key={option.value}
-                        style={[
-                          styles.simpleDurationOption,
-                          duration === option.value && styles.simpleDurationOptionActive,
-                        ]}
-                        onPress={() => setDuration(option.value)}
-                      >
-                        <Text
-                          style={[
-                            styles.simpleDurationText,
-                            duration === option.value && styles.simpleDurationTextActive,
-                          ]}
-                        >
-                          {option.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-
-                  {/* Reminder - Single toggle with auto 30min default */}
-                  <View style={styles.simpleReminderRow}>
-                    <View style={styles.reminderInfo}>
-                      <Ionicons name="notifications-outline" size={20} color={theme.colors.textSecondary} />
-                      <Text style={styles.reminderLabel}>
-                        Remind me {reminderEnabled ? REMINDER_OPTIONS.find(o => o.value === reminderOffset)?.label || '30 min before' : ''}
-                      </Text>
-                    </View>
-                    <Switch
-                      value={reminderEnabled}
-                      onValueChange={setReminderEnabled}
-                      trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-                      thumbColor="#fff"
-                    />
-                  </View>
                 </View>
-              </ScrollView>
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8, color: '#666' }}>Time</Text>
+                  <DateTimePicker
+                    label=""
+                    value={selectedTime}
+                    onChange={(time) => setSelectedTime(time)}
+                    mode="time"
+                  />
+                  label=""
+                  />
+                </View>
+              </PlanDateStep2>
+            )}
 
-              {/* Action Button - Single prominent button */}
-              <View style={styles.modalActions}>
-                <Button
-                  title={editingDateNight ? 'Save Changes' : '💕 Create Date'}
-                  onPress={handleSubmit}
-                  variant="primary"
-                  loading={submitting}
-                  disabled={submitting || !title.trim()}
-                  style={{ flex: 1 }}
-                />
-              </View>
-            </Pressable>
-          </Pressable>
+            {createStep === 3 && (
+              <PlanDateStep3
+                duration={duration}
+                setDuration={setDuration}
+                notes={description}
+                setNotes={setDescription}
+                reminderEnabled={reminderEnabled}
+                setReminderEnabled={setReminderEnabled}
+                onCreate={handleSubmit}
+                onBack={() => setCreateStep(2)}
+                submitting={submitting}
+              />
+            )}
+          </SafeAreaView>
         </Modal>
 
         {/* Review Modal */}
@@ -2190,7 +1933,7 @@ export default function DateNightsScreen() {
           onClose={() => setPreviewVisible(false)}
         />
       </SafeAreaView>
-    </SwipeableTabWrapper>
+    </SwipeableTabWrapper >
   );
 }
 

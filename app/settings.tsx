@@ -11,6 +11,7 @@ import {
     Alert,
     TextInput,
     Linking,
+    Modal,
 } from 'react-native';
 import { useAuth } from '../src/contexts/AuthContext';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
@@ -23,6 +24,12 @@ import { signOut } from 'firebase/auth';
 import * as Device from 'expo-device';
 import * as Application from 'expo-application';
 import { ProfileImagePicker } from '../src/components/ProfileImagePicker';
+import { AccountDeletionService } from '../src/services/accountDeletion.service';
+
+// URLs for privacy policy and terms - update these with your actual URLs
+const PRIVACY_POLICY_URL = 'https://sync-app.com/privacy';
+const TERMS_OF_SERVICE_URL = 'https://sync-app.com/terms';
+const SUPPORT_EMAIL = 'support@sync-app.com';
 
 export default function SettingsScreen() {
     const { user } = useAuth();
@@ -142,35 +149,48 @@ export default function SettingsScreen() {
         ]);
     };
 
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const handleDeleteAccount = () => {
-        Alert.alert(
-            'Delete Account',
-            'This action cannot be undone. All your data will be permanently deleted.',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: () => {
-                        Alert.alert(
-                            'Are you absolutely sure?',
-                            'Type DELETE to confirm account deletion.',
-                            [
-                                { text: 'Cancel', style: 'cancel' },
-                                {
-                                    text: 'Proceed',
-                                    style: 'destructive',
-                                    onPress: async () => {
-                                        // TODO: Implement account deletion
-                                        Alert.alert('Coming Soon', 'Account deletion will be available in a future update.');
-                                    },
-                                },
-                            ]
-                        );
+        setShowDeleteModal(true);
+        setDeletePassword('');
+        setDeleteConfirmText('');
+    };
+
+    const confirmDeleteAccount = async () => {
+        if (deleteConfirmText !== 'DELETE') {
+            Alert.alert('Error', 'Please type DELETE to confirm account deletion.');
+            return;
+        }
+
+        if (!deletePassword) {
+            Alert.alert('Error', 'Please enter your password to confirm deletion.');
+            return;
+        }
+
+        setIsDeleting(true);
+
+        try {
+            await AccountDeletionService.deleteAccount(deletePassword, userData?.pairId);
+            setShowDeleteModal(false);
+            Alert.alert(
+                'Account Deleted',
+                'Your account and all associated data have been permanently deleted.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => router.replace('/login'),
                     },
-                },
-            ]
-        );
+                ]
+            );
+        } catch (error: any) {
+            Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     if (loading) {
@@ -428,7 +448,7 @@ export default function SettingsScreen() {
                     <TouchableOpacity
                         style={styles.settingRow}
                         onPress={() => {
-                            Linking.openURL('mailto:support@couplesapp.com');
+                            Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
                         }}
                     >
                         <View style={styles.settingInfo}>
@@ -440,7 +460,7 @@ export default function SettingsScreen() {
                     <TouchableOpacity
                         style={styles.settingRow}
                         onPress={() => {
-                            Alert.alert('Terms of Service', 'View our terms of service online');
+                            Linking.openURL(TERMS_OF_SERVICE_URL);
                         }}
                     >
                         <View style={styles.settingInfo}>
@@ -452,7 +472,7 @@ export default function SettingsScreen() {
                     <TouchableOpacity
                         style={styles.settingRow}
                         onPress={() => {
-                            Alert.alert('Privacy Policy', 'View our privacy policy online');
+                            Linking.openURL(PRIVACY_POLICY_URL);
                         }}
                     >
                         <View style={styles.settingInfo}>
@@ -469,9 +489,77 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
 
                 <Text style={styles.footerText}>
-                    Made with ❤️ for couples everywhere
+                    Made with love for couples everywhere
                 </Text>
             </ScrollView>
+
+            {/* Delete Account Modal */}
+            <Modal
+                visible={showDeleteModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => !isDeleting && setShowDeleteModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Ionicons name="warning" size={48} color={theme.colors.error} />
+                            <Text style={styles.modalTitle}>Delete Account</Text>
+                        </View>
+
+                        <Text style={styles.modalDescription}>
+                            This action is permanent and cannot be undone. All your data, including moods, moments, date nights, and messages will be permanently deleted.
+                        </Text>
+
+                        <Text style={styles.inputLabel}>Enter your password:</Text>
+                        <TextInput
+                            style={styles.modalInput}
+                            value={deletePassword}
+                            onChangeText={setDeletePassword}
+                            placeholder="Password"
+                            placeholderTextColor={theme.colors.textMuted}
+                            secureTextEntry
+                            editable={!isDeleting}
+                        />
+
+                        <Text style={styles.inputLabel}>Type DELETE to confirm:</Text>
+                        <TextInput
+                            style={styles.modalInput}
+                            value={deleteConfirmText}
+                            onChangeText={setDeleteConfirmText}
+                            placeholder="Type DELETE"
+                            placeholderTextColor={theme.colors.textMuted}
+                            autoCapitalize="characters"
+                            editable={!isDeleting}
+                        />
+
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                style={styles.cancelButton}
+                                onPress={() => setShowDeleteModal(false)}
+                                disabled={isDeleting}
+                            >
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.deleteButton,
+                                    (deleteConfirmText !== 'DELETE' || !deletePassword || isDeleting) && styles.deleteButtonDisabled,
+                                ]}
+                                onPress={confirmDeleteAccount}
+                                disabled={deleteConfirmText !== 'DELETE' || !deletePassword || isDeleting}
+                            >
+                                {isDeleting ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={styles.deleteButtonText}>Delete Forever</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -637,5 +725,84 @@ const styles = StyleSheet.create({
         marginTop: theme.spacing.sm,
         fontSize: theme.typography.fontSize.xs,
         color: theme.colors.textMuted,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: theme.spacing.lg,
+    },
+    modalContent: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.borderRadius.xl,
+        padding: theme.spacing.xl,
+        width: '100%',
+        maxWidth: 400,
+    },
+    modalHeader: {
+        alignItems: 'center',
+        marginBottom: theme.spacing.lg,
+    },
+    modalTitle: {
+        fontSize: theme.typography.fontSize.xl,
+        fontWeight: '700',
+        color: theme.colors.error,
+        marginTop: theme.spacing.md,
+    },
+    modalDescription: {
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.textSecondary,
+        textAlign: 'center',
+        marginBottom: theme.spacing.lg,
+        lineHeight: 20,
+    },
+    inputLabel: {
+        fontSize: theme.typography.fontSize.sm,
+        fontWeight: '600',
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xs,
+    },
+    modalInput: {
+        backgroundColor: theme.colors.backgroundAlt,
+        borderRadius: theme.borderRadius.md,
+        padding: theme.spacing.md,
+        fontSize: theme.typography.fontSize.base,
+        color: theme.colors.text,
+        marginBottom: theme.spacing.md,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        gap: theme.spacing.md,
+        marginTop: theme.spacing.md,
+    },
+    cancelButton: {
+        flex: 1,
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.md,
+        backgroundColor: theme.colors.backgroundAlt,
+        alignItems: 'center',
+    },
+    cancelButtonText: {
+        fontSize: theme.typography.fontSize.base,
+        fontWeight: '600',
+        color: theme.colors.text,
+    },
+    deleteButton: {
+        flex: 1,
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.md,
+        backgroundColor: theme.colors.error,
+        alignItems: 'center',
+    },
+    deleteButtonDisabled: {
+        opacity: 0.5,
+    },
+    deleteButtonText: {
+        fontSize: theme.typography.fontSize.base,
+        fontWeight: '600',
+        color: '#FFFFFF',
     },
 });

@@ -118,12 +118,12 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
 
-    // SOS Button - Muted warm tone (not harsh red)
+    // SOS Button - Muted doodle purple tone
     sosButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#B89A8A', // Muted taupe-brown
+        backgroundColor: '#a855f7', // Doodle purple
         paddingVertical: 14,
         paddingHorizontal: theme.spacing.md,
         borderRadius: theme.borderRadius.xl,

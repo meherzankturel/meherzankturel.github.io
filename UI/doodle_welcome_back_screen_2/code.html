@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sync - Welcome Back</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&amp;family=Gaegu:wght@400;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#A855F7",
+              "background-light": "#FFFFFF",
+              "background-dark": "#121212",
+              "doodle-black": "#1A1A1A",
+            },
+            fontFamily: {
+              display: ["Architects Daughter", "cursive"],
+              hand: ["Gaegu", "sans-serif"],
+              sans: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+<style type="text/tailwindcss">.wobbly-line {
+    border-bottom: 2px solid #1A1A1A;
+    border-radius: 0 0 100% 100%/0 0 4px 4px
+    }
+.dark .wobbly-line {
+    border-bottom-color: #E5E7EB
+    }
+.scribble-bg {
+    background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    position: relative;
+    overflow: hidden
+    }
+.scribble-bg::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.15;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuA6LnE-wdqe1rSneMNMGAsCYZgsZ0T-8ssBo4ism9QAWqcX2Lq4EHf6QgdmghPVuxtbCwuR7sLGBKt8yFrGGYq-JCfxgzFr6cR31SFGpChr15g8C2HAGRyIZ3QhCuYKmZ_wOBwhKoilkl-idVy6Yi1oSvUlJYORSWNzbCSA_7Hd1rC2JlZy1W7XLYw-znGKktpFIEEzdweFUc_RCwZQF_eTL6g9iPE6_WcFbNk4UiOKq0hFU8aNy-F1nmeN6Xufg8gq3P4_f3RPq5Jr);
+    background-size: 50px 50px
+    }
+.organic-pill {
+    border-radius: 255px 25px 225px 25px/25px 225px 25px 255px
+    }
+.dot-accent {
+    width: 4px;
+    height: 4px;
+    background-color: #CBD5E1;
+    border-radius: 50%;
+    position: absolute
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center pt-24 px-8 transition-colors duration-300 overflow-hidden">
+<div class="absolute top-40 left-10 transform -rotate-12 font-display text-pink-400 text-3xl opacity-40 select-none">❤️</div>
+<div class="dot-accent top-1/4 right-20"></div>
+<div class="dot-accent bottom-1/3 left-15"></div>
+<div class="dot-accent top-1/2 right-10"></div>
+<div class="w-full max-w-sm relative z-10 flex flex-col items-center">
+<div class="text-center mb-24">
+<div class="inline-block mb-6">
+<div class="relative flex items-center justify-center py-2 px-4 rotate-2">
+<span class="font-display text-6xl font-bold tracking-tighter text-primary">SYNC</span>
+<div class="absolute -bottom-2 left-0 w-full h-1 bg-primary/20 rounded-full rotate-1"></div>
+</div>
+</div>
+<h1 class="font-display text-4xl text-doodle-black dark:text-white mt-4">Welcome Back</h1>
+</div>
+<div class="w-full space-y-16">
+<div class="relative">
+<label class="font-hand text-lg text-gray-400 absolute -top-8 left-0">Email address</label>
+<input class="w-full bg-transparent border-none border-b-0 focus:ring-0 font-hand text-2xl dark:text-white p-0 pb-2 wobbly-line placeholder-gray-300" placeholder="your@email.com" type="email"/>
+</div>
+<div class="relative">
+<label class="font-hand text-lg text-gray-400 absolute -top-8 left-0">Password</label>
+<input class="w-full bg-transparent border-none border-b-0 focus:ring-0 font-hand text-2xl dark:text-white p-0 pb-2 wobbly-line placeholder-gray-300" placeholder="••••••••" type="password"/>
+<button class="material-symbols-outlined absolute right-0 bottom-4 text-gray-400 text-xl">visibility</button>
+</div>
+<div class="flex flex-col items-center space-y-12 pt-4">
+<a class="font-hand text-xl text-primary hover:underline underline-offset-8 decoration-wavy" href="#">Forgot Password?</a>
+<button class="w-64 scribble-bg organic-pill py-5 text-white font-display text-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                    Sign In
+                </button>
+<div class="pt-8">
+<p class="font-hand text-xl text-gray-400">
+                        Don't have an account? 
+                        <a class="text-primary font-bold hover:underline underline-offset-8 decoration-wavy ml-2" href="#">Create Account</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+<button class="fixed bottom-10 right-10 w-12 h-12 rounded-full border-2 border-doodle-black dark:border-white bg-white dark:bg-doodle-black flex items-center justify-center text-doodle-black dark:text-white shadow-md z-20" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-symbols-outlined text-xl">contrast</span>
+</button>
+
+</body></html>

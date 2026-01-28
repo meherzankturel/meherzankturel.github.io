@@ -4,6 +4,21 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../src/config/firebase';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+
+// Doodle Theme Colors
+const colors = {
+    background: '#fefefe',
+    surface: '#ffffff',
+    surfaceSoft: '#f8f5ff',
+    primary: '#7f13ec',
+    text: '#141118',
+    textSecondary: '#756189',
+    textMuted: '#9a8ba8',
+    border: '#e8e0f0',
+    doodlePink: '#ff85a2',
+    doodlePurple: '#a855f7',
+};
 
 export default function ForgotPasswordScreen() {
     const [email, setEmail] = useState('');
@@ -37,16 +52,21 @@ export default function ForgotPasswordScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar style="dark" />
+
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#333" />
+                    <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
             </View>
 
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.content}>
+                    {/* Icon with doodle style */}
                     <View style={styles.iconContainer}>
-                        <Ionicons name="lock-open-outline" size={80} color="#FF6B6B" />
+                        <View style={styles.iconCircle}>
+                            <Ionicons name="lock-open-outline" size={40} color={colors.primary} />
+                        </View>
                     </View>
 
                     <Text style={styles.title}>Forgot Password?</Text>
@@ -54,15 +74,24 @@ export default function ForgotPasswordScreen() {
                         Don't worry! It happens. Enter your email below and we'll send you a secure link to reset it.
                     </Text>
 
-                    <TextInput
-                        placeholder="your@email.com"
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                        style={styles.input}
-                    />
+                    {/* Email Input with doodle style */}
+                    <View style={styles.inputWrapper}>
+                        <Text style={styles.inputLabel}>Email address</Text>
+                        <View style={styles.inputContainer}>
+                            <Ionicons name="mail-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
+                            <TextInput
+                                placeholder="your@email.com"
+                                placeholderTextColor={colors.textMuted}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                style={styles.input}
+                            />
+                        </View>
+                    </View>
 
+                    {/* Primary Button */}
                     <TouchableOpacity onPress={handleReset} style={styles.button} disabled={loading}>
                         {loading ? (
                             <ActivityIndicator color="#fff" />
@@ -81,7 +110,7 @@ export default function ForgotPasswordScreen() {
 
                     <TouchableOpacity onPress={() => router.back()} style={styles.linkButton}>
                         <View style={styles.linkRow}>
-                            <Ionicons name="arrow-back-outline" size={16} color="#999" />
+                            <Ionicons name="arrow-back-outline" size={16} color={colors.textSecondary} />
                             <Text style={styles.linkText}> Back to Login</Text>
                         </View>
                     </TouchableOpacity>
@@ -94,15 +123,19 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.background,
     },
     header: {
         paddingHorizontal: 20,
         paddingTop: Platform.OS === 'android' ? 40 : 10,
     },
     backButton: {
-        padding: 10,
-        marginLeft: -10,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: colors.surfaceSoft,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     content: {
         flex: 1,
@@ -113,65 +146,88 @@ const styles = StyleSheet.create({
     iconContainer: {
         marginBottom: 25,
     },
+    iconCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 24,
+        backgroundColor: colors.surfaceSoft,
+        borderWidth: 2,
+        borderColor: colors.doodlePurple,
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ rotate: '3deg' }],
+    },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: '600',
+        color: colors.text,
         marginBottom: 12,
         textAlign: 'center',
     },
     subtitle: {
         fontSize: 15,
-        color: '#666',
+        color: colors.textSecondary,
         textAlign: 'center',
         marginBottom: 35,
         lineHeight: 22,
     },
-    input: {
+    inputWrapper: {
         width: '100%',
-        backgroundColor: '#f9f9f9',
-        padding: 18,
-        borderRadius: 15,
         marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 13,
+        color: colors.textSecondary,
+        marginBottom: 8,
+        fontWeight: '500',
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1.5,
+        borderBottomColor: colors.border,
+        paddingHorizontal: 4,
+    },
+    inputIcon: {
+        marginRight: 12,
+    },
+    input: {
+        flex: 1,
+        paddingVertical: 14,
         fontSize: 16,
-        borderWidth: 1,
-        borderColor: '#eee',
+        color: colors.text,
     },
     button: {
-        backgroundColor: '#FF6B6B',
+        backgroundColor: colors.primary,
         padding: 18,
-        borderRadius: 15,
+        borderRadius: 28,
         width: '100%',
         alignItems: 'center',
-        shadowColor: '#FF6B6B',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 5,
     },
     buttonText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontWeight: '600',
         fontSize: 16,
     },
     troubleSection: {
         marginTop: 40,
         width: '100%',
-        backgroundColor: '#fefefe',
+        backgroundColor: colors.surfaceSoft,
         padding: 20,
-        borderRadius: 15,
+        borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#f0f0f0',
+        borderColor: colors.border,
     },
     troubleTitle: {
         fontSize: 14,
-        fontWeight: '700',
-        color: '#333',
+        fontWeight: '600',
+        color: colors.text,
         marginBottom: 10,
     },
     troubleText: {
         fontSize: 13,
-        color: '#888',
+        color: colors.textSecondary,
         marginBottom: 5,
     },
     linkButton: {
@@ -183,7 +239,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     linkText: {
-        color: '#999',
+        color: colors.textSecondary,
         fontSize: 15,
         fontWeight: '600',
     },

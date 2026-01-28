@@ -41,7 +41,7 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                             style={styles.headerButton}
                             onPress={onMapPress}
                         >
-                            <Ionicons name="map-outline" size={22} color="#7A8599" />
+                            <Ionicons name="map-outline" size={22} color="#756189" />
                         </TouchableOpacity>
                     )}
                     {onSettingsPress && (
@@ -49,7 +49,7 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                             style={styles.headerButton}
                             onPress={onSettingsPress}
                         >
-                            <Ionicons name="settings-outline" size={22} color="#7A8599" />
+                            <Ionicons name="settings-outline" size={22} color="#756189" />
                         </TouchableOpacity>
                     )}
                     {onLogoutPress && (
@@ -57,7 +57,7 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                             style={styles.headerButton}
                             onPress={onLogoutPress}
                         >
-                            <Ionicons name="log-out-outline" size={22} color="#7A8599" />
+                            <Ionicons name="log-out-outline" size={22} color="#756189" />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -95,12 +95,13 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 12,
-        backgroundColor: '#12141C',
+        backgroundColor: '#f8f5ff',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(100, 120, 150, 0.2)',
+        borderColor: '#e8e0f0',
     },
 });
 
 export default SyncLogoHeader;
+

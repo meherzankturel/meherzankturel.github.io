@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "background-light": "#ffffff",
+                        "background-dark": "#121212",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .wobbly-line {
+            border-bottom: 2px solid #141118;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        }
+        .wobbly-border {
+            border: 2px solid #141118;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        }
+        .scribble-fill {
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(127, 19, 236, 0.2) 2px,
+                rgba(127, 19, 236, 0.2) 4px
+            ),
+            repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 2px,
+                #7f13ec 2px,
+                #7f13ec 4px
+            );
+        }
+        .dark .wobbly-line { border-color: #e0dbe6; }
+        .dark .wobbly-border { border-color: #e0dbe6; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#141118] dark:text-white transition-colors duration-300">
+<div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto overflow-x-hidden border-x border-gray-100 dark:border-gray-800">
+<!-- Top App Bar (Minimal) -->
+<div class="flex items-center p-6 pb-2 justify-between">
+<div class="text-[#141118] dark:text-white cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<div class="flex-1"></div>
+</div>
+<!-- Progress Indicator -->
+<div class="flex w-full flex-row items-center justify-center gap-3 py-4">
+<div class="h-2 w-8 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-2 w-2 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+</div>
+<!-- Main Content -->
+<div class="flex flex-col flex-1 px-8 pt-12 pb-24">
+<!-- Question Header -->
+<h1 class="text-3xl font-extrabold tracking-tight text-center mb-16">
+                What's the plan?
+            </h1>
+<!-- Center Input Area -->
+<div class="relative flex-1 flex flex-col items-center justify-start pt-8">
+<div class="w-full max-w-[320px] relative">
+<input class="w-full bg-transparent border-none text-2xl font-medium text-center focus:ring-0 placeholder:text-gray-300 dark:placeholder:text-gray-600 mb-2" placeholder="Type your idea..." type="text"/>
+<!-- Wobbly Line Decoration -->
+<div class="w-full h-1 wobbly-line opacity-80"></div>
+</div>
+<!-- Doodle Icons Grid -->
+<div class="mt-20 w-full">
+<p class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center mb-8">Choose a vibe</p>
+<div class="grid grid-cols-4 gap-4 px-2">
+<!-- Food -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="w-16 h-16 flex items-center justify-center wobbly-border group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">restaurant</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-tighter">Food</span>
+</div>
+<!-- Movie -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="w-16 h-16 flex items-center justify-center wobbly-border bg-primary/20 border-primary text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">movie</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-tighter text-primary">Movie</span>
+</div>
+<!-- Walk -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="w-16 h-16 flex items-center justify-center wobbly-border group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">directions_walk</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-tighter">Walk</span>
+</div>
+<!-- Other -->
+<div class="flex flex-col items-center gap-3 group cursor-pointer">
+<div class="w-16 h-16 flex items-center justify-center wobbly-border group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">more_horiz</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-tighter">Other</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Next Button (Scribble Fill) -->
+<div class="mt-auto pt-8">
+<button class="w-full py-5 rounded-xl scribble-fill text-white font-black text-xl tracking-wider shadow-lg transform active:scale-95 transition-transform">
+                    NEXT
+                </button>
+</div>
+</div>
+<!-- Navigation Bar -->
+<div class="flex items-center justify-around border-t border-gray-100 dark:border-gray-800 py-6 bg-white dark:bg-background-dark">
+<div class="text-gray-400 dark:text-gray-600 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">home</span>
+</div>
+<div class="text-primary cursor-pointer relative">
+<span class="material-symbols-outlined text-4xl">add_circle</span>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full"></div>
+</div>
+<div class="text-gray-400 dark:text-gray-600 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">person</span>
+</div>
+</div>
+</div>
+</body></html>

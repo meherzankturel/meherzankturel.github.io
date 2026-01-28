@@ -28,6 +28,21 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { PairService } from '../src/services/pair.service';
+import { StatusBar } from 'expo-status-bar';
+
+// Doodle Theme Colors
+const colors = {
+    background: '#fefefe',
+    surface: '#ffffff',
+    surfaceSoft: '#f8f5ff',
+    primary: '#7f13ec',
+    text: '#141118',
+    textSecondary: '#756189',
+    textMuted: '#9a8ba8',
+    border: '#e8e0f0',
+    doodlePink: '#ff85a2',
+    doodlePurple: '#a855f7',
+};
 
 export default function InviteScreen() {
     const { user } = useAuth();
@@ -50,7 +65,7 @@ export default function InviteScreen() {
             // Check if user already has a partner
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             const userData = userDoc.data();
-            
+
             if (userData?.pairId || userData?.partnerId) {
                 Alert.alert(
                     'Already Paired',
@@ -110,7 +125,7 @@ export default function InviteScreen() {
             // Check if current user already has a partner
             const currentUserDoc = await getDoc(doc(db, 'users', user.uid));
             const currentUserData = currentUserDoc.data();
-            
+
             if (currentUserData?.pairId || currentUserData?.partnerId) {
                 // Check if they're already paired with the creator
                 if (currentUserData.partnerId === inviteData.creatorId) {
@@ -133,7 +148,7 @@ export default function InviteScreen() {
             // Get creator's user data
             const creatorDoc = await getDoc(doc(db, 'users', inviteData.creatorId));
             const creatorData = creatorDoc.data();
-            
+
             // Check if creator already has a partner
             if (creatorData?.pairId || creatorData?.partnerId) {
                 // Check if creator is already paired with current user
@@ -153,10 +168,10 @@ export default function InviteScreen() {
                 setLoading(false);
                 return;
             }
-            
+
             // Generate a pairId for this connection
             const pairId = `pair_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            
+
             const batch = writeBatch(db);
 
             // Create or update the pair document
@@ -206,9 +221,11 @@ export default function InviteScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar style="dark" />
+
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#333" />
+                    <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Connect Partner</Text>
                 <View style={{ width: 44 }} />
@@ -221,7 +238,11 @@ export default function InviteScreen() {
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <View style={styles.inner}>
-                            <Ionicons name="heart-outline" size={80} color="#FF6B6B" style={styles.icon} />
+                            {/* Heart icon with doodle style */}
+                            <View style={styles.iconContainer}>
+                                <Ionicons name="heart" size={48} color={colors.doodlePink} />
+                            </View>
+
                             <Text style={styles.title}>Partner Up</Text>
                             <Text style={styles.subtitle}>Send a code to your partner or enter the one you received.</Text>
 
@@ -232,7 +253,7 @@ export default function InviteScreen() {
                                     <View style={styles.codeDisplayContainer}>
                                         <Text style={styles.generatedCode}>{generatedCode}</Text>
                                         <TouchableOpacity onPress={handleCopyCode} style={styles.copyIcon}>
-                                            <Ionicons name="copy-outline" size={24} color="#FF6B6B" />
+                                            <Ionicons name="copy-outline" size={24} color={colors.primary} />
                                         </TouchableOpacity>
                                     </View>
                                 ) : (
@@ -258,6 +279,7 @@ export default function InviteScreen() {
                                 <TextInput
                                     style={styles.input}
                                     placeholder="LOVE-XXXX"
+                                    placeholderTextColor={colors.textMuted}
                                     value={inviteCode}
                                     onChangeText={setInviteCode}
                                     autoCapitalize="characters"
@@ -281,22 +303,27 @@ export default function InviteScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
     backButton: {
-        padding: 10,
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: colors.surfaceSoft,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '700',
-        color: '#333',
+        fontWeight: '600',
+        color: colors.text,
     },
     scrollContent: {
         flexGrow: 1,
@@ -305,18 +332,27 @@ const styles = StyleSheet.create({
         padding: 30,
         alignItems: 'center',
     },
-    icon: {
-        marginBottom: 20,
+    iconContainer: {
+        width: 100,
+        height: 100,
+        borderRadius: 32,
+        backgroundColor: colors.surfaceSoft,
+        borderWidth: 2,
+        borderColor: colors.doodlePink,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 24,
+        transform: [{ rotate: '-3deg' }],
     },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: '600',
+        color: colors.text,
         marginBottom: 10,
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
+        color: colors.textSecondary,
         textAlign: 'center',
         marginBottom: 40,
         lineHeight: 22,
@@ -326,33 +362,33 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     sectionLabel: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
-        color: '#999',
+        color: colors.textMuted,
         marginBottom: 10,
         textTransform: 'uppercase',
         letterSpacing: 1,
     },
     generateButton: {
-        backgroundColor: '#FF6B6B',
-        padding: 15,
-        borderRadius: 15,
+        backgroundColor: colors.doodlePink,
+        padding: 16,
+        borderRadius: 24,
         alignItems: 'center',
     },
     codeDisplayContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f9f9f9',
-        padding: 15,
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: '#eee',
+        backgroundColor: colors.surfaceSoft,
+        padding: 16,
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: colors.primary,
         justifyContent: 'center',
     },
     generatedCode: {
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: '700',
+        color: colors.primary,
         letterSpacing: 2,
     },
     copyIcon: {
@@ -367,28 +403,29 @@ const styles = StyleSheet.create({
     line: {
         flex: 1,
         height: 1,
-        backgroundColor: '#eee',
+        backgroundColor: colors.border,
     },
     or: {
         marginHorizontal: 15,
-        color: '#999',
+        color: colors.textMuted,
         fontWeight: '600',
     },
     input: {
-        backgroundColor: '#f9f9f9',
-        padding: 15,
-        borderRadius: 15,
+        backgroundColor: colors.surface,
+        padding: 16,
+        borderRadius: 20,
         fontSize: 18,
-        borderWidth: 1,
-        borderColor: '#eee',
-        marginBottom: 15,
+        borderWidth: 1.5,
+        borderColor: colors.border,
+        marginBottom: 16,
         textAlign: 'center',
-        fontWeight: 'bold',
+        fontWeight: '600',
+        color: colors.text,
     },
     joinButton: {
-        backgroundColor: '#333',
-        padding: 15,
-        borderRadius: 15,
+        backgroundColor: colors.primary,
+        padding: 16,
+        borderRadius: 24,
         alignItems: 'center',
     },
     disabledButton: {
@@ -396,7 +433,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontWeight: '600',
         fontSize: 16,
     },
 });

@@ -3,17 +3,310 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    // ===== HELPER FUNCTIONS =====
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Get the current user's ID
+    function userId() {
+      return request.auth.uid;
+    }
+
+    // Check if user owns the document
+    function isOwner(docUserId) {
+      return isAuthenticated() && userId() == docUserId;
+    }
+
+    // Get user's profile data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(userId())).data;
+    }
+
+    // Check if user has a pairId
+    function hasPair() {
+      return isAuthenticated() && getUserData().pairId != null;
+    }
+
+    // Get user's pairId
+    function userPairId() {
+      return getUserData().pairId;
+    }
+
+    // Check if user is member of a specific pair
+    function isPairMember(pairId) {
+      return isAuthenticated() && userPairId() == pairId;
+    }
+
+    // Check if user is part of the pair (as user1 or user2)
+    function isPairParticipant(pairData) {
+      return isAuthenticated() && (pairData.user1Id == userId() || pairData.user2Id == userId());
+    }
+
+    // Validate that a field is a valid timestamp
+    function isValidTimestamp(field) {
+      return field is timestamp;
+    }
+
+    // ===== USERS COLLECTION =====
+    match /users/{uid} {
+      // Users can read their own profile
+      allow read: if isOwner(uid);
+
+      // Users can create their own profile
+      allow create: if isOwner(uid) &&
+        request.resource.data.uid == uid &&
+        request.resource.data.email is string &&
+        request.resource.data.keys().hasAll(['uid', 'email', 'createdAt']);
+
+      // Users can update their own profile
+      allow update: if isOwner(uid) &&
+        // Cannot change uid
+        request.resource.data.uid == resource.data.uid &&
+        // Cannot change email
+        request.resource.data.email == resource.data.email;
+
+      // No deletion allowed - profiles should be deactivated, not deleted
+      allow delete: if false;
+
+      // Allow partner to read basic profile info
+      allow read: if isAuthenticated() &&
+        resource.data.pairId != null &&
+        isPairMember(resource.data.pairId);
+    }
+
+    // ===== PAIRS COLLECTION =====
+    match /pairs/{pairId} {
+      // Allow reading pair info if user is a participant
+      allow read: if isAuthenticated() && isPairParticipant(resource.data);
+
+      // Allow creating a pair (user becomes user1)
+      allow create: if isAuthenticated() &&
+        request.resource.data.user1Id == userId() &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.keys().hasAll(['pairId', 'user1Id', 'user1Email', 'status', 'createdAt']);
+
+      // Allow updates only by pair participants
+      allow update: if isAuthenticated() && isPairParticipant(resource.data) &&
+        // Cannot change the pair creator
+        request.resource.data.user1Id == resource.data.user1Id &&
+        // Cannot change pairId
+        request.resource.data.pairId == resource.data.pairId;
+
+      // No deletion - pairs are deactivated
+      allow delete: if false;
+    }
+
+    // ===== INVITES COLLECTION =====
+    match /invites/{inviteId} {
+      // Anyone authenticated can read invites (needed for accepting)
+      allow read: if isAuthenticated();
+
+      // Only the pair creator can create invites
+      allow create: if isAuthenticated() &&
+        request.resource.data.creatorId == userId() &&
+        request.resource.data.status == 'pending';
+
+      // Invites can be updated by creator or acceptor
+      allow update: if isAuthenticated() &&
+        (resource.data.creatorId == userId() ||
+         request.resource.data.status == 'accepted');
+
+      allow delete: if false;
+    }
+
+    // ===== MOODS COLLECTION =====
+    match /moods/{moodId} {
+      // Users can read moods from their pair
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == userId() || isPairMember(resource.data.pairId));
+
+      // Users can create their own moods
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId() &&
+        request.resource.data.keys().hasAll(['userId', 'pairId', 'emoji', 'timestamp']);
+
+      // Users can update their own moods (including reactions from partner)
+      allow update: if isAuthenticated() &&
+        (resource.data.userId == userId() || isPairMember(resource.data.pairId));
+
+      // Users can delete their own moods
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== DATE NIGHTS COLLECTION =====
+    match /dateNights/{dateNightId} {
+      // Users can read date nights from their pair
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == userId() || isPairMember(resource.data.pairId));
+
+      // Users can create date nights for their pair
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId() &&
+        request.resource.data.keys().hasAll(['userId', 'pairId', 'title', 'date']);
+
+      // Both partners can update date nights
+      allow update: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Only creator can delete
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== SOS EVENTS COLLECTION =====
+    match /sosEvents/{eventId} {
+      // Both partners can read SOS events
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create SOS events for their pair
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId();
+
+      // Both partners can update (to mark as responded)
+      allow update: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // No deletion of SOS events for safety/audit purposes
+      allow delete: if false;
+    }
+
+    // ===== GAMES COLLECTION =====
+    match /games/{gameId} {
+      // Both partners can read games
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create games for their pair
+      allow create: if isAuthenticated() &&
+        request.resource.data.pairId == userPairId();
+
+      // Both partners can update games (for answers, scores)
+      allow update: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Both partners can delete games
+      allow delete: if isAuthenticated() && isPairMember(resource.data.pairId);
+    }
+
+    // ===== MANIFESTATIONS COLLECTION =====
+    match /manifestations/{manifestationId} {
+      // Both partners can read manifestations
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create manifestations for their pair
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId();
+
+      // Both partners can update manifestations
+      allow update: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Creator can delete
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== MOMENTS COLLECTION =====
+    match /moments/{momentId} {
+      // Both partners can read moments
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create their own moments
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId();
+
+      // Only creator can update their moments
+      allow update: if isOwner(resource.data.userId);
+
+      // Only creator can delete
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== GENTLE DAYS COLLECTION =====
+    match /gentleDays/{gentleDayId} {
+      // Both partners can read gentle days
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create gentle days for their pair
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId();
+
+      // Both partners can update
+      allow update: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Creator can delete
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== PRESENCE COLLECTION =====
+    match /presence/{presenceId} {
+      // Both partners can read presence
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create/update their own presence
+      allow create, update: if isAuthenticated() &&
+        request.resource.data.userId == userId();
+
+      // Users can delete their own presence
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== NOTIFICATIONS COLLECTION =====
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() &&
+        (resource.data.recipientId == userId() || resource.data.senderId == userId());
+
+      // Users can create notifications for their partner
+      allow create: if isAuthenticated() &&
+        request.resource.data.senderId == userId();
+
+      // Recipient can update (mark as read)
+      allow update: if isAuthenticated() && resource.data.recipientId == userId();
+
+      // Recipient can delete
+      allow delete: if isAuthenticated() && resource.data.recipientId == userId();
+    }
+
+    // ===== DAILY ECHO COLLECTION =====
+    match /dailyEcho/{echoId} {
+      // Both partners can read daily echo
+      allow read: if isAuthenticated() && isPairMember(resource.data.pairId);
+
+      // Users can create their own daily echo
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.pairId == userPairId();
+
+      // Only creator can update
+      allow update: if isOwner(resource.data.userId);
+
+      // Only creator can delete
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ===== PUSH TOKENS COLLECTION =====
+    match /pushTokens/{tokenId} {
+      // Users can read their own push tokens
+      allow read: if isAuthenticated() && resource.data.userId == userId();
+
+      // Users can create their own push tokens
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId();
+
+      // Users can update their own push tokens
+      allow update: if isAuthenticated() && resource.data.userId == userId();
+
+      // Users can delete their own push tokens
+      allow delete: if isAuthenticated() && resource.data.userId == userId();
+    }
+
+    // ===== CATCH-ALL: Deny all other access =====
+    // This ensures any collection not explicitly defined is protected
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2026, 2, 2);
+      allow read, write: if false;
     }
   }
 }
