@@ -5,7 +5,6 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  SafeAreaView,
   RefreshControl,
   Alert,
   Modal,
@@ -13,6 +12,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
@@ -692,6 +692,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    zIndex: 0,
   },
   loadingContainer: {
     flex: 1,

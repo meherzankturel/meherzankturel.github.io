@@ -5,7 +5,6 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    SafeAreaView,
     ActivityIndicator,
     Switch,
     Alert,
@@ -13,6 +12,7 @@ import {
     Linking,
     Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../src/contexts/AuthContext';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../src/config/firebase';

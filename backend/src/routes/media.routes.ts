@@ -9,6 +9,10 @@ import { sanitizeString, isValidObjectId } from '../middleware/validation.middle
 
 const router = express.Router();
 
+// Use strict auth in production, optional in development
+const isProduction = process.env.NODE_ENV === 'production';
+const requireAuth = isProduction ? authMiddleware : optionalAuthMiddleware;
+
 // Initialize GridFS
 initGridFS();
 
@@ -159,7 +163,7 @@ router.post(
 // ===== SERVE FILES FROM GRIDFS =====
 // GET /api/media/file/:fileId
 // Note: File serving can be optionally authenticated for public media
-router.get('/file/:fileId', optionalAuthMiddleware, async (req: Request, res: Response) => {
+router.get('/file/:fileId', requireAuth, async (req: Request, res: Response) => {
   try {
     const { fileId } = req.params;
 

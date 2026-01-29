@@ -161,7 +161,7 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 // Bind to 0.0.0.0 so the phone on the same Wi-Fi can reach this machine via your LAN IP
 const HOST = process.env.HOST || '0.0.0.0';
 if (!process.env.VERCEL) {
-  app.listen(PORT, HOST, () => {
+  app.listen(Number(PORT), HOST, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📍 API Base URL: http://localhost:${PORT}/api`);
     console.log(`📤 Media upload: http://localhost:${PORT}/api/media/upload-multiple`);

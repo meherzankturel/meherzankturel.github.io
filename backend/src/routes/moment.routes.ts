@@ -18,6 +18,10 @@ import {
 
 const router = express.Router();
 
+// Use strict auth in production, optional in development
+const isProduction = process.env.NODE_ENV === 'production';
+const requireAuth = isProduction ? authMiddleware : optionalAuthMiddleware;
+
 // Multer error handler middleware
 const handleMulterError = (err: any, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {
@@ -42,7 +46,7 @@ const handleMulterError = (err: any, req: Request, res: Response, next: NextFunc
  */
 router.post(
   '/upload',
-  optionalAuthMiddleware,  // TODO: Use authMiddleware in production
+  requireAuth,
   uploadRateLimiter,
   upload.single('file'),
   handleMulterError,
@@ -148,7 +152,7 @@ router.post(
  */
 router.get(
   '/today/:userId/:partnerId',
-  optionalAuthMiddleware,
+  requireAuth,
   validateParams({
     userId: {
       required: true,
@@ -232,7 +236,7 @@ router.get(
  */
 router.get(
   '/history/:pairId',
-  optionalAuthMiddleware,
+  requireAuth,
   pairIdValidation,
   async (req: Request, res: Response) => {
     try {

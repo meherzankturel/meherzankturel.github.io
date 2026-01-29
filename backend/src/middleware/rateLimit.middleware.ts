@@ -26,18 +26,18 @@ const stores: Map<string, RateLimitStore> = new Map();
 // Cleanup expired entries periodically
 const cleanupInterval = setInterval(() => {
   const now = Date.now();
-  stores.forEach((store, name) => {
+  stores.forEach((store) => {
     Object.keys(store).forEach((key) => {
       if (store[key].resetTime < now) {
         delete store[key];
       }
     });
   });
-}, 60000); // Clean up every minute
+}, 60000);
 
 // Prevent Node from keeping the process alive just for cleanup
-if (cleanupInterval.unref) {
-  cleanupInterval.unref();
+if (typeof cleanupInterval === 'object' && 'unref' in cleanupInterval) {
+  (cleanupInterval as NodeJS.Timeout).unref();
 }
 
 /**

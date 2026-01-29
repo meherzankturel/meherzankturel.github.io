@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import Review from '../models/Review.model';
-import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware';
+import { authMiddleware } from '../middleware/auth.middleware';
 import {
   reviewValidation,
   objectIdValidation,

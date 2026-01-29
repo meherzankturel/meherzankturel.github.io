@@ -26,7 +26,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_MONGODB_API_URL": "https://your-staging-backend.vercel.app/api"
+        "EXPO_PUBLIC_MONGODB_API_URL": "https://7702e225deff.ngrok-free.app/api"
       }
     },
     "production": {
