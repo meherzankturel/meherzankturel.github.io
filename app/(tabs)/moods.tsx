@@ -7,7 +7,6 @@ import { doc, onSnapshot, getDoc, collection, query, where, orderBy, limit } fro
 import { db } from '../../src/config/firebase';
 import { MoodService, Mood, MoodType, MoodCause, MoodReaction, MOOD_CAUSES, MOOD_REACTIONS } from '../../src/services/mood.service';
 import MoodSelector from '../../src/components/MoodSelector';
-import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
 import { theme } from '../../src/config/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -767,12 +766,10 @@ export default function MoodsScreen() {
   // Show content if partnerId exists - partner connection is determined by partnerId
   if (!userData?.partnerId) {
     return (
-      <SwipeableTabWrapper tabIndex={1} totalTabs={4} enabled={true}>
-        <NoPartnerState
-          title="Moods"
-          subtitle="Connect with your partner to start sharing moods and staying in sync."
-        />
-      </SwipeableTabWrapper>
+      <NoPartnerState
+        title="Moods"
+        subtitle="Connect with your partner to start sharing moods and staying in sync."
+      />
     );
   }
 
@@ -780,8 +777,7 @@ export default function MoodsScreen() {
   const partnerName = partnerData?.name || partnerData?.displayName || partnerData?.email?.split('@')[0] || 'Partner';
 
   return (
-    <SwipeableTabWrapper tabIndex={1} totalTabs={4} enabled={!showMoodModal}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
         {/* Header */}
         <View style={styles.headerContainer}>
           <View style={styles.headerAvatarColumn}>
@@ -957,7 +953,6 @@ export default function MoodsScreen() {
           partnerName={partnerName}
         />
       </SafeAreaView>
-    </SwipeableTabWrapper>
   );
 }
 

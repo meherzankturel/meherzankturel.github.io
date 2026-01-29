@@ -17,7 +17,6 @@ import { sendPushNotification } from '../../src/utils/notifications';
 import MoodSelector from '../../src/components/MoodSelector';
 import SignalButton from '../../src/components/SignalButton';
 import HeartEffect from '../../src/components/HeartEffect';
-import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
 import { HomeHeaderDoodle } from '../../src/components/doodle/home/HomeHeaderDoodle';
 import { FeaturedMemory } from '../../src/components/doodle/home/FeaturedMemory';
 import { ControlCenter } from '../../src/components/doodle/home/ControlCenter';
@@ -95,6 +94,20 @@ export default function HomeScreen() {
     const [submittingEcho, setSubmittingEcho] = useState(false);
     const [showEchoRevealModal, setShowEchoRevealModal] = useState(false);
     const [echoCountdown, setEchoCountdown] = useState(0);
+
+    // Safeguard: if upload is still showing after 50s, force-clear (backup for Promise.race)
+    useEffect(() => {
+        if (!uploadingMoment) return;
+        const stuckTimer = setTimeout(() => {
+            setUploadingMoment(false);
+            Alert.alert(
+                'Upload taking too long',
+                'The upload didn’t finish in time. Check that the backend is running and your connection is stable, then try again.',
+                [{ text: 'OK' }]
+            );
+        }, 50000);
+        return () => clearTimeout(stuckTimer);
+    }, [uploadingMoment]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -542,18 +555,24 @@ export default function HomeScreen() {
         );
     };
 
-    // Handle moment upload
+    // Handle moment upload (with hard timeout so UI never stays stuck)
+    const UPLOAD_HARD_TIMEOUT_MS = 45000; // 45s max - then we always clear and show error
+
     const handleUploadMoment = async () => {
         if (!selectedImageUri || !user || !userData?.partnerId) return;
 
         setUploadingMoment(true);
         try {
-            const success = await MomentService.uploadMoment(
+            const uploadPromise = MomentService.uploadMoment(
                 user.uid,
                 userData.partnerId,
                 selectedImageUri,
                 momentCaption.trim() || undefined
             );
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Upload is taking too long. Check your connection and that the backend is running.')), UPLOAD_HARD_TIMEOUT_MS)
+            );
+            const success = await Promise.race([uploadPromise, timeoutPromise]);
 
             if (success) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -1698,12 +1717,7 @@ export default function HomeScreen() {
     reunionDate.setDate(reunionDate.getDate() + 12);
 
     return (
-        <SwipeableTabWrapper
-            tabIndex={0}
-            totalTabs={4}
-            enabled={!photoViewerVisible && !showCaptionInput && !showEchoAnswerModal && !showEchoRevealModal}
-        >
-            <View style={styles.container}>
+        <View style={styles.container}>
                 <SafeAreaView style={{ flex: 1 }} edges={['top']}>
                     {/* Heart Effects Overlay */}
                     <HeartEffect trigger={heartTrigger} duration={3000} singleHeart={singleHeartMode} />
@@ -1735,7 +1749,8 @@ export default function HomeScreen() {
                                         partnerName={partnerData?.displayName || partnerData?.name || partnerData?.email?.split('@')[0] || 'Partner'}
                                         userName={userData?.displayName || userData?.name || user?.email?.split('@')[0] || 'You'}
                                         onPress={handleAddMoment}
-                                        label="FEATURED MEMORY"
+                                        onSeeAllPress={() => router.push('/memories')}
+                                        label="TODAY'S MOMENT"
                                     />
 
                                     <ControlCenter
@@ -1806,7 +1821,15 @@ export default function HomeScreen() {
                             <Pressable onPress={(e) => e.stopPropagation()} style={styles.captionModal}>
                                 <Text style={styles.captionModalTitle}>Add Caption</Text>
                                 {selectedImageUri && (
-                                    <Image source={{ uri: selectedImageUri }} style={styles.captionPreview} resizeMode="cover" />
+                                    <View style={styles.captionPreviewWrap}>
+                                        <Image source={{ uri: selectedImageUri }} style={styles.captionPreview} resizeMode="cover" />
+                                        {uploadingMoment && (
+                                            <View style={styles.uploadingOverlay}>
+                                                <ActivityIndicator color="#FFF" size="large" />
+                                                <Text style={styles.uploadingOverlayText}>Uploading...</Text>
+                                            </View>
+                                        )}
+                                    </View>
                                 )}
                                 <Text style={styles.captionLabel}>Caption (optional)</Text>
                                 <TextInput
@@ -1820,6 +1843,7 @@ export default function HomeScreen() {
                                     returnKeyType="done"
                                     blurOnSubmit={true}
                                     onSubmitEditing={() => Keyboard.dismiss()}
+                                    editable={!uploadingMoment}
                                 />
                                 <TouchableOpacity
                                     style={[styles.uploadButton, uploadingMoment && styles.uploadButtonDisabled]}
@@ -1827,7 +1851,10 @@ export default function HomeScreen() {
                                     disabled={uploadingMoment}
                                 >
                                     {uploadingMoment ? (
-                                        <ActivityIndicator color="#FFF" />
+                                        <>
+                                            <ActivityIndicator color="#FFF" style={{ marginRight: 8 }} />
+                                            <Text style={styles.uploadButtonText}>Uploading...</Text>
+                                        </>
                                     ) : (
                                         <Text style={styles.uploadButtonText}>Upload Moment</Text>
                                     )}
@@ -1919,7 +1946,6 @@ export default function HomeScreen() {
                     </Modal>
                 </SafeAreaView >
             </View >
-        </SwipeableTabWrapper >
     );
 }
 
@@ -2028,11 +2054,31 @@ const styles = StyleSheet.create({
         marginBottom: theme.spacing.md,
     },
     // ...
-    captionPreview: {
+    captionPreviewWrap: {
         width: '100%',
         height: ResponsiveUtils.verticalScale(200),
-        borderRadius: theme.borderRadius.xl,
         marginBottom: theme.spacing.md,
+        borderRadius: theme.borderRadius.xl,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    captionPreview: {
+        width: '100%',
+        height: '100%',
+        borderRadius: theme.borderRadius.xl,
+    },
+    uploadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: theme.borderRadius.xl,
+    },
+    uploadingOverlayText: {
+        color: '#FFF',
+        fontSize: theme.typography.fontSize.md,
+        fontWeight: '600',
+        marginTop: theme.spacing.sm,
     },
     captionLabel: {
         fontSize: theme.typography.fontSize.sm,
@@ -2053,6 +2099,8 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.primary,
         borderRadius: theme.borderRadius.xl,
         paddingVertical: theme.spacing.md,
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
     },
     uploadButtonDisabled: {

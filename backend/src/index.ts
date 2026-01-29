@@ -158,12 +158,17 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // ===== START SERVER =====
 // Only start server if not in Vercel/serverless environment
+// Bind to 0.0.0.0 so the phone on the same Wi-Fi can reach this machine via your LAN IP
+const HOST = process.env.HOST || '0.0.0.0';
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
+  app.listen(PORT, HOST, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📍 API Base URL: http://localhost:${PORT}/api`);
     console.log(`📤 Media upload: http://localhost:${PORT}/api/media/upload-multiple`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`📱 For phone: set EXPO_PUBLIC_MONGODB_API_URL or src/config/mongodb.ts to http://YOUR_IP:${PORT}/api (same Wi‑Fi)`);
+    }
   });
 }
 

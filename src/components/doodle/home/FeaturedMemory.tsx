@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Text, Animated, PanResponder, Dimensions, LayoutChange } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, Text, Animated, PanResponder, LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../config/theme';
 import { ResponsiveUtils } from '../../../utils/responsive';
 import { WobblyCard } from '../index';
 
-const { scale, verticalScale, moderateScale } = ResponsiveUtils;
+const { scale, verticalScale } = ResponsiveUtils;
 
 interface FeaturedMemoryProps {
     partnerImageUri?: string | null;
@@ -13,6 +13,7 @@ interface FeaturedMemoryProps {
     partnerName?: string;
     userName?: string;
     onPress: () => void;
+    onSeeAllPress?: () => void;
     label?: string;
 }
 
@@ -22,59 +23,60 @@ export const FeaturedMemory: React.FC<FeaturedMemoryProps> = ({
     partnerName = "Partner",
     userName = "You",
     onPress,
-    label = "FEATURED MEMORY"
+    onSeeAllPress,
+    label = "TODAY'S MOMENT"
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0); // 0 = partner, 1 = user
     const [cardWidth, setCardWidth] = useState(0);
-    const pan = useRef(new Animated.ValueXY()).current;
+    const fadeAnim = useRef(new Animated.Value(1)).current;
 
-    const handleLayout = (event: LayoutChange) => {
+    const handleLayout = (event: LayoutChangeEvent) => {
         const { width } = event.nativeEvent.layout;
-        // The contentContainer already accounts for its own margin (16px on each side)
-        // So the width is already the usable width for images
         setCardWidth(width);
+    };
+
+    const switchView = (newIndex: number) => {
+        if (newIndex === currentIndex) return;
+
+        // Fade out, switch, fade in
+        Animated.sequence([
+            Animated.timing(fadeAnim, {
+                toValue: 0,
+                duration: 150,
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+            }),
+        ]).start();
+
+        setTimeout(() => setCurrentIndex(newIndex), 150);
+    };
+
+    const goLeft = () => {
+        if (currentIndex === 1) switchView(0);
+    };
+
+    const goRight = () => {
+        if (currentIndex === 0) switchView(1);
     };
 
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {
-                return Math.abs(gestureState.dx) > 10;
-            },
-            onPanResponderGrant: () => {
-                pan.setOffset({
-                    x: pan.x._value,
-                    y: 0,
-                });
-            },
-            onPanResponderMove: (_, gestureState) => {
-                pan.setValue({ x: gestureState.dx, y: 0 });
+                return Math.abs(gestureState.dx) > 20;
             },
             onPanResponderRelease: (_, gestureState) => {
-                pan.flattenOffset();
-                if (cardWidth === 0) return;
-                
-                const swipeThreshold = cardWidth * 0.25;
-                
+                const swipeThreshold = 50;
+
                 if (gestureState.dx > swipeThreshold && currentIndex === 1) {
                     // Swipe right - go to partner (index 0)
-                    Animated.spring(pan, {
-                        toValue: { x: 0, y: 0 },
-                        useNativeDriver: false,
-                    }).start();
-                    setCurrentIndex(0);
+                    switchView(0);
                 } else if (gestureState.dx < -swipeThreshold && currentIndex === 0) {
                     // Swipe left - go to user (index 1)
-                    Animated.spring(pan, {
-                        toValue: { x: -cardWidth, y: 0 },
-                        useNativeDriver: false,
-                    }).start();
-                    setCurrentIndex(1);
-                } else {
-                    // Snap back
-                    Animated.spring(pan, {
-                        toValue: { x: currentIndex === 0 ? 0 : -cardWidth, y: 0 },
-                        useNativeDriver: false,
-                    }).start();
+                    switchView(1);
                 }
             },
         })
@@ -82,7 +84,30 @@ export const FeaturedMemory: React.FC<FeaturedMemoryProps> = ({
 
     const currentImageUri = currentIndex === 0 ? partnerImageUri : userImageUri;
     const currentName = currentIndex === 0 ? partnerName : userName;
-    const hasBothImages = partnerImageUri && userImageUri;
+    const isPartnerView = currentIndex === 0;
+
+    const renderContent = () => {
+        if (currentImageUri) {
+            return (
+                <Animated.View style={[styles.imageContainer, { opacity: fadeAnim }]}>
+                    <Image source={{ uri: currentImageUri }} style={styles.image} resizeMode="cover" />
+                    <View style={styles.nameOverlay}>
+                        <Text style={styles.nameText}>{currentName}'s moment</Text>
+                    </View>
+                </Animated.View>
+            );
+        }
+        return (
+            <Animated.View style={[styles.placeholder, { opacity: fadeAnim }]}>
+                <TouchableOpacity style={styles.placeholderContent} onPress={onPress} activeOpacity={0.8}>
+                    <Ionicons name="camera-outline" size={48} color="#8B6B75" />
+                    <Text style={styles.placeholderText}>
+                        {isPartnerView ? `Waiting for ${currentName}...` : 'Tap to add your moment'}
+                    </Text>
+                </TouchableOpacity>
+            </Animated.View>
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -91,75 +116,67 @@ export const FeaturedMemory: React.FC<FeaturedMemoryProps> = ({
 
             <WobblyCard
                 style={styles.card}
-                backgroundColor="#EBC5B8" // Tan/Beige color from image
+                backgroundColor="#EBC5B8"
                 borderColor="#000"
                 onPress={onPress}
             >
-                <View 
-                    style={styles.contentContainer} 
+                <View
+                    style={styles.contentContainer}
                     onLayout={handleLayout}
-                    {...(hasBothImages ? panResponder.panHandlers : {})}
+                    {...panResponder.panHandlers}
                 >
-                    <Animated.View
-                        style={[
-                            styles.swipeContainer,
-                            hasBothImages && {
-                                transform: [{ translateX: pan.x }],
-                                flexDirection: 'row',
-                            },
-                        ]}
+                    {renderContent()}
+
+                    {/* Navigation Buttons */}
+                    <TouchableOpacity
+                        style={[styles.navButton, styles.navButtonLeft, currentIndex === 0 && styles.navButtonDisabled]}
+                        onPress={goLeft}
+                        activeOpacity={0.7}
+                        disabled={currentIndex === 0}
                     >
-                        {/* Partner Image */}
-                        <View style={[styles.imageWrapper, hasBothImages && cardWidth > 0 && { width: cardWidth }]}>
-                            {partnerImageUri ? (
-                                <>
-                                    <Image source={{ uri: partnerImageUri }} style={styles.image} resizeMode="cover" />
-                                    <View style={styles.nameOverlay}>
-                                        <Text style={styles.nameText}>{partnerName}</Text>
-                                    </View>
-                                </>
-                            ) : (
-                                <View style={styles.placeholder}>
-                                    <Ionicons name="image-outline" size={64} color="#C2A89C" />
-                                    <Text style={styles.placeholderText}>Add a memory</Text>
-                                </View>
-                            )}
-                        </View>
+                        <Ionicons name="chevron-back" size={24} color={currentIndex === 0 ? 'rgba(255,255,255,0.3)' : '#fff'} />
+                    </TouchableOpacity>
 
-                        {/* User Image */}
-                        {hasBothImages && (
-                            <View style={[styles.imageWrapper, cardWidth > 0 && { width: cardWidth }]}>
-                                {userImageUri ? (
-                                    <>
-                                        <Image source={{ uri: userImageUri }} style={styles.image} resizeMode="cover" />
-                                        <View style={styles.nameOverlay}>
-                                            <Text style={styles.nameText}>{userName}</Text>
-                                        </View>
-                                    </>
-                                ) : (
-                                    <View style={styles.placeholder}>
-                                        <Ionicons name="image-outline" size={64} color="#C2A89C" />
-                                        <Text style={styles.placeholderText}>Add a memory</Text>
-                                    </View>
-                                )}
-                            </View>
-                        )}
-                    </Animated.View>
+                    <TouchableOpacity
+                        style={[styles.navButton, styles.navButtonRight, currentIndex === 1 && styles.navButtonDisabled]}
+                        onPress={goRight}
+                        activeOpacity={0.7}
+                        disabled={currentIndex === 1}
+                    >
+                        <Ionicons name="chevron-forward" size={24} color={currentIndex === 1 ? 'rgba(255,255,255,0.3)' : '#fff'} />
+                    </TouchableOpacity>
 
-                    {/* Swipe indicator dots */}
-                    {hasBothImages && (
-                        <View style={styles.dotsContainer}>
+                    {/* Indicator dots */}
+                    <View style={styles.dotsContainer}>
+                        <TouchableOpacity onPress={() => switchView(0)}>
                             <View style={[styles.dot, currentIndex === 0 && styles.dotActive]} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => switchView(1)}>
                             <View style={[styles.dot, currentIndex === 1 && styles.dotActive]} />
-                        </View>
-                    )}
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Label showing whose view */}
+                    <View style={styles.viewLabel}>
+                        <Text style={styles.viewLabelText}>
+                            {isPartnerView ? `${partnerName}'s` : 'Your'} view
+                        </Text>
+                    </View>
                 </View>
             </WobblyCard>
 
-            {/* Featured Memory Badge */}
+            {/* Badge with label - positioned on the left */}
             <View style={styles.badge}>
                 <Text style={styles.badgeText}>{label}</Text>
             </View>
+
+            {/* See All Memories Button - positioned below with proper spacing */}
+            {onSeeAllPress && (
+                <TouchableOpacity style={styles.seeAllButton} onPress={onSeeAllPress} activeOpacity={0.8}>
+                    <Ionicons name="images-outline" size={16} color="#000" />
+                    <Text style={styles.seeAllText}>See all memories</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -167,7 +184,7 @@ export const FeaturedMemory: React.FC<FeaturedMemoryProps> = ({
 const styles = StyleSheet.create({
     container: {
         marginTop: verticalScale(20),
-        marginBottom: verticalScale(30),
+        marginBottom: verticalScale(10),
         alignItems: 'center',
         paddingHorizontal: theme.spacing.md,
     },
@@ -185,27 +202,23 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '100%',
-        aspectRatio: 1.4, // Rectangle landscape
-        padding: 0, // No padding for image to fill? No, image has border padding
-        borderWidth: scale(2), // Thicker border
+        aspectRatio: 1.4,
+        padding: 0,
+        borderWidth: scale(2),
     },
     contentContainer: {
         flex: 1,
-        margin: theme.spacing.md, // Use responsive spacing
+        margin: theme.spacing.md,
         borderRadius: theme.borderRadius.md,
         overflow: 'hidden',
-        backgroundColor: 'rgba(0,0,0,0.03)', // Slight darken
+        backgroundColor: 'rgba(0,0,0,0.03)',
         borderWidth: 1,
         borderColor: 'rgba(0,0,0,0.1)',
     },
-    swipeContainer: {
+    imageContainer: {
         flex: 1,
+        width: '100%',
         height: '100%',
-    },
-    imageWrapper: {
-        flex: 1,
-        height: '100%',
-        position: 'relative',
     },
     image: {
         width: '100%',
@@ -213,7 +226,7 @@ const styles = StyleSheet.create({
     },
     nameOverlay: {
         position: 'absolute',
-        bottom: 0,
+        bottom: verticalScale(35),
         left: 0,
         right: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -226,6 +239,44 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textAlign: 'center',
     },
+    placeholder: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    placeholderContent: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(139, 107, 117, 0.1)',
+    },
+    placeholderText: {
+        marginTop: theme.spacing.sm,
+        color: '#8B6B75',
+        fontSize: theme.typography.fontSize.sm,
+        textAlign: 'center',
+        paddingHorizontal: theme.spacing.md,
+    },
+    navButton: {
+        position: 'absolute',
+        top: '50%',
+        marginTop: -20,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    navButtonLeft: {
+        left: 8,
+    },
+    navButtonRight: {
+        right: 8,
+    },
+    navButtonDisabled: {
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    },
     dotsContainer: {
         position: 'absolute',
         bottom: verticalScale(8),
@@ -233,35 +284,41 @@ const styles = StyleSheet.create({
         right: 0,
         flexDirection: 'row',
         justifyContent: 'center',
-        gap: theme.spacing.xs,
+        gap: theme.spacing.sm,
     },
     dot: {
-        width: scale(6),
-        height: scale(6),
-        borderRadius: scale(3),
+        width: scale(8),
+        height: scale(8),
+        borderRadius: scale(4),
         backgroundColor: 'rgba(255, 255, 255, 0.4)',
     },
     dotActive: {
         backgroundColor: '#fff',
-        width: scale(8),
-        height: scale(8),
-        borderRadius: scale(4),
+        width: scale(10),
+        height: scale(10),
+        borderRadius: scale(5),
     },
-    placeholder: {
-        flex: 1,
+    viewLabel: {
+        position: 'absolute',
+        top: 8,
+        left: 0,
+        right: 0,
         alignItems: 'center',
-        justifyContent: 'center',
     },
-    placeholderText: {
-        marginTop: theme.spacing.xs,
-        color: '#8B6B75',
-        fontFamily: 'Itim_400Regular', // If available, else default
-        fontSize: theme.typography.fontSize.md,
+    viewLabelText: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        color: '#fff',
+        fontSize: theme.typography.fontSize.xs,
+        fontWeight: '600',
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: 4,
+        borderRadius: theme.borderRadius.sm,
+        overflow: 'hidden',
     },
     badge: {
-        position: 'absolute',
-        bottom: verticalScale(-14),
-        right: scale(20),
+        marginTop: verticalScale(12),
+        alignSelf: 'flex-start',
+        marginLeft: scale(10),
         backgroundColor: '#fff',
         borderWidth: scale(2),
         borderColor: '#000',
@@ -275,6 +332,24 @@ const styles = StyleSheet.create({
         fontSize: theme.typography.fontSize.sm,
         fontWeight: 'bold',
         letterSpacing: 1,
+        color: '#000',
+    },
+    seeAllButton: {
+        marginTop: verticalScale(12),
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: '#fff',
+        borderWidth: scale(2),
+        borderColor: '#000',
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: verticalScale(10),
+        borderRadius: theme.borderRadius.lg,
+        ...theme.shadows.sm,
+    },
+    seeAllText: {
+        fontSize: theme.typography.fontSize.sm,
+        fontWeight: '600',
         color: '#000',
     },
 });

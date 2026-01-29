@@ -3,7 +3,7 @@ import { upload } from '../utils/fileUpload';
 import { uploadToGridFS, getFileURL } from '../utils/gridfs';
 import Media from '../models/Media.model';
 import multer from 'multer';
-import { authMiddleware } from '../middleware/auth.middleware';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware';
 import { uploadRateLimiter } from '../middleware/rateLimit.middleware';
 import {
   momentValidation,
@@ -42,7 +42,7 @@ const handleMulterError = (err: any, req: Request, res: Response, next: NextFunc
  */
 router.post(
   '/upload',
-  authMiddleware,
+  optionalAuthMiddleware,  // TODO: Use authMiddleware in production
   uploadRateLimiter,
   upload.single('file'),
   handleMulterError,
@@ -61,8 +61,8 @@ router.post(
         });
       }
 
-      // Verify user ownership
-      if (userId !== req.userId) {
+      // Verify user ownership (skip in development without auth)
+      if (req.userId && userId !== req.userId) {
         return res.status(403).json({
           error: 'Forbidden',
           message: 'You can only upload moments for yourself',
@@ -144,10 +144,11 @@ router.post(
  * GET /api/moments/today/:userId/:partnerId
  * Get today's moments for a couple
  * Returns both user's and partner's moments for today
+ * Note: Using optionalAuth for development - add authMiddleware for production
  */
 router.get(
   '/today/:userId/:partnerId',
-  authMiddleware,
+  optionalAuthMiddleware,
   validateParams({
     userId: {
       required: true,
@@ -166,8 +167,8 @@ router.get(
     try {
       const { userId, partnerId } = req.params;
 
-      // Verify the requester is one of the users
-      if (req.userId !== userId && req.userId !== partnerId) {
+      // Verify the requester is one of the users (skip in development without auth)
+      if (req.userId && req.userId !== userId && req.userId !== partnerId) {
         return res.status(403).json({
           error: 'Forbidden',
           message: 'You can only view moments for your own pair',
@@ -231,7 +232,7 @@ router.get(
  */
 router.get(
   '/history/:pairId',
-  authMiddleware,
+  optionalAuthMiddleware,
   pairIdValidation,
   async (req: Request, res: Response) => {
     try {

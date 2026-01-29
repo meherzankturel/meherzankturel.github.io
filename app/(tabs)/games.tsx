@@ -6,7 +6,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { doc, onSnapshot, collection, query, where, onSnapshot as onSnapshotQuery, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../src/config/firebase';
 import { GameService, GameSession } from '../../src/services/game.service';
-import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
 import QuestionGame from '../../src/components/QuestionGame';
 import TriviaGame from '../../src/components/TriviaGame';
 import ChoiceGame from '../../src/components/ChoiceGame';
@@ -711,22 +710,15 @@ export default function GamesScreen() {
   // Show content if partnerId exists - partner connection is determined by partnerId
   if (!userData?.partnerId) {
     return (
-      <SwipeableTabWrapper tabIndex={3} totalTabs={4} enabled={true}>
-        <NoPartnerState
-          title="Games"
-          subtitle="Connect with your partner to play games and grow closer together!"
-        />
-      </SwipeableTabWrapper>
+      <NoPartnerState
+        title="Games"
+        subtitle="Connect with your partner to play games and grow closer together!"
+      />
     );
   }
 
   return (
-    <SwipeableTabWrapper
-      tabIndex={3}
-      totalTabs={4}
-      enabled={!showQuestionGame && !showTriviaGame && !showWouldYouRatherGame && !showThisOrThatGame}
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>Games</Text>
@@ -1095,7 +1087,6 @@ export default function GamesScreen() {
           gameType="this-or-that"
         />
       </SafeAreaView>
-    </SwipeableTabWrapper>
   );
 }
 

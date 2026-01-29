@@ -126,21 +126,66 @@ export class MomentService {
                 throw new Error('MongoDB API base URL is not configured. Please start the backend server or set EXPO_PUBLIC_MONGODB_API_URL');
             }
 
-            const url = `${MONGODB_API_BASE_URL}${API_ENDPOINTS.MOMENTS.UPLOAD}`;
-            let token = await auth.currentUser?.getIdToken();
+            const baseUrl = MONGODB_API_BASE_URL.replace(/\/$/, '');
+            const url = `${baseUrl}${API_ENDPOINTS.MOMENTS.UPLOAD}`;
+            console.log(`📤 Upload URL: ${url}`);
 
-            if (!token) {
-                let attempts = 0;
-                while (!auth.currentUser && attempts < 20) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    attempts++;
+            // Quick connectivity check (3s) so we fail fast with a clear message
+            try {
+                const healthUrl = `${baseUrl}/health`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                await fetch(healthUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+            } catch (healthErr: any) {
+                const msg = healthErr?.message || '';
+                if (msg.includes('abort') || msg.includes('timeout')) {
+                    throw new Error(`Backend at ${baseUrl} did not respond in 3s. Check: 1) Backend running (cd backend && npm run dev), 2) Phone and Mac on same Wi‑Fi, 3) Correct IP in src/config/mongodb.ts (run: ipconfig getifaddr en0)`);
                 }
-                token = await auth.currentUser?.getIdToken();
+                throw new Error(`Cannot reach backend at ${baseUrl}. Check Wi‑Fi and that the backend is running.`);
             }
+
+            // Get auth token with 10s timeout so we never hang here
+            const TOKEN_TIMEOUT_MS = 10000;
+            const tokenPromise = (async () => {
+                let token = await auth.currentUser?.getIdToken();
+                if (!token && auth.currentUser) {
+                    let attempts = 0;
+                    while (!token && attempts < 20) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        token = await auth.currentUser?.getIdToken();
+                        attempts++;
+                    }
+                }
+                return token;
+            })();
+            const tokenTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), TOKEN_TIMEOUT_MS));
+            const token = await Promise.race([tokenPromise, tokenTimeout]);
+            if (!token) {
+                throw new Error('Could not get auth token in time. Check your connection and try again.');
+            }
+
+            const UPLOAD_TIMEOUT_MS = 30000; // 30 seconds - fail fast so UI can show error
 
             return new Promise<string>((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
-                
+                let settled = false;
+
+                const settleOnce = (fn: () => void) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutId);
+                    fn();
+                };
+
+                // Client-side timeout: abort and reject if no response in 60s
+                const timeoutId = setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    xhr.abort();
+                    reject(new Error('Upload timed out. Check your connection and that the backend is running, then try again.'));
+                }, UPLOAD_TIMEOUT_MS);
+
                 xhr.upload.onprogress = (event) => {
                     if (event.lengthComputable) {
                         const progress = (event.loaded / event.total) * 100;
@@ -149,46 +194,56 @@ export class MomentService {
                 };
 
                 xhr.onload = () => {
-                    console.log(`📥 Upload response: ${xhr.status} ${xhr.statusText}`);
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.url) {
-                                console.log(`✅ Moment uploaded successfully`);
-                                resolve(response.url);
-                            } else {
-                                reject(new Error('Server did not return a URL'));
+                    settleOnce(() => {
+                        console.log(`📥 Upload response: ${xhr.status} ${xhr.statusText}`);
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.url) {
+                                    console.log(`✅ Moment uploaded successfully`);
+                                    resolve(response.url);
+                                } else {
+                                    reject(new Error('Server did not return a URL'));
+                                }
+                            } catch (error) {
+                                console.error('❌ Failed to parse upload response:', xhr.responseText);
+                                reject(new Error('Failed to parse upload response'));
                             }
-                        } catch (error) {
-                            console.error('❌ Failed to parse upload response:', xhr.responseText);
-                            reject(new Error('Failed to parse upload response'));
+                        } else {
+                            try {
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                const errorMsg = errorResponse.error || `Upload failed: ${xhr.status} ${xhr.statusText}`;
+                                reject(new Error(errorMsg));
+                            } catch {
+                                reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}. Make sure the backend server is running.`));
+                            }
                         }
-                    } else {
-                        try {
-                            const errorResponse = JSON.parse(xhr.responseText);
-                            const errorMsg = errorResponse.error || `Upload failed: ${xhr.status} ${xhr.statusText}`;
-                            reject(new Error(errorMsg));
-                        } catch {
-                            reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}. Make sure the backend server is running.`));
-                        }
-                    }
+                    });
                 };
 
                 xhr.onerror = () => {
-                    let errorMsg = 'Cannot connect to backend server. ';
-                    if (MONGODB_API_BASE_URL.includes('localhost') || MONGODB_API_BASE_URL.includes('127.0.0.1')) {
-                        errorMsg += 'If testing on a physical device, update src/config/mongodb.ts to use your computer\'s IP address. ';
-                    }
-                    errorMsg += 'Make sure: 1) Backend is running (run: cd backend && npm run dev), 2) Phone and computer are on the same Wi-Fi network.';
-                    reject(new Error(errorMsg));
+                    settleOnce(() => {
+                        let errorMsg = 'Cannot connect to backend server. ';
+                        if (MONGODB_API_BASE_URL.includes('localhost') || MONGODB_API_BASE_URL.includes('127.0.0.1')) {
+                            errorMsg += 'If testing on a physical device, update src/config/mongodb.ts to use your computer\'s IP address. ';
+                        }
+                        errorMsg += 'Make sure: 1) Backend is running (run: cd backend && npm run dev), 2) Phone and computer are on the same Wi-Fi network.';
+                        reject(new Error(errorMsg));
+                    });
                 };
 
                 xhr.ontimeout = () => {
-                    reject(new Error('Upload timeout. The file may be too large or the server is slow.'));
+                    settleOnce(() => {
+                        reject(new Error('Upload timeout. The file may be too large or the server is slow.'));
+                    });
+                };
+
+                xhr.onabort = () => {
+                    settleOnce(() => reject(new Error('Upload was cancelled or timed out.')));
                 };
 
                 xhr.open('POST', url);
-                xhr.timeout = 300000; // 5 minutes timeout
+                xhr.timeout = UPLOAD_TIMEOUT_MS;
 
                 if (token) {
                     xhr.setRequestHeader('Authorization', `Bearer ${token}`);

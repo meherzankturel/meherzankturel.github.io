@@ -12,9 +12,10 @@ import { auth } from './firebase';
  * Development: Uses localhost (for simulator) or can be overridden
  */
 const getApiUrl = (): string => {
-  // Priority 1: Environment variable (for production)
-  if (process.env.EXPO_PUBLIC_MONGODB_API_URL) {
-    return process.env.EXPO_PUBLIC_MONGODB_API_URL;
+  // Priority 1: Environment variable (.env – restart Expo after changing)
+  const envUrl = process.env.EXPO_PUBLIC_MONGODB_API_URL?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
   }
 
   // Priority 2: Production build detection
@@ -25,7 +26,7 @@ const getApiUrl = (): string => {
 
   // Priority 3: Development fallback
   // Use your computer's IP for physical device testing (phone must be on same Wi-Fi)
-  return 'http://192.168.2.121:3000/api';
+  return 'http://192.168.2.131:3000/api';
 };
 
 export const MONGODB_API_BASE_URL = getApiUrl();

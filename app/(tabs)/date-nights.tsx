@@ -16,7 +16,6 @@ import { db } from '../../src/config/firebase';
 import { DateNightService, DateNight } from '../../src/services/dateNight.service';
 import { DateReviewService, DateReview } from '../../src/services/dateReview.service';
 import { SOSService } from '../../src/services/sos.service';
-import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
 import { SimpleTabs } from '../../src/components/SimpleTabs';
 import { Input } from '../../src/components/Input';
 import { Button } from '../../src/components/Button';
@@ -1605,18 +1604,15 @@ export default function DateNightsScreen() {
 
   if (!hasPair) {
     return (
-      <SwipeableTabWrapper tabIndex={2} totalTabs={4}>
-        <NoPartnerState
-          title="Date Nights"
-          subtitle="Connect with your partner to plan your next romantic getaway or cozy night in."
-        />
-      </SwipeableTabWrapper>
+      <NoPartnerState
+        title="Date Nights"
+        subtitle="Connect with your partner to plan your next romantic getaway or cozy night in."
+      />
     );
   }
 
   return (
-    <SwipeableTabWrapper tabIndex={2} totalTabs={4} enabled={!previewVisible}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
         <DateNightsHeaderDoodle onAddPress={openCreateModal} />
 
         {/* Doodle Tabs */}
@@ -1698,7 +1694,8 @@ export default function DateNightsScreen() {
                     </View>
                   )}
                 </>
-              )}              {/* Past Tab Content */}
+              )}
+              {/* Past Tab Content */}
               {activeDateTab === 'past' && (
                 <View style={styles.section}>
                   <View style={styles.sectionHeader}>
@@ -1949,7 +1946,6 @@ export default function DateNightsScreen() {
           onClose={() => setPreviewVisible(false)}
         />
       </SafeAreaView>
-    </SwipeableTabWrapper >
   );
 }
 

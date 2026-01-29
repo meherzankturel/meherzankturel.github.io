@@ -19,6 +19,9 @@
       "bundleIdentifier": "com.sync.app",
       "buildNumber": "1",
       "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        },
         "NSCameraUsageDescription": "SYNC needs access to your camera to capture moments and share photos with your partner.",
         "NSPhotoLibraryUsageDescription": "SYNC needs access to your photo library to share photos and memories with your partner.",
         "NSPhotoLibraryAddUsageDescription": "SYNC needs permission to save photos and memories to your photo library.",

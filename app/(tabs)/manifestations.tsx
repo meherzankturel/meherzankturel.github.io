@@ -30,7 +30,6 @@ import {
   ManifestationService,
   Manifestation,
 } from '../../src/services/manifestation.service';
-import { SwipeableTabWrapper } from '../../src/components/SwipeableTabWrapper';
 import { SimpleTabs } from '../../src/components/SimpleTabs';
 import ManifestationModal from '../../src/components/ManifestationModal';
 import { AnimatedStars } from '../../src/components/AnimatedStars';
@@ -368,17 +367,15 @@ export default function ManifestationsScreen() {
   // Show content if partnerId exists
   if (!userData?.partnerId) {
     return (
-      <SwipeableTabWrapper tabIndex={4} totalTabs={5}>
-        <SafeAreaView style={styles.container} edges={['top']}>
-          <View style={styles.emptyContainer}>
-            <Ionicons name="star-outline" size={64} color={theme.colors.textLight} />
-            <Text style={styles.emptyText}>No partner connected</Text>
-            <Text style={styles.emptySubtext}>
-              Connect with your partner to set shared goals
-            </Text>
-          </View>
-        </SafeAreaView>
-      </SwipeableTabWrapper>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="star-outline" size={64} color={theme.colors.textLight} />
+          <Text style={styles.emptyText}>No partner connected</Text>
+          <Text style={styles.emptySubtext}>
+            Connect with your partner to set shared goals
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -386,8 +383,7 @@ export default function ManifestationsScreen() {
   const individualCount = manifestations.filter((m) => m.type === 'individual').length;
 
   return (
-    <SwipeableTabWrapper tabIndex={4} totalTabs={5}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
         {/* Animated Star Background */}
         <AnimatedStars count={25} />
         
@@ -663,33 +659,32 @@ export default function ManifestationsScreen() {
             })
           )}
         </ScrollView>
-      </SafeAreaView>
 
-      <ManifestationModal
-        visible={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditingManifestation(null);
-        }}
-        onSubmit={handleSubmit}
-        editingManifestation={editingManifestation}
-        loading={submitting}
-      />
-
-      {/* Overlay to close action menu */}
-      {actionMenuVisible && (
-        <Pressable
-          style={styles.overlay}
-          onPress={() => setActionMenuVisible(null)}
+        <ManifestationModal
+          visible={showModal}
+          onClose={() => {
+            setShowModal(false);
+            setEditingManifestation(null);
+          }}
+          onSubmit={handleSubmit}
+          editingManifestation={editingManifestation}
+          loading={submitting}
         />
-      )}
-      
-      {/* Celebration Animation */}
-      <CelebrationAnimation
-        visible={celebrationVisible}
-        onComplete={() => setCelebrationVisible(false)}
-      />
-    </SwipeableTabWrapper>
+
+        {/* Overlay to close action menu */}
+        {actionMenuVisible && (
+          <Pressable
+            style={styles.overlay}
+            onPress={() => setActionMenuVisible(null)}
+          />
+        )}
+
+        {/* Celebration Animation */}
+        <CelebrationAnimation
+          visible={celebrationVisible}
+          onComplete={() => setCelebrationVisible(false)}
+        />
+      </SafeAreaView>
   );
 }
 
