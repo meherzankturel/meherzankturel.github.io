@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../config/theme';
+import { ResponsiveUtils } from '../utils/responsive';
+
+const { scale, verticalScale } = ResponsiveUtils;
 
 interface SyncLogoHeaderProps {
     onSettingsPress?: () => void;
@@ -37,7 +40,7 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                             style={styles.headerButton}
                             onPress={onMapPress}
                         >
-                            <Ionicons name="map-outline" size={24} color={theme.colors.text} />
+                            <Ionicons name="map-outline" size={scale(24)} color={theme.colors.text} />
                         </TouchableOpacity>
                     )}
                     {onSettingsPress && (
@@ -52,14 +55,14 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                                         style={styles.profileIcon}
                                     />
                                 ) : (
-                                    <Ionicons name="person-circle-outline" size={26} color={theme.colors.text} />
+                                    <Ionicons name="person-circle-outline" size={scale(26)} color={theme.colors.text} />
                                 )}
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.headerButton}
                                 onPress={onSettingsPress}
                             >
-                                <Ionicons name="settings-outline" size={24} color={theme.colors.text} />
+                                <Ionicons name="settings-outline" size={scale(24)} color={theme.colors.text} />
                             </TouchableOpacity>
                         </View>
                     )}
@@ -68,7 +71,7 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                             style={styles.headerButton}
                             onPress={onLogoutPress}
                         >
-                            <Ionicons name="log-out-outline" size={24} color={theme.colors.text} />
+                            <Ionicons name="log-out-outline" size={scale(24)} color={theme.colors.text} />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -82,8 +85,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
+        paddingVertical: verticalScale(12),
+        paddingHorizontal: theme.spacing.md,
         backgroundColor: 'transparent',
     },
     logoContainer: {
@@ -91,23 +94,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logoImage: {
-        width: 100,
-        height: 40,
+        width: scale(100),
+        height: verticalScale(40),
     },
     headerButtons: {
         flexDirection: 'row',
-        gap: 4,
+        gap: theme.spacing.xs,
     },
     headerButton: {
-        width: 44,
-        height: 44,
+        width: scale(44),
+        height: scale(44),
         justifyContent: 'center',
         alignItems: 'center',
     },
     profileIcon: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
+        width: scale(30),
+        height: scale(30),
+        borderRadius: scale(15),
         borderWidth: 1,
         borderColor: theme.colors.divider,
     },

@@ -110,16 +110,16 @@ export const theme = {
     },
 
     fontSize: {
-      xs: fontScale(10),
-      sm: fontScale(12),
-      base: fontScale(14),
-      md: fontScale(16),
-      lg: fontScale(18),
-      xl: fontScale(20),
-      '2xl': fontScale(24),
-      '3xl': fontScale(28),
-      '4xl': fontScale(36),
-      '5xl': fontScale(48),
+      xs: moderateScale(10, 0.7),      // More responsive scaling
+      sm: moderateScale(12, 0.7),
+      base: moderateScale(14, 0.7),
+      md: moderateScale(16, 0.7),
+      lg: moderateScale(18, 0.7),
+      xl: moderateScale(20, 0.7),
+      '2xl': moderateScale(24, 0.7),
+      '3xl': moderateScale(28, 0.7),
+      '4xl': moderateScale(36, 0.7),
+      '5xl': moderateScale(48, 0.7),
     },
 
     fontWeight: {
@@ -146,23 +146,23 @@ export const theme = {
   },
 
   spacing: {
-    xs: moderateScale(4),
-    sm: moderateScale(8),
-    md: moderateScale(16),
-    lg: moderateScale(24),
-    xl: moderateScale(32),
-    '2xl': moderateScale(48),
-    '3xl': moderateScale(64),
+    xs: scale(4),        // Use full scale for better responsiveness
+    sm: scale(8),
+    md: scale(16),
+    lg: scale(24),
+    xl: scale(32),
+    '2xl': scale(48),
+    '3xl': scale(64),
   },
 
   borderRadius: {
-    xs: moderateScale(4),
-    sm: moderateScale(8),
-    md: moderateScale(12),
-    lg: moderateScale(16),
-    xl: moderateScale(20),
-    '2xl': moderateScale(24),
-    '3xl': moderateScale(32),
+    xs: scale(4),
+    sm: scale(8),
+    md: scale(12),
+    lg: scale(16),
+    xl: scale(20),
+    '2xl': scale(24),
+    '3xl': scale(32),
     pill: 50, // Usually kept constant or very large
     full: 9999,
   },
@@ -265,23 +265,23 @@ export const theme = {
     // Tab bar
     tabBar: {
       height: verticalScale(80),
-      fabSize: moderateScale(56),
-      iconSize: moderateScale(24),
+      fabSize: scale(56),
+      iconSize: scale(24),
     },
 
     // Avatar
     avatar: {
-      sm: moderateScale(32),
-      md: moderateScale(48),
-      lg: moderateScale(64),
-      xl: moderateScale(80),
+      sm: scale(32),
+      md: scale(48),
+      lg: scale(64),
+      xl: scale(80),
       borderWidth: 3,
     },
 
     // Input
     input: {
       height: verticalScale(48),
-      borderRadius: moderateScale(12),
+      borderRadius: scale(12),
     },
 
     // Button

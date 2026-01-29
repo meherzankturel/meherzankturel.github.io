@@ -138,7 +138,7 @@ export default function GentleDaysPartnerScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
@@ -147,7 +147,7 @@ export default function GentleDaysPartnerScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />

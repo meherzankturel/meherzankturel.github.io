@@ -255,6 +255,8 @@ export class WeatherService {
 
     /**
      * Send severe weather notification to partner
+     * DISABLED: Weather alert notifications are disabled to prevent excessive notifications.
+     * Only weather data fetching is enabled, notifications are not sent.
      */
     static async notifyPartnerOfSevereWeather(
         partnerPushToken: string,
@@ -262,7 +264,7 @@ export class WeatherService {
         weather: WeatherData,
         yourName: string
     ): Promise<void> {
-        // Feature disabled as requested
+        // Weather notifications disabled - do not send any weather alert notifications
         return;
 
         if (!weather.isSevere || !partnerPushToken) return;

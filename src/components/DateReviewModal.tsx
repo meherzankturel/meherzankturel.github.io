@@ -134,40 +134,65 @@ export default function DateReviewModal({
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission needed', 'We need access to your photos to upload images.');
+        Alert.alert('Permission needed', 'We need access to your media library to upload photos and videos.');
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All, // Allow both images and videos
         allowsMultipleSelection: true,
         quality: 0.8,
         base64: false, // Don't get base64 to save memory, read only during upload
+        videoMaxDuration: 300, // Max 5 minutes for videos
         allowsEditing: false,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const currentImageCount = images.length;
-        const remainingSlots = 10 - currentImageCount;
-        const assetsToAdd = result.assets.slice(0, remainingSlots);
-
-        if (assetsToAdd.length < result.assets.length) {
-          Alert.alert(
-            'Limit Reached',
-            `You can only add ${remainingSlots} more image(s). ${result.assets.length - remainingSlots} image(s) were not added.`
-          );
-        }
+        const currentVideoCount = videos.length;
+        const remainingImageSlots = 10 - currentImageCount;
+        const remainingVideoSlots = 5 - currentVideoCount;
 
         const newImages: string[] = [];
+        const newVideos: string[] = [];
 
-        assetsToAdd.forEach((asset, index) => {
-          const globalIndex = currentImageCount + index;
-          if (globalIndex < 10) { // Max 10 images
+        // Separate images and videos based on their type
+        result.assets.forEach((asset) => {
+          const isVideo = asset.type === 'video' || asset.duration !== undefined;
+          
+          if (isVideo && newVideos.length < remainingVideoSlots) {
+            newVideos.push(asset.uri);
+          } else if (!isVideo && newImages.length < remainingImageSlots) {
             newImages.push(asset.uri);
           }
         });
 
-        setImages(prev => [...prev, ...newImages]);
+        // Show warnings if limits were reached
+        const totalSelected = result.assets.length;
+        const totalAdded = newImages.length + newVideos.length;
+        
+        if (totalAdded < totalSelected) {
+          const skipped = totalSelected - totalAdded;
+          let message = `Added ${totalAdded} item(s). `;
+          
+          if (newImages.length >= remainingImageSlots && newVideos.length >= remainingVideoSlots) {
+            message += `${skipped} item(s) were not added (image limit: ${currentImageCount}/10, video limit: ${currentVideoCount}/5).`;
+          } else if (newImages.length >= remainingImageSlots) {
+            message += `${skipped} image(s) were not added (image limit: ${currentImageCount}/10).`;
+          } else if (newVideos.length >= remainingVideoSlots) {
+            message += `${skipped} video(s) were not added (video limit: ${currentVideoCount}/5).`;
+          }
+          
+          Alert.alert('Limit Reached', message);
+        }
+
+        // Update state
+        if (newImages.length > 0) {
+          setImages(prev => [...prev, ...newImages]);
+        }
+        if (newVideos.length > 0) {
+          setVideos(prev => [...prev, ...newVideos]);
+        }
 
         // Haptic feedback
         if (Platform.OS === 'ios') {
@@ -178,10 +203,10 @@ export default function DateReviewModal({
           }
         }
 
-        console.log(`✅ Added ${newImages.length} image(s). Total: ${images.length + newImages.length}/10`);
+        console.log(`✅ Added ${newImages.length} image(s) and ${newVideos.length} video(s). Total: Images ${images.length + newImages.length}/10, Videos ${videos.length + newVideos.length}/5`);
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to pick image');
+      Alert.alert('Error', error.message || 'Failed to pick media');
     }
   };
 

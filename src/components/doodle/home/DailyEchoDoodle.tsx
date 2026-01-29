@@ -2,7 +2,10 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../config/theme';
+import { ResponsiveUtils } from '../../../utils/responsive';
 import { WobblyCard } from '../index';
+
+const { scale, verticalScale } = ResponsiveUtils;
 
 interface DailyEchoDoodleProps {
     question: string;
@@ -53,17 +56,17 @@ export const DailyEchoDoodle: React.FC<DailyEchoDoodleProps> = ({
                             <Text style={styles.actionText}>Tap to answer...</Text>
                         ) : canReveal ? (
                             <View style={styles.statusRow}>
-                                <Ionicons name="eye-outline" size={16} color="#8A5AAB" />
+                                <Ionicons name="eye-outline" size={scale(16)} color="#8A5AAB" />
                                 <Text style={styles.statusText}>Reveal Answers</Text>
                             </View>
                         ) : waitingForPartner ? (
                             <View style={styles.statusRow}>
-                                <Ionicons name="hourglass-outline" size={16} color="#8A5AAB" />
+                                <Ionicons name="hourglass-outline" size={scale(16)} color="#8A5AAB" />
                                 <Text style={styles.statusText}>Waiting for partner...</Text>
                             </View>
                         ) : (
                             <View style={styles.statusRow}>
-                                <Ionicons name="time-outline" size={16} color="#8A5AAB" />
+                                <Ionicons name="time-outline" size={scale(16)} color="#8A5AAB" />
                                 <Text style={styles.statusText}>Reveals in {countdown}</Text>
                             </View>
                         )}
@@ -81,27 +84,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     line: {
-        width: 40,
-        height: 2,
+        width: scale(40),
+        height: verticalScale(2),
         backgroundColor: '#E0E0E0',
-        marginBottom: 20,
+        marginBottom: verticalScale(20),
     },
     card: {
         width: '100%',
-        minHeight: 140,
+        minHeight: verticalScale(140),
         borderWidth: 1,
     },
     content: {
-        padding: 20,
+        padding: theme.spacing.md,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginBottom: 12,
+        marginBottom: theme.spacing.sm,
         alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 12,
+        fontSize: theme.typography.fontSize.sm,
         fontWeight: 'bold',
         color: '#A880E8', // Purple
         letterSpacing: 2,
@@ -111,40 +114,40 @@ const styles = StyleSheet.create({
         left: 0,
     },
     curve: {
-        width: 20,
-        height: 10,
+        width: scale(20),
+        height: verticalScale(10),
         borderTopWidth: 1,
         borderLeftWidth: 1,
         borderColor: '#D0B4F8',
-        borderRadius: 10,
+        borderRadius: scale(10),
     },
     question: {
-        fontSize: 18,
+        fontSize: theme.typography.fontSize.lg,
         textAlign: 'center',
         color: '#000',
         fontFamily: 'Itim_400Regular', // Handwritten feel
-        marginBottom: 20,
-        lineHeight: 26,
+        marginBottom: verticalScale(20),
+        lineHeight: theme.typography.fontSize.lg * 1.44,
     },
     footer: {
         alignItems: 'center',
     },
     actionText: {
-        fontSize: 14,
+        fontSize: theme.typography.fontSize.base,
         color: '#A880E8',
         fontStyle: 'italic',
     },
     statusRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: scale(6),
         backgroundColor: '#F0E6FA',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 12,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: verticalScale(6),
+        borderRadius: theme.borderRadius.md,
     },
     statusText: {
-        fontSize: 12,
+        fontSize: theme.typography.fontSize.sm,
         color: '#8A5AAB',
         fontWeight: '600',
     }

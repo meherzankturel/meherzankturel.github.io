@@ -180,7 +180,7 @@ export default function GentleDaysScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
@@ -190,7 +190,7 @@ export default function GentleDaysScreen() {
 
   if (!userData?.pairId) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <ScrollView contentContainerStyle={styles.centerContent}>
           <Ionicons name="heart-outline" size={64} color={theme.colors.textLight} />
           <Text style={styles.emptyText}>Connect with your partner to use Gentle Days</Text>
@@ -200,7 +200,7 @@ export default function GentleDaysScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

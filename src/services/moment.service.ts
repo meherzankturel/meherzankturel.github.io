@@ -118,17 +118,95 @@ export class MomentService {
 
             console.log(`📤 Uploading moment to MongoDB...`);
 
-            // Upload to backend via apiRequest
-            const data = await apiRequest<any>(API_ENDPOINTS.MOMENTS.UPLOAD, {
-                method: 'POST',
-                body: formData,
-            });
+            // Use XMLHttpRequest for better FormData support in React Native
+            const { MONGODB_API_BASE_URL } = require('../config/mongodb');
+            const { auth } = require('../config/firebase');
+            
+            if (!MONGODB_API_BASE_URL) {
+                throw new Error('MongoDB API base URL is not configured. Please start the backend server or set EXPO_PUBLIC_MONGODB_API_URL');
+            }
 
-            console.log(`✅ Moment uploaded successfully`);
-            return data.url;
-        } catch (error) {
+            const url = `${MONGODB_API_BASE_URL}${API_ENDPOINTS.MOMENTS.UPLOAD}`;
+            let token = await auth.currentUser?.getIdToken();
+
+            if (!token) {
+                let attempts = 0;
+                while (!auth.currentUser && attempts < 20) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                token = await auth.currentUser?.getIdToken();
+            }
+
+            return new Promise<string>((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const progress = (event.loaded / event.total) * 100;
+                        console.log(`📤 Upload progress: ${Math.round(progress)}%`);
+                    }
+                };
+
+                xhr.onload = () => {
+                    console.log(`📥 Upload response: ${xhr.status} ${xhr.statusText}`);
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.url) {
+                                console.log(`✅ Moment uploaded successfully`);
+                                resolve(response.url);
+                            } else {
+                                reject(new Error('Server did not return a URL'));
+                            }
+                        } catch (error) {
+                            console.error('❌ Failed to parse upload response:', xhr.responseText);
+                            reject(new Error('Failed to parse upload response'));
+                        }
+                    } else {
+                        try {
+                            const errorResponse = JSON.parse(xhr.responseText);
+                            const errorMsg = errorResponse.error || `Upload failed: ${xhr.status} ${xhr.statusText}`;
+                            reject(new Error(errorMsg));
+                        } catch {
+                            reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}. Make sure the backend server is running.`));
+                        }
+                    }
+                };
+
+                xhr.onerror = () => {
+                    let errorMsg = 'Cannot connect to backend server. ';
+                    if (MONGODB_API_BASE_URL.includes('localhost') || MONGODB_API_BASE_URL.includes('127.0.0.1')) {
+                        errorMsg += 'If testing on a physical device, update src/config/mongodb.ts to use your computer\'s IP address. ';
+                    }
+                    errorMsg += 'Make sure: 1) Backend is running (run: cd backend && npm run dev), 2) Phone and computer are on the same Wi-Fi network.';
+                    reject(new Error(errorMsg));
+                };
+
+                xhr.ontimeout = () => {
+                    reject(new Error('Upload timeout. The file may be too large or the server is slow.'));
+                };
+
+                xhr.open('POST', url);
+                xhr.timeout = 300000; // 5 minutes timeout
+
+                if (token) {
+                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                }
+
+                xhr.send(formData as any);
+            });
+        } catch (error: any) {
+            const errorMessage = error?.message || 'Unknown error';
             console.error('Error uploading image:', error);
-            return null;
+            
+            // Re-throw network errors with more context
+            if (errorMessage.includes('Network request failed') || errorMessage.includes('Network')) {
+                throw new Error(`Network request failed: ${errorMessage}`);
+            }
+            
+            // Re-throw other errors
+            throw error;
         }
     }
 
@@ -160,9 +238,10 @@ export class MomentService {
         try {
             const photoUrl = await this.uploadImage(imageUri, userId, partnerId, caption);
             return !!photoUrl;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error uploading moment:', error);
-            return false;
+            // Re-throw to let caller handle with better error messages
+            throw error;
         }
     }
 
@@ -223,9 +302,14 @@ export class MomentService {
             }
 
             return coupleMoment;
-        } catch (error) {
-            console.error('Error getting moment:', error);
-            return null;
+        } catch (error: any) {
+            // Don't log network errors here - they're handled in listenToTodayMoment
+            // Only log unexpected errors
+            const errorMessage = error?.message || 'Unknown error';
+            if (!errorMessage.includes('Network request failed')) {
+                console.error('Error getting moment:', error);
+            }
+            throw error; // Re-throw to let caller handle it
         }
     }
 
@@ -238,17 +322,81 @@ export class MomentService {
         partnerId: string,
         callback: (moment: CoupleMoment | null) => void
     ): () => void {
-        // Poll every 10 seconds for updates
-        const pollInterval = setInterval(async () => {
-            const moment = await this.getTodayMoment(userId, partnerId);
-            callback(moment);
-        }, 10000);
+        let pollInterval: NodeJS.Timeout | null = null;
+        let consecutiveErrors = 0;
+        let lastErrorLogTime = 0;
+        const ERROR_LOG_THROTTLE = 30000; // Only log errors every 30 seconds
+        const BASE_POLL_INTERVAL = 10000; // 10 seconds
+        const MAX_POLL_INTERVAL = 60000; // Max 60 seconds
+        let currentPollInterval = BASE_POLL_INTERVAL;
+        let isPolling = true;
+
+        const poll = async () => {
+            if (!isPolling) return;
+
+            try {
+                const moment = await this.getTodayMoment(userId, partnerId);
+                // Reset on success
+                consecutiveErrors = 0;
+                currentPollInterval = BASE_POLL_INTERVAL;
+                callback(moment);
+            } catch (error: any) {
+                consecutiveErrors++;
+                
+                // Exponential backoff: increase interval on consecutive errors
+                if (consecutiveErrors > 1) {
+                    currentPollInterval = Math.min(
+                        BASE_POLL_INTERVAL * Math.pow(2, consecutiveErrors - 1),
+                        MAX_POLL_INTERVAL
+                    );
+                }
+
+                // Throttle error logging to prevent spam
+                const now = Date.now();
+                if (now - lastErrorLogTime > ERROR_LOG_THROTTLE) {
+                    const errorMessage = error?.message || 'Unknown error';
+                    if (errorMessage.includes('Network request failed')) {
+                        // Only log network errors occasionally
+                        if (__DEV__) {
+                            console.warn(`⚠️ Network error fetching moment (attempt ${consecutiveErrors}). Backend may be offline. Polling interval increased to ${currentPollInterval}ms.`);
+                        }
+                    } else {
+                        console.error('Error getting moment:', error);
+                    }
+                    lastErrorLogTime = now;
+                }
+
+                // Still call callback with null on error to prevent UI blocking
+                callback(null);
+            }
+
+            // Schedule next poll with current interval
+            if (isPolling) {
+                pollInterval = setTimeout(poll, currentPollInterval);
+            }
+        };
 
         // Initial fetch
-        this.getTodayMoment(userId, partnerId).then(callback);
+        this.getTodayMoment(userId, partnerId)
+            .then((moment) => {
+                callback(moment);
+                // Start polling after initial fetch
+                pollInterval = setTimeout(poll, currentPollInterval);
+            })
+            .catch((error) => {
+                // Handle initial fetch error silently
+                callback(null);
+                // Start polling anyway
+                pollInterval = setTimeout(poll, currentPollInterval);
+            });
 
         // Return cleanup function
-        return () => clearInterval(pollInterval);
+        return () => {
+            isPolling = false;
+            if (pollInterval) {
+                clearTimeout(pollInterval);
+            }
+        };
     }
 
     /**

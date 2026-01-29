@@ -118,6 +118,10 @@ export const API_ENDPOINTS = {
   },
 };
 
+// Error logging throttle - prevent spam from repeated failures
+const errorLogThrottle: Map<string, number> = new Map();
+const ERROR_LOG_THROTTLE_MS = 30000; // Only log same endpoint errors every 30 seconds
+
 /**
  * Make API request to MongoDB Atlas backend
  */
@@ -181,9 +185,30 @@ export async function apiRequest<T>(
     }
 
     const data = await response.json();
+    
+    // Clear error throttle on success
+    errorLogThrottle.delete(endpoint);
+    
     return data as T;
   } catch (error: any) {
-    console.error(`API request failed for ${endpoint}:`, error);
+    // Throttle error logging to prevent spam
+    const now = Date.now();
+    const lastLogTime = errorLogThrottle.get(endpoint) || 0;
+    const shouldLog = now - lastLogTime > ERROR_LOG_THROTTLE_MS;
+    
+    if (shouldLog) {
+      const errorMessage = error?.message || 'Unknown error';
+      if (errorMessage.includes('Network request failed')) {
+        // Network errors are common when backend is offline - log less verbosely
+        if (__DEV__) {
+          console.warn(`⚠️ Network request failed for ${endpoint}. Backend may be offline.`);
+        }
+      } else {
+        console.error(`API request failed for ${endpoint}:`, error);
+      }
+      errorLogThrottle.set(endpoint, now);
+    }
+    
     throw error;
   }
 }

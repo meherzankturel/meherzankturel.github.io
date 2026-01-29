@@ -221,7 +221,7 @@ export default function InviteScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <StatusBar style="dark" />
 
             <View style={styles.header}>

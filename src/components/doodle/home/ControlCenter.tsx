@@ -2,7 +2,10 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../../config/theme';
+import { ResponsiveUtils } from '../../../utils/responsive';
 import { WobblyCircle } from '../index';
+
+const { scale, verticalScale } = ResponsiveUtils;
 
 interface ControlCenterProps {
     onSendLove: () => void;
@@ -22,7 +25,7 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
             {/* Left: Send Love */}
             <View style={styles.sideControl}>
                 <TouchableOpacity onPress={onSendLove} activeOpacity={0.7} style={[styles.circleButton, styles.pinkButton]}>
-                    <Ionicons name="heart" size={28} color="#E85D75" />
+                    <Ionicons name="heart" size={scale(28)} color="#E85D75" />
                 </TouchableOpacity>
                 <Text style={styles.label}>SEND LOVE</Text>
             </View>
@@ -36,8 +39,8 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
                     onPress={onCenterPress}
                 >
                     <View style={styles.heartsRow}>
-                        <Ionicons name="heart-outline" size={42} color="#000" style={styles.leftHeart} />
-                        <Ionicons name="heart-outline" size={42} color="#000" style={styles.rightHeart} />
+                        <Ionicons name="heart-outline" size={scale(42)} color="#000" style={styles.leftHeart} />
+                        <Ionicons name="heart-outline" size={scale(42)} color="#000" style={styles.rightHeart} />
                     </View>
                 </WobblyCircle>
             </View>
@@ -46,9 +49,9 @@ export const ControlCenter: React.FC<ControlCenterProps> = ({
             <View style={styles.sideControl}>
                 <TouchableOpacity onPress={onSOS} activeOpacity={0.7} style={[styles.circleButton, styles.purpleButton]}>
                     {sendingSOS ? (
-                        <Ionicons name="radio-outline" size={28} color="#8A5AAB" />
+                        <Ionicons name="radio-outline" size={scale(28)} color="#8A5AAB" />
                     ) : (
-                        <Ionicons name="medkit" size={28} color="#8A5AAB" /> // Used medkit as potion proxy
+                        <Ionicons name="medkit" size={scale(28)} color="#8A5AAB" /> // Used medkit as potion proxy
                     )}
                 </TouchableOpacity>
                 <Text style={styles.label}>SOS</Text>
@@ -67,12 +70,12 @@ const styles = StyleSheet.create({
     },
     sideControl: {
         alignItems: 'center',
-        gap: 8,
+        gap: theme.spacing.xs,
     },
     circleButton: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: scale(60),
+        height: scale(60),
+        borderRadius: scale(30),
         justifyContent: 'center',
         alignItems: 'center',
         ...theme.shadows.sm,
@@ -84,26 +87,26 @@ const styles = StyleSheet.create({
         backgroundColor: '#EBD9F5',
     },
     label: {
-        fontSize: 10,
+        fontSize: theme.typography.fontSize.xs,
         fontWeight: 'bold',
         color: '#8B6B75',
         letterSpacing: 1,
     },
     centerControl: {
-        marginTop: -20, // Push up slightly to overlap
+        marginTop: verticalScale(-20), // Push up slightly to overlap
     },
     wobblyCircle: {
-        width: 140,
-        height: 100, // Elliptical as per image
-        borderTopLeftRadius: 60,
-        borderTopRightRadius: 60,
-        borderBottomLeftRadius: 60,
-        borderBottomRightRadius: 60,
+        width: scale(140),
+        height: verticalScale(100), // Elliptical as per image
+        borderTopLeftRadius: scale(60),
+        borderTopRightRadius: scale(60),
+        borderBottomLeftRadius: scale(60),
+        borderBottomRightRadius: scale(60),
         // Override border radius logic from component if possible, or accept the generic wobbly look
     },
     heartsRow: {
         flexDirection: 'row',
-        gap: 4,
+        gap: scale(4),
     },
     leftHeart: {
         transform: [{ rotate: '-10deg' }]

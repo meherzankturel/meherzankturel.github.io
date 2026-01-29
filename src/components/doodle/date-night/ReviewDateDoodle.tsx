@@ -89,10 +89,10 @@ export const ReviewDateDoodle: React.FC<ReviewDateDoodleProps> = ({
                 />
                 <View style={styles.dashedLine} />
 
-                {/* Add Photo Button */}
+                {/* Add Media Button */}
                 <TouchableOpacity style={styles.addPhotoButton} onPress={onAddPhoto}>
                     <Ionicons name="camera" size={24} color="#E85D75" />
-                    <Text style={styles.addPhotoText}>Add More Photos</Text>
+                    <Text style={styles.addPhotoText}>Add Photos & Videos</Text>
                 </TouchableOpacity>
 
             </ScrollView>

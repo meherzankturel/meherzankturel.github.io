@@ -138,7 +138,7 @@ export default function TicTacToeScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={styles.container} edges={['top']}>
                 <LinearGradient colors={[theme.colors.background, theme.colors.surface]} style={styles.gradient}>
                     <ActivityIndicator size="large" color={theme.colors.primary} />
                 </LinearGradient>
@@ -147,7 +147,7 @@ export default function TicTacToeScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <LinearGradient colors={[theme.colors.background, theme.colors.surface]} style={styles.gradient}>
                 {/* Header */}
                 <View style={styles.header}>

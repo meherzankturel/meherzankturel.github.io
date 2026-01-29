@@ -547,22 +547,45 @@ export default function HomeScreen() {
         if (!selectedImageUri || !user || !userData?.partnerId) return;
 
         setUploadingMoment(true);
-        const success = await MomentService.uploadMoment(
-            user.uid,
-            userData.partnerId,
-            selectedImageUri,
-            momentCaption.trim() || undefined
-        );
+        try {
+            const success = await MomentService.uploadMoment(
+                user.uid,
+                userData.partnerId,
+                selectedImageUri,
+                momentCaption.trim() || undefined
+            );
 
-        if (success) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            setShowCaptionInput(false);
-            setSelectedImageUri(null);
-            setMomentCaption('');
-        } else {
-            Alert.alert('Error', 'Failed to upload your moment. Please try again.');
+            if (success) {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                setShowCaptionInput(false);
+                setSelectedImageUri(null);
+                setMomentCaption('');
+            } else {
+                // Check if backend is accessible
+                const { MONGODB_API_BASE_URL } = require('../../src/config/mongodb');
+                let errorMessage = 'Failed to upload your moment. Please try again.';
+                
+                if (MONGODB_API_BASE_URL.includes('localhost') || MONGODB_API_BASE_URL.includes('127.0.0.1')) {
+                    errorMessage = 'Cannot connect to backend server.\n\nTo fix:\n1. Open terminal\n2. Run: cd backend && npm run dev\n3. Make sure phone and computer are on same Wi-Fi\n4. Try again';
+                } else if (!MONGODB_API_BASE_URL || MONGODB_API_BASE_URL === '') {
+                    errorMessage = 'Backend server not configured. Please check your connection settings.';
+                }
+                
+                Alert.alert('Upload Failed', errorMessage);
+            }
+        } catch (error: any) {
+            console.error('Upload error:', error);
+            const errorMessage = error?.message || 'Failed to upload your moment.';
+            let userMessage = errorMessage;
+            
+            if (errorMessage.includes('Network request failed') || errorMessage.includes('Network')) {
+                userMessage = 'Network error: Cannot connect to server.\n\nPlease check:\n• Backend server is running\n• Phone and computer are on same Wi-Fi\n• Internet connection is active';
+            }
+            
+            Alert.alert('Upload Error', userMessage);
+        } finally {
+            setUploadingMoment(false);
         }
-        setUploadingMoment(false);
     };
 
     // Partner live indicator animation  
@@ -1681,7 +1704,7 @@ export default function HomeScreen() {
             enabled={!photoViewerVisible && !showCaptionInput && !showEchoAnswerModal && !showEchoRevealModal}
         >
             <View style={styles.container}>
-                <SafeAreaView style={{ flex: 1 }}>
+                <SafeAreaView style={{ flex: 1 }} edges={['top']}>
                     {/* Heart Effects Overlay */}
                     <HeartEffect trigger={heartTrigger} duration={3000} singleHeart={singleHeartMode} />
 
@@ -1699,7 +1722,7 @@ export default function HomeScreen() {
                     >
                         {
                             userData?.partnerId ? (
-                                <View style={{ padding: 16 }} >
+                                <View style={{ padding: theme.spacing.md }} >
                                     <SyncLogoHeader
                                         onSettingsPress={() => router.push('/settings')}
                                         onLogoutPress={handleLogout}
@@ -1707,10 +1730,10 @@ export default function HomeScreen() {
                                     />
 
                                     <FeaturedMemory
-                                        imageUri={
-                                            MomentService.getPartnerPhoto(todayMoment, user?.uid || '')?.photoUrl ||
-                                            MomentService.getUserPhoto(todayMoment, user?.uid || '')?.photoUrl
-                                        }
+                                        partnerImageUri={MomentService.getPartnerPhoto(todayMoment, user?.uid || '')?.photoUrl}
+                                        userImageUri={MomentService.getUserPhoto(todayMoment, user?.uid || '')?.photoUrl}
+                                        partnerName={partnerData?.displayName || partnerData?.name || partnerData?.email?.split('@')[0] || 'Partner'}
+                                        userName={userData?.displayName || userData?.name || user?.email?.split('@')[0] || 'You'}
                                         onPress={handleAddMoment}
                                         label="FEATURED MEMORY"
                                     />
@@ -1731,7 +1754,7 @@ export default function HomeScreen() {
                                         waitingForPartner={dailyEcho ? !DailyEchoService.haveBothAnswered(dailyEcho) && DailyEchoService.hasUserAnswered(dailyEcho, user?.uid || '') : false}
                                     />
 
-                                    <Text style={{ textAlign: 'center', marginTop: 40, color: '#000', letterSpacing: 4, fontSize: 10 }}>IN SYNC</Text>
+                                    <Text style={{ textAlign: 'center', marginTop: ResponsiveUtils.verticalScale(40), color: '#000', letterSpacing: 4, fontSize: theme.typography.fontSize.xs }}>IN SYNC</Text>
                                 </View >
                             ) : (
                                 <View style={{ flex: 1 }}>
@@ -1918,7 +1941,7 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.background,
     },
     loadingText: {
-        marginTop: 16,
+        marginTop: theme.spacing.md,
         fontSize: theme.typography.fontSize.base,
         color: theme.colors.textSecondary,
     },
@@ -2117,7 +2140,7 @@ const styles = StyleSheet.create({
     },
     answerAvatarText: {
         color: '#fff',
-        fontSize: 12,
+        fontSize: theme.typography.fontSize.sm,
         fontWeight: 'bold',
     },
     answerName: {
