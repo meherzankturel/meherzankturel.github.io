@@ -112,6 +112,9 @@ export default function ManifestationsScreen() {
         }
       }
       setLoading(false);
+    }, (error: any) => {
+      console.warn('[Manifestations] User profile listener failed:', error.code || error.message);
+      setLoading(false);
     });
 
     return unsubscribe;

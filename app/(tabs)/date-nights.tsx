@@ -640,6 +640,10 @@ export default function DateNightsScreen() {
               if (snap.exists()) {
                 setPartnerData(snap.data());
               }
+            }, (error: any) => {
+              if (__DEV__) {
+                console.warn('Partner profile listener failed:', error.code || error.message);
+              }
             });
           } catch (error) {
             console.error('Error loading partner data:', error);
@@ -704,6 +708,9 @@ export default function DateNightsScreen() {
           console.log('Date Nights - No pairId or partnerId found. User needs to connect with partner.');
         }
       }
+      setLoading(false);
+    }, (error: any) => {
+      console.warn('[DateNights] User profile listener failed:', error.code || error.message);
       setLoading(false);
     });
 

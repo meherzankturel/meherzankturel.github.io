@@ -58,6 +58,10 @@ export default function GamesScreen() {
             if (partnerSnap.exists()) {
               setPartnerData(partnerSnap.data());
             }
+          }, (error: any) => {
+            if (__DEV__) {
+              console.warn('Partner profile listener failed:', error.code || error.message);
+            }
           });
         }
 
@@ -207,6 +211,9 @@ export default function GamesScreen() {
           );
         }
       }
+      setLoading(false);
+    }, (error: any) => {
+      console.warn('[Games] User profile listener failed:', error.code || error.message);
       setLoading(false);
     });
 

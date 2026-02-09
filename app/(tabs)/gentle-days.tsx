@@ -48,6 +48,9 @@ export default function GentleDaysScreen() {
         setUserData(data);
       }
       setLoading(false);
+    }, (error: any) => {
+      console.warn('[GentleDays] User profile listener failed:', error.code || error.message);
+      setLoading(false);
     });
 
     return unsubscribe;

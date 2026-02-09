@@ -272,6 +272,9 @@ export default function MoodsScreen() {
         }
       }
       setLoading(false);
+    }, (error: any) => {
+      console.warn('[Moods] User profile listener failed:', error.code || error.message);
+      setLoading(false);
     });
 
     return unsubscribe;

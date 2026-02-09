@@ -316,6 +316,9 @@ export class DateReviewService {
             ...doc.data(),
           })) as DateReview[];
           callback(sortReviews(reviews));
+        }, (fallbackError) => {
+          console.warn('Review fallback listener also failed:', fallbackError);
+          callback([]);
         });
       }
     );
