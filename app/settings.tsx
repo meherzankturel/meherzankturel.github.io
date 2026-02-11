@@ -26,9 +26,8 @@ import * as Application from 'expo-application';
 import { ProfileImagePicker } from '../src/components/ProfileImagePicker';
 import { AccountDeletionService } from '../src/services/accountDeletion.service';
 
-// URLs for privacy policy and terms - update these with your actual URLs
-const PRIVACY_POLICY_URL = 'https://sync-app.com/privacy';
-const TERMS_OF_SERVICE_URL = 'https://sync-app.com/terms';
+const PRIVACY_POLICY_URL = 'https://meherzankturel.github.io/privacy.html';
+const TERMS_OF_SERVICE_URL = 'https://meherzankturel.github.io/terms.html';
 const SUPPORT_EMAIL = 'support@sync-app.com';
 
 export default function SettingsScreen() {
