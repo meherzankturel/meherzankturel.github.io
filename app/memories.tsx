@@ -80,6 +80,10 @@ export default function MemoriesScreen() {
                 // Group memories by date
                 const grouped: { [key: string]: MemoryItem[] } = {};
                 data.moments.forEach((memory: MemoryItem) => {
+                    // Fix http:// URLs from before trust proxy was enabled
+                    if (memory.url && memory.url.startsWith('http://')) {
+                        memory.url = memory.url.replace('http://', 'https://');
+                    }
                     const date = memory.date;
                     if (!grouped[date]) {
                         grouped[date] = [];
