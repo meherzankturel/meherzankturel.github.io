@@ -297,11 +297,15 @@ export async function uploadMedia(
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText);
-          const urls = response.urls || response.data?.urls || [];
-          if (urls.length === 0) {
+          const rawUrls = response.urls || response.data?.urls || [];
+          if (rawUrls.length === 0) {
             reject(new Error('Server returned no file URLs'));
             return;
           }
+          // Ensure https for URLs from backends behind reverse proxies
+          const urls = rawUrls.map((url: string) =>
+            url && url.startsWith('http://') ? url.replace('http://', 'https://') : url
+          );
           console.log(`✅ Upload successful. Received ${urls.length} URLs`);
           resolve(urls);
         } catch (error) {

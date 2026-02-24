@@ -18,6 +18,16 @@ export interface CoupleMoment {
     createdAt: Date;
 }
 
+/**
+ * Ensure URL uses https (fixes URLs stored before trust proxy was enabled)
+ */
+function ensureHttps(url: string): string {
+    if (url && url.startsWith('http://')) {
+        return url.replace('http://', 'https://');
+    }
+    return url;
+}
+
 export class MomentService {
     /**
      * Request camera/photo library permissions
@@ -201,7 +211,7 @@ export class MomentService {
                                 const response = JSON.parse(xhr.responseText);
                                 if (response.url) {
                                     console.log(`✅ Moment uploaded successfully`);
-                                    resolve(response.url);
+                                    resolve(ensureHttps(response.url));
                                 } else {
                                     reject(new Error('Server did not return a URL'));
                                 }
@@ -325,7 +335,7 @@ export class MomentService {
                     id: data.userMoment.id,
                     date: data.date,
                     userId: data.userMoment.userId,
-                    photoUrl: data.userMoment.url,
+                    photoUrl: ensureHttps(data.userMoment.url),
                     caption: data.userMoment.caption,
                     uploadedAt: new Date(data.userMoment.uploadedAt),
                 };
@@ -343,7 +353,7 @@ export class MomentService {
                     id: data.partnerMoment.id,
                     date: data.date,
                     userId: data.partnerMoment.userId,
-                    photoUrl: data.partnerMoment.url,
+                    photoUrl: ensureHttps(data.partnerMoment.url),
                     caption: data.partnerMoment.caption,
                     uploadedAt: new Date(data.partnerMoment.uploadedAt),
                 };

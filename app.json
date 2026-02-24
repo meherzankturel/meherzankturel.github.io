@@ -16,8 +16,8 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sync.app",
-      "buildNumber": "1",
+      "bundleIdentifier": "com.meherzan.sync",
+      "buildNumber": "2",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
@@ -49,7 +49,7 @@
       },
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.sync.app"
+          "group.com.meherzan.sync"
         ],
         "aps-environment": "production"
       },
@@ -75,7 +75,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A0F"
       },
-      "package": "com.sync.app",
+      "package": "com.meherzan.sync",
       "versionCode": 1,
       "permissions": [
         "CAMERA",

@@ -16,6 +16,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy (Render, Vercel, etc.) so req.protocol returns 'https' correctly
+app.set('trust proxy', 1);
+
 // ===== SECURITY MIDDLEWARE =====
 
 // Add security headers using helmet
