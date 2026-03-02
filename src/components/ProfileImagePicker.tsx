@@ -30,6 +30,12 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
 }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
+    const [imageError, setImageError] = useState(false);
+
+    // Ensure https for URLs that may have been stored as http://
+    const safeImageUrl = currentImageUrl && currentImageUrl.startsWith('http://')
+        ? currentImageUrl.replace('http://', 'https://')
+        : currentImageUrl;
 
     const handleSelectImage = async () => {
         setShowOptions(false);
@@ -41,6 +47,7 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
                 if (imageUri) {
                     const uploadedUrl = await ProfileService.uploadProfileImage(userId, imageUri);
                     if (uploadedUrl) {
+                        setImageError(false);
                         onImageUpdated(uploadedUrl);
                         // Update widget with new avatar
                         WidgetService.updateYourProfile(userName, uploadedUrl);
@@ -67,6 +74,7 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
                 if (imageUri) {
                     const uploadedUrl = await ProfileService.uploadProfileImage(userId, imageUri);
                     if (uploadedUrl) {
+                        setImageError(false);
                         onImageUpdated(uploadedUrl);
                         WidgetService.updateYourProfile(userName, uploadedUrl);
                     } else {
@@ -108,11 +116,16 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
             >
                 {isLoading ? (
                     <ActivityIndicator color="#00D4FF" size="large" />
-                ) : currentImageUrl ? (
+                ) : safeImageUrl && !imageError ? (
                     <>
                         <Image
-                            source={{ uri: currentImageUrl }}
+                            source={{ uri: safeImageUrl }}
                             style={[styles.image, { width: size, height: size, borderRadius: size / 2 }]}
+                            onError={(e) => {
+                                console.error('Profile image failed to load:', e.nativeEvent.error, safeImageUrl);
+                                setImageError(true);
+                            }}
+                            onLoad={() => setImageError(false)}
                         />
                         <View style={styles.editBadge}>
                             <Ionicons name="camera" size={14} color="#fff" />

@@ -51,7 +51,7 @@ export const SyncLogoHeader: React.FC<SyncLogoHeaderProps> = ({
                             >
                                 {userProfileImage ? (
                                     <Image
-                                        source={{ uri: userProfileImage }}
+                                        source={{ uri: userProfileImage.replace('http://', 'https://') }}
                                         style={styles.profileIcon}
                                     />
                                 ) : (

@@ -791,7 +791,7 @@ export default function MoodsScreen() {
             >
               {userData?.profileImage ? (
                 <View style={{ width: '100%', height: '100%' }}>
-                  <Image source={{ uri: userData.profileImage }} style={styles.avatarImage} />
+                  <Image source={{ uri: userData.profileImage.replace('http://', 'https://') }} style={styles.avatarImage} />
                   {todayMood && (
                     <View style={styles.emojiBadge}>
                       <Text style={{ fontSize: 14 }}>{moodEmojis[todayMood.mood]}</Text>
@@ -823,7 +823,7 @@ export default function MoodsScreen() {
             >
               {partnerData?.profileImage ? (
                 <View style={{ width: '100%', height: '100%' }}>
-                  <Image source={{ uri: partnerData.profileImage }} style={styles.avatarImage} />
+                  <Image source={{ uri: partnerData.profileImage.replace('http://', 'https://') }} style={styles.avatarImage} />
                   {partnerTodayMood && (
                     <View style={styles.emojiBadge}>
                       <Text style={{ fontSize: 14 }}>{moodEmojis[partnerTodayMood.mood]}</Text>

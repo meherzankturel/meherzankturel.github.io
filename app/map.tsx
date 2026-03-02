@@ -286,7 +286,7 @@ export default function MapScreen() {
                                     <View style={[styles.avatar, styles.yourAvatar]}>
                                         {userData.profileImage ? (
                                             <Image
-                                                source={{ uri: userData.profileImage }}
+                                                source={{ uri: userData.profileImage.replace('http://', 'https://') }}
                                                 style={styles.avatarImage}
                                             />
                                         ) : (
@@ -316,7 +316,7 @@ export default function MapScreen() {
                                     <View style={[styles.avatar, styles.partnerAvatar]}>
                                         {partnerData.profileImage ? (
                                             <Image
-                                                source={{ uri: partnerData.profileImage }}
+                                                source={{ uri: partnerData.profileImage.replace('http://', 'https://') }}
                                                 style={styles.avatarImage}
                                             />
                                         ) : (

@@ -100,7 +100,9 @@ export class ProfileService {
             });
 
             // Media upload returns urls array, get the first one
-            const imageUrl = data.urls?.[0] || data.url || data.data?.urls?.[0];
+            const rawUrl = data.urls?.[0] || data.url || data.data?.urls?.[0];
+            // Ensure https for URLs from backends behind reverse proxies (Render, etc.)
+            const imageUrl = rawUrl && rawUrl.startsWith('http://') ? rawUrl.replace('http://', 'https://') : rawUrl;
             console.log('✅ Image uploaded:', imageUrl);
 
             // Update Firebase with the new profile image URL
