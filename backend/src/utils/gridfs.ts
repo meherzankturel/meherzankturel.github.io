@@ -73,3 +73,24 @@ export const getFileURL = (fileId: string, baseUrl: string): string => {
   return `${baseUrl}/api/media/file/${fileId}`;
 };
 
+// Rewrite stored URLs that reference old/suspended backend domains
+const OLD_DOMAINS = [
+  'https://sync-6m58.onrender.com',
+  'http://sync-6m58.onrender.com',
+];
+
+export const fixStoredUrl = (url: string): string => {
+  if (!url) return url;
+  const currentHost = process.env.RENDER_EXTERNAL_URL || 'https://meherzankturel-github-io.onrender.com';
+  for (const old of OLD_DOMAINS) {
+    if (url.startsWith(old)) {
+      return url.replace(old, currentHost);
+    }
+  }
+  // Ensure https
+  if (url.startsWith('http://')) {
+    return url.replace('http://', 'https://');
+  }
+  return url;
+};
+

@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { upload } from '../utils/fileUpload';
-import { uploadToGridFS, getFileURL } from '../utils/gridfs';
+import { uploadToGridFS, getFileURL, fixStoredUrl } from '../utils/gridfs';
 import Media from '../models/Media.model';
 import multer from 'multer';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware';
@@ -208,7 +208,7 @@ router.get(
           ? {
               id: userMoment._id,
               userId: userMoment.userId,
-              url: userMoment.url,
+              url: fixStoredUrl(userMoment.url),
               caption: userMoment.caption,
               uploadedAt: userMoment.createdAt,
             }
@@ -217,7 +217,7 @@ router.get(
           ? {
               id: partnerMoment._id,
               userId: partnerMoment.userId,
-              url: partnerMoment.url,
+              url: fixStoredUrl(partnerMoment.url),
               caption: partnerMoment.caption,
               uploadedAt: partnerMoment.createdAt,
             }
@@ -271,7 +271,7 @@ router.get(
         moments: moments.map((m) => ({
           id: m._id,
           userId: m.userId,
-          url: m.url,
+          url: fixStoredUrl(m.url),
           caption: m.caption,
           date: m.momentDate,
           uploadedAt: m.createdAt,

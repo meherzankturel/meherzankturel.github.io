@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { upload } from '../utils/fileUpload';
-import { uploadToGridFS, getFileURL, initGridFS } from '../utils/gridfs';
+import { uploadToGridFS, getFileURL, initGridFS, fixStoredUrl } from '../utils/gridfs';
 import Media from '../models/Media.model';
 import multer from 'multer';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware';
@@ -322,7 +322,7 @@ router.get('/:id/metadata', authMiddleware, async (req: Request, res: Response) 
         filename: media.filename,
         size: media.size,
         contentType: media.contentType,
-        url: media.url,
+        url: fixStoredUrl(media.url),
         createdAt: media.createdAt,
       },
     });

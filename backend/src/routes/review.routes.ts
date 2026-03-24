@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import Review from '../models/Review.model';
+import { fixStoredUrl } from '../utils/gridfs';
 import { authMiddleware } from '../middleware/auth.middleware';
 import {
   reviewValidation,
@@ -10,6 +11,13 @@ import {
 } from '../middleware/validation.middleware';
 
 const router = express.Router();
+
+// Rewrite old domain URLs in review image/video arrays
+const fixReviewUrls = (review: any) => ({
+  ...review,
+  images: review.images?.map(fixStoredUrl) || [],
+  videos: review.videos?.map(fixStoredUrl) || [],
+});
 
 // ===== CREATE REVIEW =====
 // POST /api/reviews
@@ -77,7 +85,7 @@ router.get(
       res.json({
         success: true,
         count: reviews.length,
-        data: reviews,
+        data: reviews.map(fixReviewUrls),
       });
     } catch (error: any) {
       console.error('Get reviews error:', error);
@@ -108,7 +116,7 @@ router.get(
 
       res.json({
         success: true,
-        data: review,
+        data: fixReviewUrls(review),
       });
     } catch (error: any) {
       console.error('Get review error:', error);
