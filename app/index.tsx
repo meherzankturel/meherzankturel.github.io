@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/contexts/AuthContext';
 import { AnimatedSplashScreen } from '../src/components/AnimatedSplashScreen';
@@ -34,8 +35,8 @@ export default function Index() {
     );
   }
 
-  // Show splash while checking auth (after animated splash)
+  // Simple loading view while auth redirect happens (after animated splash)
   return (
-    <AnimatedSplashScreen duration={0} />
+    <View style={{ flex: 1, backgroundColor: '#0A0A0F' }} />
   );
 }

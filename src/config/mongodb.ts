@@ -21,12 +21,12 @@ const getApiUrl = (): string => {
   // Priority 2: Production build detection
   if (process.env.NODE_ENV === 'production') {
     // Default production URL - update this with your deployed backend URL
-    return 'https://sync-6m58.onrender.com/api';
+    return 'https://meherzankturel-github-io.onrender.com/api';
   }
 
   // Priority 3: Development fallback
   // Use your computer's IP for physical device testing (phone must be on same Wi-Fi)
-  return 'https://sync-6m58.onrender.com/api';
+  return 'https://meherzankturel-github-io.onrender.com/api';
 };
 
 export const MONGODB_API_BASE_URL = getApiUrl();

@@ -48,7 +48,7 @@ export default function HomeScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [activeSOS, setActiveSOS] = useState<any>(null);
     const [sendingSOS, setSendingSOS] = useState(false);
-    const [lastSOSId, setLastSOSId] = useState<string | null>(null);
+    const lastSOSIdRef = useRef<string | null>(null);
     const [heartTrigger, setHeartTrigger] = useState(0); // Trigger for heart effects
     const [singleHeartMode, setSingleHeartMode] = useState(true); // Track if we should show single heart
     const lastPulseTimeRef = useRef<number>(0); // Track last pulse time
@@ -133,8 +133,8 @@ export default function HomeScreen() {
                     const sosId = sosData.id;
 
                     // Only show notification if this is a new SOS (not the same one we already saw)
-                    if (sosId !== lastSOSId) {
-                        setLastSOSId(sosId);
+                    if (sosId !== lastSOSIdRef.current) {
+                        lastSOSIdRef.current = sosId;
                         setActiveSOS(sosData);
 
                         // Fetch sender's data to get their name
@@ -186,7 +186,6 @@ export default function HomeScreen() {
                     }
                 } else {
                     setActiveSOS(null);
-                    setLastSOSId(null);
                 }
             } catch (error) {
                 console.warn('Manual SOS check failed:', error);
@@ -1073,8 +1072,8 @@ export default function HomeScreen() {
                                 const sosId = sosData.id;
 
                                 // Only show notification if this is a new SOS (not the same one we already saw)
-                                if (sosId !== lastSOSId) {
-                                    setLastSOSId(sosId);
+                                if (sosId !== lastSOSIdRef.current) {
+                                    lastSOSIdRef.current = sosId;
                                     setActiveSOS(sosData);
 
                                     // Fetch sender's data to get their name
@@ -1126,7 +1125,6 @@ export default function HomeScreen() {
                                 }
                             } else {
                                 setActiveSOS(null);
-                                setLastSOSId(null);
                             }
                         },
                         (error: any) => {
@@ -1157,8 +1155,8 @@ export default function HomeScreen() {
                         const sosId = sosData.id;
 
                         // Only show notification if this is a new SOS (not the same one we already saw)
-                        if (sosId !== lastSOSId) {
-                            setLastSOSId(sosId);
+                        if (sosId !== lastSOSIdRef.current) {
+                            lastSOSIdRef.current = sosId;
                             setActiveSOS(sosData);
 
                             // Fetch sender's data to get their name
@@ -1210,7 +1208,6 @@ export default function HomeScreen() {
                         }
                     } else {
                         setActiveSOS(null);
-                        setLastSOSId(null);
                     }
                 },
                 (error: any) => {
@@ -1260,46 +1257,54 @@ export default function HomeScreen() {
 
         let unsubscribeFallback: (() => void) | null = null;
 
-        // OPTIMIZED: Simplified processing - no complex filtering
+        // Process ALL unprocessed signals in the snapshot (not just the newest)
         const processSignals = (snapshot: any, isInitialLoad: boolean = false) => {
             if (snapshot.empty) return;
 
-            // Get the newest signal (first doc due to orderBy desc)
-            const newestDoc = snapshot.docs[0];
-            const signalId = newestDoc.id;
-            const signalData = newestDoc.data();
-            const signalTimestamp = signalData.timestamp || Date.now();
+            // Collect all new signals that haven't been processed yet
+            const newSignals: { id: string; data: any }[] = [];
 
-            // Skip if already processed
-            if (processedSignalIds.current.has(signalId)) return;
+            for (const docSnap of snapshot.docs) {
+                const signalId = docSnap.id;
+                const signalData = docSnap.data();
+                const signalTimestamp = signalData.timestamp || Date.now();
 
-            // Skip old signals on initial load (only show new ones after listener started)
-            if (isInitialLoad && signalTimestamp < listenerStartTime.current - 1000) {
-                // Mark as processed so we don't process again
+                // Skip if already processed
+                if (processedSignalIds.current.has(signalId)) continue;
+
+                // Skip old signals on initial load (only show new ones after listener started)
+                if (isInitialLoad && signalTimestamp < listenerStartTime.current - 1000) {
+                    processedSignalIds.current.add(signalId);
+                    continue;
+                }
+
+                // Mark as processed immediately
                 processedSignalIds.current.add(signalId);
-                return;
+                newSignals.push({ id: signalId, data: signalData });
             }
 
-            // Mark as processed immediately
-            processedSignalIds.current.add(signalId);
-
-            // Keep processed IDs set small (max 20)
-            if (processedSignalIds.current.size > 20) {
+            // Keep processed IDs set small (max 50)
+            if (processedSignalIds.current.size > 50) {
                 const idsArray = Array.from(processedSignalIds.current);
-                processedSignalIds.current = new Set(idsArray.slice(-10));
+                processedSignalIds.current = new Set(idsArray.slice(-25));
             }
 
-            // INSTANT: Trigger heart effects immediately!
-            const now = Date.now();
-            const timeSinceLastPulse = now - lastReceivedPulseTimeRef.current;
-            const isRapidPulse = timeSinceLastPulse < 500;
+            // Trigger a heart animation for each new signal, staggered by 120ms
+            newSignals.forEach((signal, index) => {
+                const delay = index * 120;
+                setTimeout(() => {
+                    const now = Date.now();
+                    const timeSinceLastPulse = now - lastReceivedPulseTimeRef.current;
+                    const isRapidPulse = timeSinceLastPulse < 500;
 
-            lastReceivedPulseTimeRef.current = now;
-            setSingleHeartMode(!isRapidPulse);
-            setHeartTrigger((prev: number) => prev + 1);
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    lastReceivedPulseTimeRef.current = now;
+                    setSingleHeartMode(!isRapidPulse);
+                    setHeartTrigger((prev: number) => prev + 1);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-            console.log('💖 INSTANT pulse received!', { signalId, isRapidPulse, latency: now - signalTimestamp + 'ms' });
+                    console.log('💖 INSTANT pulse received!', { signalId: signal.id, isRapidPulse, latency: now - (signal.data.timestamp || now) + 'ms' });
+                }, delay);
+            });
         };
 
         let isFirstSnapshot = true;
