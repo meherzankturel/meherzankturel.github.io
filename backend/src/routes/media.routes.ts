@@ -96,7 +96,10 @@ router.post(
       const dateNightId = req.body.dateNightId ? sanitizeString(req.body.dateNightId) : undefined;
       const reviewId = req.body.reviewId ? sanitizeString(req.body.reviewId) : undefined;
 
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      // Behind reverse proxies (Render, Heroku, etc.), req.protocol may be 'http'
+      // even when the external URL is https. Use x-forwarded-proto header if available.
+      const proto = req.get('x-forwarded-proto') || req.protocol;
+      const baseUrl = `${proto}://${req.get('host')}`;
       const uploadedURLs: string[] = [];
       const mediaRecords: any[] = [];
 

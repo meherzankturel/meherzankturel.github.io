@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { API_ENDPOINTS, apiRequest } from '../config/mongodb';
+import { API_ENDPOINTS, apiRequest, fixMediaUrl } from '../config/mongodb';
 
 export interface DailyMoment {
     id?: string; // MongoDB document ID for editing
@@ -19,13 +19,10 @@ export interface CoupleMoment {
 }
 
 /**
- * Ensure URL uses https (fixes URLs stored before trust proxy was enabled)
+ * Ensure URL uses https and points to the current backend domain
  */
 function ensureHttps(url: string): string {
-    if (url && url.startsWith('http://')) {
-        return url.replace('http://', 'https://');
-    }
-    return url;
+    return fixMediaUrl(url);
 }
 
 export class MomentService {

@@ -3,7 +3,7 @@
  * Handles fetching reviews from MongoDB API with real-time capabilities
  */
 
-import { API_ENDPOINTS, apiRequest } from '../config/mongodb';
+import { API_ENDPOINTS, apiRequest, fixMediaUrl } from '../config/mongodb';
 
 export interface MongoDBReview {
   _id: string;
@@ -27,7 +27,12 @@ export async function getReviewsForDateNight(dateNightId: string): Promise<Mongo
     const reviews = await apiRequest<MongoDBReview[]>(
       API_ENDPOINTS.REVIEWS.GET_BY_DATE_NIGHT(dateNightId)
     );
-    return reviews;
+    // Rewrite media URLs that reference old/suspended backend domains
+    return reviews.map(r => ({
+      ...r,
+      images: r.images?.map(fixMediaUrl),
+      videos: r.videos?.map(fixMediaUrl),
+    }));
   } catch (error: any) {
     console.error('Error fetching reviews from MongoDB:', error);
     throw error;

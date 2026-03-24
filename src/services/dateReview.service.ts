@@ -13,6 +13,7 @@ import {
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { fixMediaUrl } from '../config/mongodb';
 
 export interface DateReview {
   id?: string;
@@ -26,6 +27,14 @@ export interface DateReview {
   videos?: string[]; // URLs to uploaded videos
   createdAt: any;
   updatedAt: any;
+}
+
+function fixReviewUrls(review: DateReview): DateReview {
+  return {
+    ...review,
+    images: review.images?.map(fixMediaUrl),
+    videos: review.videos?.map(fixMediaUrl),
+  };
 }
 
 export class DateReviewService {
@@ -83,10 +92,10 @@ export class DateReviewService {
       );
       
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
+      return snapshot.docs.map(doc => fixReviewUrls({
         id: doc.id,
         ...doc.data(),
-      })) as DateReview[];
+      } as DateReview));
     } catch (error: any) {
       // Fallback: try without orderBy if index is missing
       try {
@@ -95,10 +104,10 @@ export class DateReviewService {
           where('dateNightId', '==', dateNightId)
         );
         const snapshot = await getDocs(fallbackQ);
-        const reviews = snapshot.docs.map(doc => ({
+        const reviews = snapshot.docs.map(doc => fixReviewUrls({
           id: doc.id,
           ...doc.data(),
-        })) as DateReview[];
+        } as DateReview));
         
         // Sort manually by createdAt
         reviews.sort((a, b) => {
@@ -204,11 +213,11 @@ export class DateReviewService {
       
       const snapshot = await getDocs(q);
       if (snapshot.empty) return null;
-      
-      return {
+
+      return fixReviewUrls({
         id: snapshot.docs[0].id,
         ...snapshot.docs[0].data(),
-      } as DateReview;
+      } as DateReview);
     } catch (error: any) {
       console.error('Error getting user review:', error);
       return null;
@@ -290,10 +299,10 @@ export class DateReviewService {
     unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const reviews = snapshot.docs.map(doc => ({
+        const reviews = snapshot.docs.map(doc => fixReviewUrls({
           id: doc.id,
           ...doc.data(),
-        })) as DateReview[];
+        } as DateReview));
         callback(reviews);
       },
       (error) => {

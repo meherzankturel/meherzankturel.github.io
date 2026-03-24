@@ -31,6 +31,29 @@ const getApiUrl = (): string => {
 
 export const MONGODB_API_BASE_URL = getApiUrl();
 
+// Rewrite media URLs that still reference the old suspended backend domain
+const OLD_DOMAINS = [
+  'https://sync-6m58.onrender.com',
+  'http://sync-6m58.onrender.com',
+];
+const CURRENT_DOMAIN = 'https://meherzankturel-github-io.onrender.com';
+
+export const fixMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  let fixed = url;
+  for (const old of OLD_DOMAINS) {
+    if (fixed.startsWith(old)) {
+      fixed = fixed.replace(old, CURRENT_DOMAIN);
+      break;
+    }
+  }
+  // Also ensure https
+  if (fixed.startsWith('http://')) {
+    fixed = fixed.replace('http://', 'https://');
+  }
+  return fixed;
+};
+
 // Log the API URL being used (helpful for debugging)
 if (__DEV__) {
   console.log('📍 MongoDB API URL:', MONGODB_API_BASE_URL);
