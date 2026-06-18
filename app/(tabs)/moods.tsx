@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, Animated, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, Animated, Platform, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WobblySquare, WobblyCard, WobblyCircle, NoPartnerState } from '../../src/components/doodle';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -8,6 +8,7 @@ import { db } from '../../src/config/firebase';
 import { MoodService, Mood, MoodType, MoodCause, MoodReaction, MOOD_CAUSES, MOOD_REACTIONS } from '../../src/services/mood.service';
 import MoodSelector from '../../src/components/MoodSelector';
 import { theme } from '../../src/config/theme';
+import { fixMediaUrl } from '../../src/config/mongodb';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { sendPushNotification } from '../../src/utils/notifications';
@@ -144,6 +145,7 @@ export default function MoodsScreen() {
   const [moods, setMoods] = useState<Mood[]>([]);
   const [submittingMood, setSubmittingMood] = useState(false);
   const [showMoodModal, setShowMoodModal] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [todayMood, setTodayMood] = useState<Mood | null>(null);
   const [partnerTodayMood, setPartnerTodayMood] = useState<Mood | null>(null);
@@ -168,7 +170,7 @@ export default function MoodsScreen() {
   const reactionRotateAnims = useRef<{ [key: string]: Animated.Value }>({ heart: heartRotateAnim }).current;
   const [showHistory, setShowHistory] = useState(false);
 
-  const ALL_MOODS: MoodType[] = ['happy', 'calm', 'neutral', 'sad', 'anxious', 'excited', 'grateful', 'loved'];
+  const ALL_MOODS: MoodType[] = ['happy', 'calm', 'sad', 'anxious', 'excited', 'grateful', 'loved'];
 
   // Define functions before using them in useEffect
   const loadMoodTimeline = useCallback(async (pairId: string) => {
@@ -638,7 +640,7 @@ export default function MoodsScreen() {
     }
   }, [todayMood?.mood, partnerTodayMood?.mood]);
 
-  const handleMoodSubmit = async (mood: MoodType, note?: string, cause?: MoodCause) => {
+  const handleMoodSubmit = async (mood: MoodType, note?: string, cause?: MoodCause, customEmoji?: string) => {
     if (!user || !userData?.partnerId) return;
 
     setSubmittingMood(true);
@@ -646,7 +648,7 @@ export default function MoodsScreen() {
       const pairId = getPairId(user.uid, userData.partnerId, userData.pairId);
       if (!pairId) return;
 
-      await MoodService.submitMood(user.uid, pairId, mood, note, cause);
+      await MoodService.submitMood(user.uid, pairId, mood, note, cause, customEmoji);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowMoodModal(false);
 
@@ -791,10 +793,10 @@ export default function MoodsScreen() {
             >
               {userData?.profileImage ? (
                 <View style={{ width: '100%', height: '100%' }}>
-                  <Image source={{ uri: userData.profileImage.replace('http://', 'https://') }} style={styles.avatarImage} />
+                  <Image source={{ uri: fixMediaUrl(userData.profileImage) }} style={styles.avatarImage} />
                   {todayMood && (
                     <View style={styles.emojiBadge}>
-                      <Text style={{ fontSize: 14 }}>{moodEmojis[todayMood.mood]}</Text>
+                      <Text style={{ fontSize: 14 }}>{todayMood.customEmoji || moodEmojis[todayMood.mood]}</Text>
                     </View>
                   )}
                 </View>
@@ -804,7 +806,7 @@ export default function MoodsScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }]}>
-                  <Text style={{ fontSize: 32 }}>{todayMood ? moodEmojis[todayMood.mood] : ''}</Text>
+                  <Text style={{ fontSize: 32 }}>{todayMood ? (todayMood.customEmoji || moodEmojis[todayMood.mood]) : ''}</Text>
                 </View>
               )}
             </WobblySquare>
@@ -823,10 +825,10 @@ export default function MoodsScreen() {
             >
               {partnerData?.profileImage ? (
                 <View style={{ width: '100%', height: '100%' }}>
-                  <Image source={{ uri: partnerData.profileImage.replace('http://', 'https://') }} style={styles.avatarImage} />
+                  <Image source={{ uri: fixMediaUrl(partnerData.profileImage) }} style={styles.avatarImage} />
                   {partnerTodayMood && (
                     <View style={styles.emojiBadge}>
-                      <Text style={{ fontSize: 14 }}>{moodEmojis[partnerTodayMood.mood]}</Text>
+                      <Text style={{ fontSize: 14 }}>{partnerTodayMood.customEmoji || moodEmojis[partnerTodayMood.mood]}</Text>
                     </View>
                   )}
                 </View>
@@ -836,7 +838,7 @@ export default function MoodsScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }]}>
-                  <Text style={{ fontSize: 32 }}>{partnerTodayMood ? moodEmojis[partnerTodayMood.mood] : ''}</Text>
+                  <Text style={{ fontSize: 32 }}>{partnerTodayMood ? (partnerTodayMood.customEmoji || moodEmojis[partnerTodayMood.mood]) : ''}</Text>
                 </View>
               )}
             </WobblySquare>
@@ -889,6 +891,19 @@ export default function MoodsScreen() {
                   </TouchableOpacity>
                 );
               })}
+              {/* Custom emoji picker — 8th circle in the grid */}
+              <TouchableOpacity
+                style={styles.moodBtn}
+                onPress={() => setShowEmojiPicker(true)}
+              >
+                <WobblyCircle
+                  style={styles.moodBtnCircle}
+                  borderColor={theme.colors.text + '20'}
+                >
+                  <Ionicons name="add" size={28} color={theme.colors.primary} />
+                </WobblyCircle>
+                <Text style={styles.moodBtnLabel}>MORE</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -955,6 +970,38 @@ export default function MoodsScreen() {
           loading={submittingMood}
           partnerName={partnerName}
         />
+
+        {/* Custom Emoji Picker Modal */}
+        <Modal visible={showEmojiPicker} animationType="slide" transparent>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+            <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f0e8f0' }}>
+                <Text style={{ fontSize: 18, fontWeight: '700', color: '#333' }}>How are you feeling?</Text>
+                <TouchableOpacity onPress={() => setShowEmojiPicker(false)}>
+                  <Ionicons name="close" size={24} color="#999" />
+                </TouchableOpacity>
+              </View>
+              <View style={{ padding: 16 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+                  {['😐','🥰','😍','🤗','😇','🥺','😔','😤','😩','🤯','😴','😭','🫠','🥱','🤔','😳','🤭','😜','😶‍🌫️','🤒','😮‍💨','💕','🔥','💤','✨','😵‍💫','🫣','😏','🤪','😋','🫡','😑','🙃','🤧','😬','🥴','😠','🤬','😨','😖','😞','🥲','🤑','😎','🤓','🥳','🫶','💔','💀','🥶','🥵'].map((emoji) => (
+                    <TouchableOpacity
+                      key={emoji}
+                      onPress={() => {
+                        setShowEmojiPicker(false);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        handleMoodSubmit('happy', undefined, undefined, emoji);
+                      }}
+                      style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 14, backgroundColor: '#F8F5FF' }}
+                      activeOpacity={0.6}
+                    >
+                      <Text style={{ fontSize: 28 }}>{emoji}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
   );
 }

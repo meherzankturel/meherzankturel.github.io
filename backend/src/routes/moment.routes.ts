@@ -248,7 +248,7 @@ router.get(
       if (limitParam) {
         const parsed = parseInt(limitParam as string, 10);
         if (!isNaN(parsed) && parsed > 0) {
-          limit = Math.min(parsed, 90); // Cap at 90 days max
+          limit = Math.min(parsed, 3650); // Cap at 10 years max
         }
       }
 
@@ -262,7 +262,7 @@ router.get(
         momentDate: { $gte: dateFilter },
       })
         .sort({ momentDate: -1, createdAt: -1 })
-        .limit(500) // Hard limit to prevent excessive data
+        .limit(5000) // Hard limit to prevent excessive data
         .lean();
 
       res.json({

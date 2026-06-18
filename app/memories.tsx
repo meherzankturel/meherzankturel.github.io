@@ -9,13 +9,17 @@ import {
     ActivityIndicator,
     RefreshControl,
     Dimensions,
+    Modal,
+    Pressable,
+    ScrollView,
+    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../src/config/theme';
 import { useAuth } from '../src/contexts/AuthContext';
-import { API_ENDPOINTS, apiRequest } from '../src/config/mongodb';
+import { API_ENDPOINTS, apiRequest, fixMediaUrl } from '../src/config/mongodb';
 import { MomentService } from '../src/services/moment.service';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../src/config/firebase';
@@ -45,6 +49,7 @@ export default function MemoriesScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [userData, setUserData] = useState<any>(null);
     const [partnerData, setPartnerData] = useState<any>(null);
+    const [preview, setPreview] = useState<MemoryItem | null>(null);
 
     const fetchUserData = useCallback(async () => {
         if (!user?.uid) return;
@@ -73,17 +78,15 @@ export default function MemoriesScreen() {
         try {
             const pairId = MomentService.getMomentPairId(user.uid, userData.partnerId);
             const data = await apiRequest<any>(
-                API_ENDPOINTS.MOMENTS.GET_HISTORY(pairId) + '?limit=90'
+                API_ENDPOINTS.MOMENTS.GET_HISTORY(pairId) + '?limit=3650'
             );
 
             if (data.success && data.moments) {
                 // Group memories by date
                 const grouped: { [key: string]: MemoryItem[] } = {};
                 data.moments.forEach((memory: MemoryItem) => {
-                    // Fix http:// URLs from before trust proxy was enabled
-                    if (memory.url && memory.url.startsWith('http://')) {
-                        memory.url = memory.url.replace('http://', 'https://');
-                    }
+                    // Fix URLs referencing old/suspended backend domains
+                    memory.url = fixMediaUrl(memory.url);
                     const date = memory.date;
                     if (!grouped[date]) {
                         grouped[date] = [];
@@ -148,7 +151,11 @@ export default function MemoriesScreen() {
     };
 
     const renderMemoryItem = ({ item }: { item: MemoryItem }) => (
-        <TouchableOpacity style={styles.memoryItem} activeOpacity={0.8}>
+        <TouchableOpacity
+            style={styles.memoryItem}
+            activeOpacity={0.8}
+            onPress={() => setPreview(item)}
+        >
             <Image source={{ uri: item.url }} style={styles.memoryImage} />
             <View style={styles.memoryOverlay}>
                 <Text style={styles.memoryOwner}>{getUserName(item.userId)}</Text>
@@ -160,6 +167,16 @@ export default function MemoriesScreen() {
             </View>
         </TouchableOpacity>
     );
+
+    const formatPreviewDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
 
     const renderDateSection = ({ item }: { item: GroupedMemory }) => (
         <View style={styles.dateSection}>
@@ -174,18 +191,28 @@ export default function MemoriesScreen() {
         </View>
     );
 
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-                <Text style={styles.loadingText}>Loading memories...</Text>
-            </View>
-        );
-    }
+    const renderSkeletonGrid = () => (
+        <View style={styles.listContent}>
+            {[1, 2].map((section) => (
+                <View key={section} style={styles.dateSection}>
+                    <View style={{ width: 120, height: 20, backgroundColor: '#eee', borderRadius: 4, marginBottom: theme.spacing.sm }} />
+                    <View style={styles.memoriesGrid}>
+                        {[1, 2, 3, 4].map((i) => (
+                            <View key={i} style={styles.gridItem}>
+                                <View style={[styles.memoryItem, { backgroundColor: '#f0f0f0' }]}>
+                                    <ActivityIndicator size="small" color={theme.colors.primary} style={{ flex: 1 }} />
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            ))}
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-            {/* Header */}
+            {/* Header - always visible immediately */}
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
@@ -197,7 +224,9 @@ export default function MemoriesScreen() {
                 <View style={styles.headerRight} />
             </View>
 
-            {memories.length === 0 ? (
+            {loading ? (
+                renderSkeletonGrid()
+            ) : memories.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="images-outline" size={64} color={theme.colors.textMuted} />
                     <Text style={styles.emptyTitle}>No memories yet</Text>
@@ -221,6 +250,62 @@ export default function MemoriesScreen() {
                     }
                 />
             )}
+
+            <Modal
+                visible={preview !== null}
+                transparent
+                animationType="fade"
+                statusBarTranslucent
+                onRequestClose={() => setPreview(null)}
+            >
+                <StatusBar barStyle="light-content" backgroundColor="rgba(0,0,0,0.9)" />
+                <Pressable
+                    style={styles.previewBackdrop}
+                    onPress={() => setPreview(null)}
+                >
+                    <Pressable
+                        style={styles.previewCard}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        <TouchableOpacity
+                            style={styles.previewClose}
+                            onPress={() => setPreview(null)}
+                            activeOpacity={0.7}
+                            hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+                        >
+                            <Ionicons name="close" size={22} color="#fff" />
+                        </TouchableOpacity>
+
+                        {preview && (
+                            <>
+                                <Image
+                                    source={{ uri: preview.url }}
+                                    style={styles.previewImage}
+                                    resizeMode="contain"
+                                />
+                                <ScrollView
+                                    style={styles.previewMeta}
+                                    contentContainerStyle={styles.previewMetaContent}
+                                    showsVerticalScrollIndicator={false}
+                                    bounces={false}
+                                >
+                                    <Text style={styles.previewOwner}>
+                                        {getUserName(preview.userId)}
+                                    </Text>
+                                    <Text style={styles.previewDate}>
+                                        {formatPreviewDate(preview.date)}
+                                    </Text>
+                                    {preview.caption ? (
+                                        <Text style={styles.previewCaption}>
+                                            {preview.caption}
+                                        </Text>
+                                    ) : null}
+                                </ScrollView>
+                            </>
+                        )}
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -339,5 +424,68 @@ const styles = StyleSheet.create({
         color: theme.colors.textMuted,
         textAlign: 'center',
         marginTop: theme.spacing.sm,
+    },
+    previewBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 48,
+    },
+    previewCard: {
+        width: '100%',
+        maxWidth: 560,
+        maxHeight: '100%',
+        backgroundColor: '#000',
+        borderRadius: 18,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    previewClose: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.5)',
+    },
+    previewImage: {
+        width: '100%',
+        aspectRatio: 1,
+        backgroundColor: '#000',
+    },
+    previewMeta: {
+        maxHeight: 180,
+        backgroundColor: '#000',
+    },
+    previewMetaContent: {
+        paddingHorizontal: 18,
+        paddingVertical: 16,
+    },
+    previewOwner: {
+        color: '#fff',
+        fontSize: 17,
+        fontWeight: '700',
+        letterSpacing: 0.2,
+    },
+    previewDate: {
+        color: 'rgba(255,255,255,0.65)',
+        fontSize: 13,
+        fontWeight: '500',
+        marginTop: 2,
+    },
+    previewCaption: {
+        color: 'rgba(255,255,255,0.92)',
+        fontSize: 15,
+        lineHeight: 21,
+        marginTop: 12,
     },
 });
