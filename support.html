@@ -61,6 +61,7 @@ footer a{color:var(--muted)}
 <li><a href="#disconnect">Disconnecting</a></li>
 <li><a href="#delete">Deleting your account</a></li>
 <li><a href="#removed">Why was my photo removed?</a> · <a href="#appeal">How do I appeal?</a></li>
+<li><a href="#newphone">New phone or lost phone</a></li>
 <li><a href="#report">Reporting a problem or a person</a></li>
 <li><a href="#safety">Safety</a></li>
 </ul>
@@ -76,7 +77,7 @@ footer a{color:var(--muted)}
 
 <h2 id="disconnect">Disconnecting</h2>
 <h3>How do I disconnect?</h3>
-<p>Go to <strong>Settings → Disconnect partner</strong>. You don't need your partner's permission. You'll both get an email that the connection ended.</p>
+<p>Go to <strong>Settings → Your relationship → Connected with… → Disconnect</strong>. You don't need your partner's permission.</p>
 <h3>What happens to our memories?</h3>
 <ul>
 <li>Your shared space is <strong>archived</strong>: frozen and hidden from both of you.</li>
@@ -93,24 +94,34 @@ footer a{color:var(--muted)}
 <p>SYNC doesn't allow nudity or sexual or adult images anywhere, <strong>even between partners</strong>. Every photo is checked automatically on our own servers before your partner can see it, so a photo that isn't allowed is never shown to them. Swimwear and underwear are fine.</p>
 <ul>
 <li><strong>"This photo can't be shared on SYNC"</strong> on its own means the check wasn't sure. Nothing was shared and it isn't a warning. Try a different photo.</li>
-<li><strong>"Warning 1 of 3"</strong> means the photo clearly showed nudity or sexual content. Warnings don't expire. On a third warning the account is paused and a person on our team decides whether to close it (usually within 3 days).</li>
+<li><strong>"Warning 1 of 3"</strong> means the photo clearly showed nudity or sexual content. Warnings don't expire. On a third warning the account is closed automatically, with 14 days to ask for a review or download your things. No person at SYNC ever looks at your photos.</li>
 <li><strong>"We couldn't check this photo just now"</strong> means nothing was shared. Try again in a minute.</li>
-<li>Videos can't be uploaded for now. Photos and voice notes work.</li>
+<li>Videos can't be uploaded for now. Photos and voice notes work. Voice notes are end-to-end encrypted, so they aren't scanned. Photos that pass the check are stored encrypted, and no person at SYNC can view them.</li>
 </ul>
 <p>Automatic checks aren't perfect: sometimes a swimsuit photo or a baby's bath time gets flagged by mistake. If that happened to you, please ask for a review.</p>
 
 <h2 id="appeal">How do I appeal?</h2>
 <ol>
-<li>For a warning, the quickest way is <strong>Ask for a review</strong> on the warning in the app. Otherwise (or if your account is paused or closed), email syncapp.noreply@gmail.com from the email address on your account, with the subject <strong>"Appeal"</strong>, within 30 days.</li>
+<li>The quickest way is <strong>Ask for a review</strong> on the warning, or on the account-closed screen, in the app. Otherwise, email syncapp.noreply@gmail.com from the email address on your account, with the subject <strong>"Appeal"</strong>, within 14 days.</li>
 <li>Tell us roughly when it happened and why you think it was a mistake. You don't need to send the photo again.</li>
-<li>A person on our team (not a machine) will review it, usually within 5 working days, and tell you the outcome. If we got it wrong, we'll remove the warning, restore your account if it was banned, and restore the content if we still can.</li>
+<li>We'll run a <strong>second, stricter check automatically</strong>. If it doesn't confirm the first, the warning is cancelled, your account is reopened if it was closed, and we email you.</li>
+<li>Still think it's wrong? Reply to that email (subject <strong>"Human review"</strong>) to <strong>ask a person to review the details</strong>. They see the scores, dates, warning count and what you told us, <strong>never the photo</strong>, and can overturn the decision. We usually reply within 5 working days.</li>
 </ol>
 <p>Appeals aren't available for confirmed child sexual abuse material, which we're legally required to report.</p>
+
+<h2 id="newphone">New phone or lost phone</h2>
+<p>What you and your partner share is end-to-end encrypted, so the keys that open it live on your phones. On a new phone, sign in and SYNC will try these, in this order:</p>
+<ol>
+<li><strong>Your iCloud Keychain or Google account backup.</strong> If it's on (you can turn it off in Settings), your new phone usually opens your things by itself.</li>
+<li><strong>Your partner's phone.</strong> Your partner gets "Let your new phone see your shared things?" and one tap lets you back in. Another device of yours can approve the same way.</li>
+<li><strong>Your recovery code</strong> (24 characters, shown once when you set up). Keep it in a password manager or on paper.</li>
+</ol>
+<p><strong>If all of these are lost, we can't get your past encrypted things back, and neither can anyone else.</strong> We never hold your keys, so we can't reset this for you. New things you share after you're back in will work normally.</p>
 
 <h2 id="report">Reporting a problem or a person</h2>
 <ul>
 <li><strong>Something isn't working:</strong> email syncapp.noreply@gmail.com with your phone model, the app version (Settings → App Version) and what happened. Screenshots help.</li>
-<li><strong>Someone is abusing, threatening or scamming you:</strong> you can end the connection immediately in <strong>Settings → Disconnect partner</strong>. Once disconnected, they can't see anything new from you or send you anything. Then email syncapp.noreply@gmail.com with the subject <strong>"Report"</strong>. We'll review it and can ban accounts that break our <a href="terms.html#acceptable-use">rules</a>.</li>
+<li><strong>Someone is abusing, threatening or scamming you:</strong> you can end the connection immediately in <strong>Settings → Your relationship → Connected with… → Disconnect</strong>. Once disconnected, they can't see anything new from you or send you anything. Then email syncapp.noreply@gmail.com with the subject <strong>"Report"</strong>. We'll review it and can ban accounts that break our <a href="terms.html#acceptable-use">rules</a>.</li>
 <li><strong>Child safety:</strong> if you see anything that sexualises or endangers a child, report it to syncapp.noreply@gmail.com straight away, and to the authorities (see <a href="child-safety.html">Child Safety Standards</a>).</li>
 </ul>
 
@@ -127,12 +138,12 @@ footer a{color:var(--muted)}
 <h3>Where can I read your policies?</h3>
 <p><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Service</a> · <a href="child-safety.html">Child Safety Standards</a></p>
 <h3>Can I get a copy of my data?</h3>
-<p>Yes. Email syncapp.noreply@gmail.com from your account's email address and we'll send you a copy of your data.</p>
+<p>Yes. In the app, use <strong>Download my things</strong>. It's built on your phone, because your shared things are end-to-end encrypted and only your phone can open them. For the account details we hold (name, email, sign-in and account records), email syncapp.noreply@gmail.com from your account's email address and we'll send you a copy. We can't open or send your encrypted content for you.</p>
 </main>
 
 <footer>
 <p>SYNC · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a> · <a href="delete-account.html">Delete your account</a> · <a href="child-safety.html">Child safety</a></p>
-<p>© Meherzan Turel</p>
+<p>© SYNC</p>
 </footer>
 </div>
 </body>

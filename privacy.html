@@ -51,7 +51,7 @@ footer a{color:var(--muted)}
 </header>
 
 <main>
-<p class="meta">Effective 6 October 2026 · Last updated 6 October 2026</p>
+<p class="meta">Effective 6 October 2026 · Last updated 7 October 2026</p>
 <h1>Privacy Policy</h1>
 <p class="lede">SYNC is a private space for two people. This policy explains, in plain English, what we collect, why, who can see it, how long we keep it and the choices you have.</p>
 
@@ -61,7 +61,10 @@ footer a{color:var(--muted)}
 <li>What you share in SYNC is visible to <strong>you and your partner only</strong>. It isn't public, and we don't sell it or use it for advertising.</li>
 <li>There are no ads, no advertising trackers and no third-party analytics in the app.</li>
 <li>Location sharing is <strong>off unless you turn it on</strong>, and even then we only store an approximate (about 1 km) position.</li>
-<li>Nudity and sexual content are not allowed. Uploaded photos are <strong>checked automatically on our own servers</strong> before your partner sees them. No outside moderation company sees them (see <a href="#moderation">section 6</a>).</li>
+<li>Nudity and sexual content are not allowed. Uploaded photos are <strong>checked automatically</strong> before your partner sees them. The checks are fully automatic: <strong>no person ever looks at your photos</strong>, including any that are flagged (see <a href="#moderation">section 6</a>).</li>
+<li><strong>No one at SYNC can view what you and your partner share</strong>: not your photos, messages, voice notes, letters, moods or location. Our admin tools only show account details and the dates and scores of automatic decisions.</li>
+<li>Almost everything you write or record is <strong>end-to-end encrypted</strong>: only your phone and your partner's phone can read it. Not SYNC, not our administrators, not Supabase and not any other service provider. Photos are checked automatically and then stored encrypted too (see <a href="#e2ee">section 10</a>).</li>
+<li><strong>Keys live on your phones.</strong> If you lose every way back in (your phone, your partner's phone, your Apple or Google backup and your recovery code), nobody can recover your past shared things, including us.</li>
 <li>You can delete your account, and what you created, from inside the app at any time.</li>
 </ul>
 </div>
@@ -87,7 +90,7 @@ footer a{color:var(--muted)}
 </nav>
 
 <h2 id="who">1. Who we are</h2>
-<p>SYNC is provided by Meherzan Turel, Surat, Gujarat, India ("SYNC", "we", "us"). We are the <em>controller</em> (in India, the <em>data fiduciary</em>) of the personal data described here. You can reach us at syncapp.noreply@gmail.com.</p>
+<p>SYNC ("SYNC", "we", "us"), based in Surat, Gujarat, India, provides the app. We are the <em>controller</em> (in India, the <em>data fiduciary</em>) of the personal data described here. You can reach us at syncapp.noreply@gmail.com.</p>
 
 <h2 id="collect">2. What we collect</h2>
 <h3>Information you give us</h3>
@@ -95,13 +98,15 @@ footer a{color:var(--muted)}
 <li><strong>Account:</strong> your email address and the name you choose. If you sign in with Apple or Google, we receive an identifier from them and your email address. With Apple this can be a private relay address, and Apple may also share your name the first time. We never receive your Apple or Google password.</li>
 <li><strong>Profile (optional):</strong> a profile photo, a phone number and/or FaceTime address (used only to let your partner call you from the call buttons), your time zone, and preferences like your pebble colour and notification settings.</li>
 <li><strong>Pairing:</strong> invite codes, who asked to connect with whom and when, and the connection itself.</li>
-<li><strong>Things you share with your partner:</strong> photos, videos and short voice clips, captions and notes, moods, letters (including "Open when" letters and songs you attach), date-night plans and reviews, countdowns, goals, vision-board pins, playlist links, game answers and reactions, daily question answers, "Thinking of you" pebbles and other signals.</li>
+<li><strong>Things you share with your partner (end-to-end encrypted, see <a href="#e2ee">section 10</a>):</strong> photos, videos and short voice clips, captions and notes, moods, letters (including "Open when" letters and songs you attach), date-night plans and reviews, countdowns, goals, vision-board pins, playlist links, game answers and reactions, daily question answers, "Thinking of you" pebbles and other signals.</li>
 <li><strong>Gentle Days (optional):</strong> period start dates, how you're feeling on a given day, and messages for your partner (see <a href="#sensitive">section 4</a>).</li>
-<li><strong>Support:</strong> whatever you send us when you contact support or appeal a decision.</li>
+<li><strong>Support:</strong> whatever you send us when you contact support or appeal a decision. Unlike the things you share with your partner, support messages are readable by us, because you are writing to us.</li>
 </ul>
+<h3>Information we can read, and information we can't</h3>
+<p>Most of what you share is encrypted so that we can't read it. What stays readable to us is: your name, email address and sign-in details; dates and times (for example when something was sent, or when a plan is scheduled); one-tap reactions; account status and moderation records (scores and warning counts); and the messages you send to support. Section 10 has the full picture.</p>
 <h3>Information collected automatically</h3>
 <ul>
-<li><strong>Approximate location, only if you turn on "Share my location":</strong> your city, region, country, and a position rounded to about 1 km. Your phone works out the city itself; the precise reading never leaves your phone. We don't track location in the background.</li>
+<li><strong>Approximate location, only if you turn on "Share my location":</strong> your city, region, country, and a position rounded to about 1 km. Your phone works out the city itself and rounds it; the precise reading never leaves your phone. The approximate place is encrypted on your phone before it is sent, so only your partner's phone can read it. We don't track location in the background.</li>
 <li><strong>Device and security data:</strong> a scrambled (hashed) identifier for each device you sign in on, its type and model name (e.g. "iPhone 15"), and when it was first and last used. We use these to warn you about sign-ins on new devices.</li>
 <li><strong>Notification data:</strong> push notification tokens for your devices, and a log of which notifications were sent (type and time only, never message content).</li>
 <li><strong>Activity status:</strong> whether you're online and when you last opened the app, shown to your partner.</li>
@@ -121,18 +126,18 @@ footer a{color:var(--muted)}
 <tr><td>Share your approximate location with your partner</td><td>Approximate location</td><td>Your consent (Art. 6(1)(a)). Switch it off any time in Settings</td></tr>
 <tr><td>Gentle Days health features</td><td>Period dates, wellbeing check-ins</td><td>Your explicit consent (Art. 9(2)(a))</td></tr>
 <tr><td>Keep accounts and SYNC safe: new-device alerts, rate limits, abuse prevention, CAPTCHA</td><td>Device, technical and pairing data</td><td>Legitimate interests in protecting you and the service (Art. 6(1)(f))</td></tr>
-<tr><td>Automatic checking of uploaded photos for nudity and sexual content; warnings, pauses and bans; recognising banned people who sign up again; preserving and reporting child sexual abuse material</td><td>Photos and voice notes you upload; moderation records; scrambled identifiers (email, Apple / Google sign-in ID, app install ID)</td><td>Legitimate interests in a safe service and enforcing our Terms (Art. 6(1)(f)); legal obligation where we must report or preserve CSAM (Art. 6(1)(c))</td></tr>
-<tr><td>Answer support requests and appeals</td><td>What you send us</td><td>Contract / legitimate interests</td></tr>
+<tr><td>Automatic checking of uploaded photos for nudity and sexual content; automatic warnings and account closure; automatic appeal re-checks and human review of the details on request; recognising banned people who sign up again; detecting, preserving and reporting known child sexual abuse material</td><td>Photos you upload; moderation records; scrambled identifiers (email, Apple / Google sign-in ID, app install ID)</td><td>Legitimate interests in a safe service and enforcing our Terms (Art. 6(1)(f)); legal obligation where we must report or preserve CSAM (Art. 6(1)(c))</td></tr>
+<tr><td>Answer support requests, appeals and requests for a person to review an automatic decision</td><td>What you send us; the details of the decision (scores, dates, warning count), never the photo</td><td>Contract / legitimate interests</td></tr>
 <tr><td>Understand, in totals only, how many people use SYNC and which features they use, so we can improve it</td><td>Days you opened the app; counts of what is created (never its content)</td><td>Legitimate interests in running and improving the service (Art. 6(1)(f))</td></tr>
 <tr><td>Comply with law, respond to lawful requests, establish or defend legal claims</td><td>As needed</td><td>Legal obligation (Art. 6(1)(c)); legitimate interests</td></tr>
 </tbody></table></div>
 <p>We don't sell your personal data, share it for cross-context behavioural advertising, or use it to build advertising profiles. We don't use your content to train AI models.</p>
 
 <h2 id="sensitive">4. Health information (Gentle Days)</h2>
-<p>Gentle Days lets you note period dates and how you're feeling, and choose whether your partner sees them. This is health information, which the law treats as especially sensitive. We only process it because you choose to use the feature (your explicit consent). It's private to you unless you switch on sharing in Gentle Days settings, and you can stop sharing, or delete your entries, at any time. We never use it for anything except showing it to you and, if you choose, your partner.</p>
+<p>Gentle Days lets you note period dates and how you're feeling, and choose whether your partner sees them. This is health information, which the law treats as especially sensitive. We only process it because you choose to use the feature (your explicit consent). It's private to you unless you switch on sharing in Gentle Days settings, and you can stop sharing, or delete your entries, at any time. We never use it for anything except showing it to you and, if you choose, your partner. Period dates, check-ins and messages in Gentle Days are end-to-end encrypted: only your phone and, if you share them, your partner's phone can read them. We can't.</p>
 
 <h2 id="partner">5. What your partner can see</h2>
-<p>SYNC is built for two. When you're connected, your partner can see:</p>
+<p>SYNC is built for two. When you're connected, your partner's phone can open and show:</p>
 <ul>
 <li>your name, profile photo, email address and, if you added them, your phone number and FaceTime address;</li>
 <li>everything you share in the app (moments, moods, letters once they open, plans, game answers once revealed, reactions and so on);</li>
@@ -141,7 +146,7 @@ footer a{color:var(--muted)}
 <li>your Gentle Days status or calendar, <em>only</em> if you turn sharing on.</li>
 </ul>
 <p>Some things are deliberately hidden until the right moment, like a sealed letter before its opening time or a daily answer before both of you have replied.</p>
-<p>Your partner can also save things you share (for example by taking screenshots, or saving a photo to their phone). We can't control copies made outside SYNC.</p>
+<p>Because shared things are encrypted end to end, your partner's phone holds the key to open them; we don't. Your partner can also save things you share (for example by taking screenshots, or saving a photo to their phone). We can't control copies made outside SYNC.</p>
 <h3>If you disconnect</h3>
 <ul>
 <li>Either of you can end the connection from Settings. When that happens, you're both unpaired and your shared space is <strong>archived</strong>: it's frozen and neither of you can see it.</li>
@@ -152,15 +157,18 @@ footer a{color:var(--muted)}
 </ul>
 
 <h2 id="moderation">6. Safety checks of photos</h2>
-<p>SYNC has a zero-tolerance rule on nudity and sexual or adult images, even between partners (see our <a href="terms.html#acceptable-use">Terms</a>). To enforce it, every photo is <strong>checked automatically before your partner can see it</strong>.</p>
+<p>SYNC has a zero-tolerance rule on nudity and sexual or adult images, even between partners (see our <a href="terms.html#acceptable-use">Terms</a>). To enforce it, every photo is <strong>checked automatically before your partner can see it</strong>. The whole process is automatic: <strong>no person at SYNC ever looks at your photos</strong>, not when they're checked, not when they're flagged, and not when you appeal.</p>
 <ul>
-<li><strong>Who does the checking:</strong> we do, on our own servers. Two free, open-source image-recognition models (Marqo's NSFW image classifier and NudeNet) run inside our server functions at Supabase, our hosting provider. <strong>No outside moderation company receives your photos</strong>, and the models don't learn from them.</li>
-<li><strong>How it works:</strong> a new photo first goes to a locked holding area that nobody can open, not even you or your partner. The check looks at it in memory. If it's fine, it moves into your shared space and your partner can see it. If it isn't, it's not shared. If the check can't run, nothing is shared and you can try again.</li>
-<li><strong>What counts:</strong> a photo that both models agree clearly shows nudity or sexual content is removed and counts as a warning. A photo where only one model is concerned is simply not shared, with no warning. Swimwear and underwear are allowed. Voice notes are only checked to make sure they really are audio. Videos can't be uploaded for now.</li>
-<li><strong>Warnings and bans:</strong> warnings don't expire. On a third warning your account is paused automatically, and <strong>a person on our team</strong> then reviews it and either confirms a ban or restores your account. A ban is never decided by a machine alone. You can ask for a review of any warning in the app or <a href="support.html#appeal">through support</a>, give your point of view and contest the decision.</li>
-<li><strong>What we keep:</strong> for every photo that isn't shared we keep a minimal record: a digital fingerprint (hash) of the file, the models' scores and labels, the model version, the time, your account, your couple and which part of the app it was for. <strong>We don't keep the image</strong>, with two exceptions: (1) a photo that counts as a warning is kept in a locked store for <strong>30 days</strong>, so that a person can look at it and handle any appeal, and is then deleted; (2) possible child sexual abuse material (below). For photos that are shared, we keep a short record that the check passed (fingerprint and time) until you delete your account.</li>
-<li><strong>Recognising banned people:</strong> so that warnings and bans can't be reset by making a new account, we keep scrambled versions (a keyed hash that can't be turned back into the original) of the email address, the Apple or Google sign-in ID and the app's install ID of anyone with a warning, pause or ban. A new account that matches is given the same status, and a person reviews it.</li>
-<li><strong>Child sexual abuse material:</strong> if an image may involve a child, we don't delete it. We preserve it and the related account information securely for at least one year, a person reviews it, and child sexual abuse material is reported to the authorities as the law requires: the National Center for Missing &amp; Exploited Children (NCMEC) and the relevant Indian authorities. Such accounts are banned immediately. We record every time anyone on our team looks at preserved material.</li>
+<li><strong>Who does the checking:</strong> software, on our own servers. Two free, open-source image-recognition models (Marqo's NSFW image classifier and NudeNet) run inside our server functions at Supabase, our hosting provider. Each photo's digital fingerprint is also compared with fingerprints of known child sexual abuse material (Microsoft's PhotoDNA service, using lists from NCMEC). <strong>No outside moderation company reviews your photos</strong>, and the models don't learn from them.</li>
+<li><strong>How it works:</strong> a new photo first goes to a locked holding area that nobody can open, not even you or your partner. The check looks at it in memory. If it's fine, it's encrypted and moved into your shared space, and your partner can see it. If it isn't, it's not shared. If the check can't run, nothing is shared and you can try again.</li>
+<li><strong>How photos are stored after the check:</strong> a photo that passes is stored <strong>encrypted</strong>, with the keys kept separately from our database. Only the two phones in your couple are given the key to view it, and no one at SYNC can view it. Unlike your messages, photos can't be end-to-end encrypted, because our server has to be able to look at a photo, automatically, to run the safety check before your partner sees it (see <a href="#e2ee">section 10</a>).</li>
+<li><strong>What counts:</strong> a photo that both models agree clearly shows nudity or sexual content is removed and counts as a warning. A photo where only one model is concerned is simply not shared, with no warning. Swimwear and underwear are allowed. Voice notes are end-to-end encrypted, so our servers can't check them: your partner's app only plays them as audio and refuses anything else. Videos can't be uploaded for now; if they are added, they will get the same automatic checks as photos.</li>
+<li><strong>Warnings and account closure:</strong> warnings don't expire. On a third warning your account is <strong>closed automatically</strong>. We email you the dates, and for <strong>14 days</strong> you can still sign in to ask for a review or download your things; after that the account is deleted. Two warnings within a few minutes pause photo sharing for 24 hours.</li>
+<li><strong>Automated decisions and your right to a human review:</strong> warnings and account closures are decisions made by automated means. You can contest any of them in the app or <a href="support.html#appeal">through support</a>. When you ask for a review, a <strong>second, stricter automatic check</strong> runs on the sealed copy of the photo. If it doesn't confirm the first result, the warning is cancelled (and a closed account is reopened) and we email you. If you still disagree, you can <strong>ask a person to review the decision</strong> and give your point of view (in the EU and UK this is your right under Article 22 of the GDPR). That person sees only the details of the decision, such as the scores, dates, warning count and what you wrote to us, <strong>never the photo</strong>, and can overturn it.</li>
+<li><strong>What we keep:</strong> for every photo that isn't shared we keep a minimal record: a digital fingerprint (hash) of the file, the models' scores and labels, the model version, the time, your account, your couple and which part of the app it was for. <strong>We don't keep the image</strong>, with two exceptions: (1) a photo that counts as a warning is kept <strong>sealed</strong> (encrypted, with no way for anyone at SYNC to open it), only so the automatic second check can run if you ask for a review. It's deleted after <strong>14 days</strong>, or when the 14-day window of a closed account ends; (2) known child sexual abuse material (below). For photos that are shared, we keep a short record that the check passed (fingerprint and time) until you delete your account.</li>
+<li><strong>What SYNC staff can see:</strong> our admin tools show account details (name, email, sign-up date, warning count, account status), messages you send to support, and a log of automatic decisions (time, account, which part of the app, scores, warning number, action taken, appeal outcome). They <strong>can't show</strong> any couple's photos, videos, messages, voice notes, letters, moods or location, and no one at SYNC views them. We receive an email alert for each automatic decision with these details only, never the image.</li>
+<li><strong>Recognising banned people:</strong> so that warnings and bans can't be reset by making a new account, we keep scrambled versions (a keyed hash that can't be turned back into the original) of the email address, the Apple or Google sign-in ID and the app's install ID of anyone with a warning, pause or ban. A new account that matches is given the same status automatically; you can ask for a review as above.</li>
+<li><strong>Child sexual abuse material:</strong> known material is detected automatically by matching its fingerprint (above). On a match, the image is never shared and never deleted: it's sealed and preserved, with the related account information, for <strong>at least one year</strong>, the account is blocked, and it's reported to the authorities as the law requires (the National Center for Missing &amp; Exploited Children (NCMEC) and the relevant Indian authorities), <strong>without anyone at SYNC viewing it</strong>. The sealed material is only ever handed to the authorities. Other images the checks flag are handled as nudity: not shared, and a warning.</li>
 </ul>
 
 <h2 id="share">7. Who we share data with</h2>
@@ -168,10 +176,12 @@ footer a{color:var(--muted)}
 <div class="tbl"><table>
 <thead><tr><th>Provider</th><th>What they do</th><th>Location</th></tr></thead>
 <tbody>
-<tr><td>Supabase</td><td>Database, sign-in, file storage, real-time updates, server functions (including the automatic photo safety check, which we run ourselves)</td><td>Data stored in Mumbai, India (AWS); server functions may run in other regions, where a photo being checked is processed in memory only</td></tr>
+<tr><td>Supabase</td><td>Database, sign-in, file storage, real-time updates, server functions (including the automatic photo safety check, which we run ourselves). It holds your encrypted content as scrambled data it can't read, plus the account details listed in section 2</td><td>Data stored in Mumbai, India (AWS); server functions may run in other regions, where a photo being checked is processed in memory only</td></tr>
+<tr><td>Microsoft (PhotoDNA Cloud Service), once our access is approved</td><td>Compares each uploaded photo with fingerprints of known child sexual abuse material. The photo is processed only for this match</td><td>United States</td></tr>
 <tr><td>Expo (650 Industries)</td><td>Delivers push notifications and app updates</td><td>United States</td></tr>
 <tr><td>Apple Push Notification service / Google Firebase Cloud Messaging</td><td>Delivers notifications to iPhone / Android</td><td>United States / global</td></tr>
-<tr><td>Resend</td><td>Sends sign-in codes and security emails</td><td>United States</td></tr>
+<tr><td>Apple (iCloud Keychain) / Google (account backup)</td><td>If you leave it on, keep an encrypted backup of the key that restores your shared things on a new phone. This is your own Apple or Google account storage. SYNC never receives it, and you can turn it off in Settings</td><td>Wherever your Apple or Google account stores it</td></tr>
+<tr><td>Google (Gmail)</td><td>Sends account and security emails from syncapp.noreply@gmail.com</td><td>United States</td></tr>
 <tr><td>Cloudflare (Turnstile)</td><td>Checks that sign-ins come from a person, not a bot</td><td>Global</td></tr>
 </tbody></table></div>
 <p>Notifications only carry your first name and a fixed message (for example "Priya is thinking of you"). They never include your notes, letters or photos.</p>
@@ -188,14 +198,15 @@ footer a{color:var(--muted)}
 <tr><td>Your account, profile and the content you create</td><td>Until you delete it or delete your account</td></tr>
 <tr><td>Your shared space after a disconnect</td><td>Archived for 3 months (or until either of you deletes it sooner), then permanently deleted</td></tr>
 <tr><td>Location</td><td>Only your latest approximate position is kept; it's wiped the moment you turn sharing off</td></tr>
+<tr><td>The encrypted backup of your keys that your recovery code unlocks (we can't open it)</td><td>Until you delete your account</td></tr>
 <tr><td>Security emails queue</td><td>Deleted 30 days after sending</td></tr>
 <tr><td>Device records</td><td>Your 20 most recent devices, until you delete your account</td></tr>
 <tr><td>Days you opened the app</td><td>400 days, or until you delete your account</td></tr>
-<tr><td>An account we close for breaking our Terms</td><td>You can still sign in for 14 days to ask for a review or save your things; then the account is deleted as if you had deleted it yourself (unless a review reopens it). Accounts in the child-safety process below are kept as the law requires</td></tr>
+<tr><td>An account closed automatically for breaking our Terms</td><td>You can still sign in for 14 days to ask for a review or save your things; then the account is deleted as if you had deleted it yourself (unless a review reopens it). Accounts in the child-safety process below are kept as the law requires</td></tr>
 <tr><td>Records of photos that weren't shared, without a warning (hash, scores)</td><td>12 months; longer where needed for an open appeal or legal claim</td></tr>
 <tr><td>Warnings, pauses and bans, with their records and the scrambled identifiers used to recognise returning accounts</td><td>Kept permanently (warnings don't expire), including after you delete your account. A warning overturned on review stops counting</td></tr>
-<tr><td>Copies of photos that led to a warning</td><td>30 days, then deleted (kept longer only if moved to the child-safety process below)</td></tr>
-<tr><td>Material we must preserve and report by law (possible child sexual abuse material)</td><td>At least 1 year, or longer if the law or the authorities require</td></tr>
+<tr><td>Sealed copies of photos that led to a warning (no one at SYNC can open them; used only for the automatic appeal re-check)</td><td>14 days, or until the 14-day window of a closed account ends, then deleted</td></tr>
+<tr><td>Known child sexual abuse material we must preserve and report by law (sealed, never viewed by SYNC)</td><td>At least 1 year, or longer if the law or the authorities require</td></tr>
 <tr><td>Backups</td><td>Backups rotate every 7 days. After that, deleted data is gone from backups too</td></tr>
 <tr><td>Support emails</td><td>Up to 2 years after the conversation ends</td></tr>
 </tbody></table></div>
@@ -210,17 +221,37 @@ footer a{color:var(--muted)}
 </ul>
 
 <h2 id="security">10. How we protect it</h2>
+<h3 id="e2ee">End-to-end encryption: what we can and can't see</h3>
+<p>SYNC uses end-to-end encryption. That means the things you share are scrambled on your phone before they leave it, and can only be unscrambled on your partner's phone. Our servers, our administrators, Supabase and our other service providers only ever hold the scrambled version.</p>
+<div class="tbl"><table>
+<thead><tr><th>What</th><th>Who can read it</th></tr></thead>
+<tbody>
+<tr><td><strong>End-to-end encrypted:</strong> texts and notes, letters (including "Open when" letters), moods, captions, plans and date-night details, goals, countdowns, playlists, vision-board notes, Gentle Days and period data, messages to your partner, game answers and words, reflections, voice notes, and your approximate (city-level) location</td><td>Only the two partners' phones. Not SYNC, not our administrators, not Supabase and not any service provider</td></tr>
+<tr><td><strong>Photos and videos:</strong> checked automatically for nudity and known child sexual abuse material (section 6), then stored encrypted with keys kept separate from our database</td><td>Only the couple's phones are given the key to view them. No SYNC staff can view them. See the note below</td></tr>
+<tr><td><strong>Readable by SYNC:</strong> your name, email address and sign-in data; dates and times; one-tap reactions; account status and moderation records (scores, warning counts); messages you send to support</td><td>SYNC, to run your account and keep it safe</td></tr>
+</tbody></table></div>
+<p><strong>An honest note on photos.</strong> To keep SYNC safe, a photo has to be looked at, automatically, by our server before your partner sees it. That is why photos are encrypted at rest and tightly access-controlled, but not end-to-end encrypted like your messages. No screen or tool in SYNC lets any person open them.</p>
+<h3>Your keys, and getting back in</h3>
+<ul>
+<li>The keys that unlock your shared things are created on, and kept on, your phone and your partner's phone.</li>
+<li>On a <strong>new phone</strong> you can get back in with any one of these: your <strong>iCloud Keychain or Google account backup</strong> (encrypted; you can turn it off in Settings); your <strong>partner's phone approving</strong> the new phone; or your personal <strong>recovery code</strong>, which we ask you to save when you set up.</li>
+<li><strong>If you lose every one of these, your past encrypted things can't be recovered by anyone, including us.</strong> We can't reset this, because we never have the keys.</li>
+<li>Because we can't read your content, our notifications only say who it's from (for example "Priya sent you a note"), never what it says. "Download my things" is built on your phone, which opens your own encrypted things and puts them in the file.</li>
+</ul>
+<h3>Other protections</h3>
 <ul>
 <li>All data is encrypted in transit (HTTPS/TLS) and encrypted at rest by our hosting provider.</li>
 <li>Database rules ("row-level security") make sure each account can only read its own data and its current partner's. Photos and files sit in private storage and are shown through short-lived links.</li>
 <li>Sign-in is passwordless (Apple, Google or a one-time email code), so there are no passwords to steal. Your session is stored in your phone's secure keychain.</li>
 <li>We email you when your account signs in on a new device or connects with someone.</li>
 <li>Our backups are encrypted.</li>
+<li><strong>Staff access:</strong> SYNC's admin tools have no way to open couples' photos, videos, messages, voice notes, letters, moods or location (most of which we couldn't read even if we tried), and photo moderation is fully automatic, so no one at SYNC views your content. Admin accounts need two-step sign-in and every admin action is logged.</li>
 </ul>
 <p>No system is perfectly secure. If a breach affects your personal data, we'll notify you and the relevant authorities as the law requires.</p>
 
 <h2 id="rights">11. Your rights and choices</h2>
-<p>Depending on where you live, you can ask to <strong>access</strong> your data, <strong>correct</strong> it, <strong>delete</strong> it, <strong>download</strong> a copy (portability), <strong>restrict</strong> or <strong>object</strong> to some processing, and <strong>withdraw consent</strong> at any time (this doesn't affect what we did before). Many of these you can do yourself in the app: edit your profile, turn off location sharing or Gentle Days sharing, change notification settings, disconnect, or delete your account. For anything else, email syncapp.noreply@gmail.com. We'll reply within one month (or sooner where the law requires), and may need to confirm it's really you first. You won't be treated differently for using your rights.</p>
+<p>Depending on where you live, you can ask to <strong>access</strong> your data, <strong>correct</strong> it, <strong>delete</strong> it, <strong>download</strong> a copy (portability), <strong>restrict</strong> or <strong>object</strong> to some processing, and <strong>withdraw consent</strong> at any time (this doesn't affect what we did before). Many of these you can do yourself in the app: <strong>Download my things</strong> (it runs on your phone, opens your own encrypted things and gives you a copy), edit your profile, turn off location sharing or Gentle Days sharing, change notification settings, disconnect, or delete your account. For anything else, email syncapp.noreply@gmail.com. If you ask us for a copy of your data, we can send the account details we hold (section 2), but we can't open your encrypted content, so use Download my things for that. We'll reply within one month (or sooner where the law requires), and may need to confirm it's really you first. You won't be treated differently for using your rights.</p>
+<p><strong>Automated decisions:</strong> photo checks, warnings and automatic account closure are decided by software (see <a href="#moderation">section 6</a>). You have the right to contest them, to give your point of view, and to ask for a person to review the decision. The person reviews the details of the decision (scores, dates and what you tell us), never the photo. Ask in the app with <strong>Ask for a review</strong>, or follow the steps on our <a href="support.html#appeal">support page</a>.</p>
 <p>You can also complain to a data protection authority. For example: your local EU supervisory authority, the UK Information Commissioner's Office (ico.org.uk), or the Data Protection Board of India. We'd appreciate the chance to help first.</p>
 
 <h2 id="regions">12. Region-specific information</h2>
@@ -228,7 +259,7 @@ footer a{color:var(--muted)}
 <ul>
 <li>This policy is our notice under the DPDP Act. It lists the personal data we process and why. Where we rely on your consent (for example, location sharing and Gentle Days), you can withdraw it as easily as you gave it, in the app or by emailing us.</li>
 <li>You have the right to access a summary of your data and of who we've shared it with, to correct, complete, update and erase it, to nominate someone to exercise your rights if you die or become incapacitated, and to grievance redressal.</li>
-<li><strong>Grievance Officer:</strong> Meherzan Turel, syncapp.noreply@gmail.com, Surat, Gujarat, India. We'll acknowledge your grievance promptly and resolve it within the time the DPDP Rules require. If you're not satisfied, you can approach the Data Protection Board of India.</li>
+<li><strong>Grievance Officer:</strong> SYNC Grievance Officer, syncapp.noreply@gmail.com, Surat, Gujarat, India. We'll acknowledge your grievance promptly and resolve it within the time the DPDP Rules require. Grievances about moderation are handled from the details of the decision, never by viewing your photos. If you're not satisfied, you can approach the Data Protection Board of India.</li>
 </ul>
 <h3>European Economic Area and United Kingdom</h3>
 <p>Our legal bases are listed in <a href="#use">section 3</a> and international transfers in <a href="#transfers">section 8</a>.</p>
@@ -246,12 +277,12 @@ footer a{color:var(--muted)}
 <p>If we make important changes, we'll tell you in the app or by email before they take effect, and update the date at the top. Earlier versions are available on request.</p>
 
 <h2 id="contact">15. Contact</h2>
-<p>Meherzan Turel<br>Surat, Gujarat, India<br>Privacy questions: syncapp.noreply@gmail.com<br>Support: syncapp.noreply@gmail.com</p>
+<p>SYNC<br>Surat, Gujarat, India<br>Privacy questions: syncapp.noreply@gmail.com<br>Support: syncapp.noreply@gmail.com</p>
 </main>
 
 <footer>
 <p>SYNC · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a> · <a href="delete-account.html">Delete your account</a> · <a href="child-safety.html">Child safety</a></p>
-<p>© Meherzan Turel</p>
+<p>© SYNC</p>
 </footer>
 </div>
 </body>
