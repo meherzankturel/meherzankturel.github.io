@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://meherzankturel.github.io/sitemap.xml
+Sitemap: https://pebbleapp.vercel.app/sitemap.xml
